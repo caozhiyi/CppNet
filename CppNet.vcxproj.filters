@@ -1,0 +1,123 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="base">
+      <UniqueIdentifier>{b690a62c-604b-49ac-8547-0f7dfebfbb05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net">
+      <UniqueIdentifier>{d0b899ae-a8d4-4808-a5ee-64822497b537}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net\netio">
+      <UniqueIdentifier>{9894f839-293d-46c5-b71d-ee6fa110024c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net\OS">
+      <UniqueIdentifier>{e68d38ab-7e33-4061-b30f-d8d452c83950}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Buffer.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="Log.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="LoopBuffer.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="MemaryPool.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="Time.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="IOCP.cpp">
+      <Filter>net\netio</Filter>
+    </ClCompile>
+    <ClCompile Include="OSInfo.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="CppNet.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="Socket.cpp">
+      <Filter>net\OS</Filter>
+    </ClCompile>
+    <ClCompile Include="AcceptSocket.cpp">
+      <Filter>net\OS</Filter>
+    </ClCompile>
+    <ClCompile Include="SocketBase.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Buffer.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="Log.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="LoopBuffer.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="MemaryPool.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="PoolSharedPtr.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="Runnable.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="RunnableAloneTaskList.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="RunnableAloneTaskListWithPost.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="RunnableShareTaskList.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="Single.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="TaskQueue.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="Time.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="IOCP.h">
+      <Filter>net\netio</Filter>
+    </ClInclude>
+    <ClInclude Include="OSInfo.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="EventActions.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="EventHandler.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="WinExpendFunc.h">
+      <Filter>net\netio</Filter>
+    </ClInclude>
+    <ClInclude Include="Socket.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="AcceptSocket.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketBase.h">
+      <Filter>net</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

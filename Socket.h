@@ -1,0 +1,45 @@
+#ifndef HEADER_CSOCKET
+#define HEADER_CSOCKET
+
+#include <string>
+#include <memory>
+#include <functional>
+
+#include "EventHandler.h"
+#include "Buffer.h"
+#include "PoolSharedPtr.h"
+#include "SocketBase.h"
+
+class CEventHandler;
+class CBuffer;
+class CSocket : public CSocketBase {
+public:
+	CSocket(std::shared_ptr<CEventActions>& event_actions);
+	~CSocket();
+
+	void SyncRead(const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back = nullptr);
+	void SyncWrite(char* src, int len, const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back = nullptr);
+
+	void SyncRead(unsigned int interval, const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back = nullptr);
+	void SyncWrite(unsigned int interval, char* src, int len, const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back = nullptr);
+
+	void SetReadCallBack(const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back);
+	void SetWriteCallBack(const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back);
+
+	friend bool operator>(const CSocketBase& s1, const CSocketBase& s2);
+	friend bool operator<(const CSocketBase& s1, const CSocketBase& s2);
+	friend bool operator==(const CSocketBase& s1, const CSocketBase& s2);
+	friend bool operator!=(const CSocketBase& s1, const CSocketBase& s2);
+
+public:
+	void _Recv(CMemSharePtr<CEventHandler>& event);
+	void _Send(CMemSharePtr<CEventHandler>& event);
+
+protected:
+	friend class CAcceptSocket;
+
+	CMemSharePtr<CEventHandler>		_read_event;
+	CMemSharePtr<CEventHandler>		_write_event;
+};
+
+#endif
