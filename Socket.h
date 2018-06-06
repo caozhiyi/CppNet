@@ -35,9 +35,7 @@ public:
 	void _Recv(CMemSharePtr<CEventHandler>& event);
 	void _Send(CMemSharePtr<CEventHandler>& event);
 
-protected:
-	friend class CAcceptSocket;
-
+public:
 	CMemSharePtr<CEventHandler>		_read_event;
 	CMemSharePtr<CEventHandler>		_write_event;
 };

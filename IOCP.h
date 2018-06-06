@@ -10,16 +10,16 @@
 #include "PoolSharedPtr.h"
 
 #define MAX_BUFFER_LEN        8192
-class CEventHandler;
+class Cevent;
 struct EventOverlapped {
 	OVERLAPPED	_overlapped;
 	WSABUF      _wsa_buf;   
-	int			__event_flag_set;
+	int			_event_flag_set;
 	char        _lapped_buffer[MAX_BUFFER_LEN];
-	CMemSharePtr<CEventHandler> _event;
+	void*		_event;
 
 	EventOverlapped() {
-		__event_flag_set = 0;
+		_event_flag_set = 0;
 		memset(&_overlapped, 0, sizeof(_overlapped));
 		memset(_lapped_buffer, 0, MAX_BUFFER_LEN);
 		_wsa_buf.buf = _lapped_buffer;
@@ -27,7 +27,7 @@ struct EventOverlapped {
 	}
 
 	void Clear() {
-		__event_flag_set = 0;
+		_event_flag_set = 0;
 		memset(_lapped_buffer, 0, MAX_BUFFER_LEN);
 	}
 };
@@ -44,14 +44,14 @@ public:
 	virtual bool AddTimerEvent(unsigned int interval, int event_flag, CMemSharePtr<CEventHandler>& event);
 	virtual bool AddSendEvent(CMemSharePtr<CEventHandler>& event);
 	virtual bool AddRecvEvent(CMemSharePtr<CEventHandler>& event);
-	virtual bool AddAcceptEvent(CMemSharePtr<CEventHandler>& event);
+	virtual bool AddAcceptEvent(CMemSharePtr<CAcceptEventHandler>& event);
 	virtual bool DelEvent(CMemSharePtr<CEventHandler>& event);
 
 	virtual void ProcessEvent();
 
 private:
 	bool _PostRecv(CMemSharePtr<CEventHandler>& event);
-	bool _PostAccept(CMemSharePtr<CEventHandler>& event);
+	bool _PostAccept(CMemSharePtr<CAcceptEventHandler>& event);
 	bool _PostSend(CMemSharePtr<CEventHandler>& event);
 
 private:

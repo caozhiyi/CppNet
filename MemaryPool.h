@@ -9,7 +9,7 @@
 #include <map>
 
 static const int __align = 8;
-static const int __max_bytes = 128;
+static const int __max_bytes = 256;
 static const int __number_of_free_lists = __max_bytes / __align;
 static const int __number_add_nodes = 20;
 
@@ -67,11 +67,11 @@ private:
 	};
 
 	MemNode*	_free_list[__number_of_free_lists];	
-	std::mutex	_mutex;
 	char*		_pool_start;					
 	char*		_pool_end;				
-	std::thread::id		_create_thread_id;
-	std::vector<char*>  _malloc_vec;
+	std::thread::id			_create_thread_id;
+	std::vector<char*>		_malloc_vec;
+	std::recursive_mutex	_mutex;
 
 	std::mutex	_large_mutex;
 	int			_number_large_add_nodes;			//everytime add nodes num
@@ -88,7 +88,7 @@ T* CMemaryPool::PoolNew(Args&&... args) {
 		return res;
 	}
 
-	std::unique_lock<std::mutex> lock(_mutex);
+	std::unique_lock<std::recursive_mutex> lock(_mutex);
 	MemNode** my_free = &(_free_list[FreeListIndex(sz)]);
 	MemNode* result = *my_free;
 	if (result == nullptr) {
@@ -110,6 +110,7 @@ void CMemaryPool::PoolDelete(T* &c) {
 
 	int sz = sizeof(T);
 	if (sz > __max_bytes) {
+		c->~T();
 		free(c);
 		return;
 	}
@@ -117,7 +118,7 @@ void CMemaryPool::PoolDelete(T* &c) {
 	MemNode* node = (MemNode*)c;
 	MemNode** my_free = &(_free_list[FreeListIndex(sz)]);
 
-	std::unique_lock<std::mutex> lock(_mutex);
+	std::unique_lock<std::recursive_mutex> lock(_mutex);
 	c->~T();
 	node->_next = *my_free;
 	*my_free = node;
@@ -132,7 +133,7 @@ T* CMemaryPool::PoolMalloc(int sz) {
 		return (T*)bytes;
 	}
 
-	std::unique_lock<std::mutex> lock(_mutex);
+	std::unique_lock<std::recursive_mutex> lock(_mutex);
 	MemNode** my_free = &(_free_list[FreeListIndex(sz)]);
 	MemNode* result = *my_free;
 	if (result == nullptr) {
@@ -161,7 +162,7 @@ void CMemaryPool::PoolFree(T* &m, int len) {
 	MemNode* node = (MemNode*)m;
 	MemNode** my_free = &(_free_list[FreeListIndex(len)]);
 
-	std::unique_lock<std::mutex> lock(_mutex);
+	std::unique_lock<std::recursive_mutex> lock(_mutex);
 	node->_next = *my_free;
 	*my_free = node;
 	m = nullptr;

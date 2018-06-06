@@ -83,8 +83,8 @@ public:
 	CBasePtr(_BasePtr&& r) : _ptr(r._ptr), _ref_count(r._ref_count), _pool(r._pool), _memory_type(type), _malloc_size(large_size) {
 		r._ptr			= nullptr;
 		r._ref_count	= nullptr;
-		r._deleter		= nullptr;
-		_malloc_size = 0;
+		r._pool			= nullptr;
+		_malloc_size	= 0;
 	}
 
 	// construct CBasePtr object that takes resource from _Right
@@ -100,7 +100,7 @@ public:
 
 		r._ptr = nullptr;
 		r._ref_count = nullptr;
-		r._deleter = nullptr;
+		r._pool = nullptr;
 		r._malloc_size = 0;
 		return (*this);
 	}
@@ -115,6 +115,7 @@ public:
 		_ref_count   = r._ref_count;
 		_memory_type = r._memory_type;
 		_malloc_size = r._malloc_size;
+		_pool		 = r._pool;
 		if (_ref_count) {
 			_ref_count->IncrefUse();
 		}
@@ -222,7 +223,7 @@ public:
 
 		_ref_count	= other_rep;
 		_ptr		= other_ptr;
-		_deleter	= nullptr;
+		_pool		= nullptr;
 	}
 
 	// release resource and take new resource
@@ -335,13 +336,19 @@ public:
 	}
 
 	// construct CBasePtr object that takes resource from _Right
-	CMemWeakPtr& operator=(_BasePtr&& r) {
+	CMemWeakPtr<T>& operator=(_BasePtr&& r) {
 		_BasePtr::operator=(r);
 		return (*this);
 	}
 
 	// construct CBasePtr object that takes resource from _Right
-	CMemWeakPtr& operator=(_BasePtr& r) {
+	CMemWeakPtr<T>& operator=(CMemSharePtr<T>& r) {
+		Resetw(r);
+		return (*this);
+	}
+
+	// construct CBasePtr object that takes resource from _Right
+	CMemWeakPtr<T>& operator=(CMemWeakPtr<T>& r) {
 		Resetw(r);
 		return (*this);
 	}
@@ -358,32 +365,37 @@ public:
 		}
 		return (CMemSharePtr<T>(*this));
 	}
+
+	// test if CMemSharePtr object owns no resource
+	explicit operator bool() const noexcept {
+		return (this->Get() != 0);
+	}
 };
 
 template<typename T, typename... Args >
-CMemSharePtr<T> MakeNewSharedPtr(CMemaryPool& pool, Args&&... args) {
-	T* o = pool.PoolNew<T>(std::forward<Args>(args)...);
-	CRefCount* ref = pool.PoolNew<CRefCount>();
-	return CMemSharePtr<T>(o, ref, &pool, TYPE_NEW);
+CMemSharePtr<T> MakeNewSharedPtr(CMemaryPool* pool, Args&&... args) {
+	T* o = pool->PoolNew<T>(std::forward<Args>(args)...);
+	CRefCount* ref = pool->PoolNew<CRefCount>();
+	return CMemSharePtr<T>(o, ref, pool, TYPE_NEW);
 }
 
 template<typename T>
-CMemSharePtr<T> MakeMallocSharedPtr(CMemaryPool& pool, int size) {
-	T* o = (T*)pool.PoolMalloc<T>(size);
-	CRefCount* ref = pool.PoolNew<CRefCount>();
-	return CMemSharePtr<T>(o, ref, &pool, TYPE_MALLOC, size);
+CMemSharePtr<T> MakeMallocSharedPtr(CMemaryPool* pool, int size) {
+	T* o = (T*)pool->PoolMalloc<T>(size);
+	CRefCount* ref = pool->PoolNew<CRefCount>();
+	return CMemSharePtr<T>(o, ref, pool, TYPE_MALLOC, size);
 }
 
 template<typename T>
-CMemSharePtr<T> MakeLargeSharedPtr(CMemaryPool& pool) {
-	T* o = pool.PoolLargeMalloc<T>();
-	CRefCount* ref = pool.PoolNew<CRefCount>();
-	return CMemSharePtr<T>(o, ref, &pool, TYPE_LARGE);
+CMemSharePtr<T> MakeLargeSharedPtr(CMemaryPool* pool) {
+	T* o = pool->PoolLargeMalloc<T>();
+	CRefCount* ref = pool->PoolNew<CRefCount>();
+	return CMemSharePtr<T>(o, ref, pool, TYPE_LARGE);
 }
 
 template<typename T>
-CMemSharePtr<T> MakeLargeSharedPtr(CMemaryPool& pool, int size) {
-	T* o = pool.PoolLargeMalloc<T>(size);
-	CRefCount* ref = pool.PoolNew<CRefCount>(); 
-	return CMemSharePtr<T>(o, ref, &pool, TYPE_LARGE_WITH_SIZE, size);
+CMemSharePtr<T> MakeLargeSharedPtr(CMemaryPool* pool, int size) {
+	T* o = pool->PoolLargeMalloc<T>(size);
+	CRefCount* ref = pool->PoolNew<CRefCount>();
+	return CMemSharePtr<T>(o, ref, pool, TYPE_LARGE_WITH_SIZE, size);
 }

@@ -12,7 +12,7 @@ CMemaryPool::CMemaryPool(const int large_sz, const int add_num) : _large_size(Ro
 }
 
 CMemaryPool::~CMemaryPool() {
-	assert(_create_thread_id == std::this_thread::get_id());
+	//assert(_create_thread_id == std::this_thread::get_id());
 	for (auto iter = _malloc_vec.begin(); iter != _malloc_vec.end(); ++iter) {
 		if (*iter) {
 			free(*iter);

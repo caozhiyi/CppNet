@@ -23,31 +23,29 @@ enum EVENT_ERROR {
 	EVENT_ERROR_CLOSED	= 2
 };
 
-class CEventHandler {
+class Cevent {
 public:
-	CMemSharePtr<CBuffer>		_buffer;
-	CMemSharePtr<CSocket>		_client_socket;
-	int							_off_set;				//read or write size
-
-	//don't change following members
 	void*						_data = nullptr;
 	int							_event_flag_set = 0;
-	CAcceptSocket*				_accept_socket = nullptr;
+};
+
+class CEventHandler : public Cevent {
+public:
+	CMemSharePtr<CBuffer>		_buffer;
+	CMemWeakPtr<CSocket>		_client_socket;
+	int							_off_set;				//read or write size
+
 	bool						_timer_out = false;
 	bool						_timer_set = false;		//is add in timer map?
 	unsigned int				_timer_id = 0;
 	std::function<void(CMemSharePtr<CEventHandler>&, int error)>	_call_back;
 };
 
-class CAcceptEventHandler {
+class CAcceptEventHandler : public Cevent {
 public:
 	CMemSharePtr<CSocket>		_client_socket;
-	int							_off_set;				//read or write size
 
-	void*						_data = nullptr;
-	int							_event_flag_set = 0;
 	CAcceptSocket*				_accept_socket = nullptr;
-
-	std::function<void(CMemSharePtr<CEventHandler>&, int error)>	_call_back;
+	std::function<void(CMemSharePtr<CAcceptEventHandler>&, int error)>	_call_back;
 };
 #endif

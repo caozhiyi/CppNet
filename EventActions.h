@@ -15,7 +15,7 @@ public:
 	virtual bool AddTimerEvent(unsigned int interval, int event_flag, CMemSharePtr<CEventHandler>& event) = 0;
 	virtual bool AddSendEvent(CMemSharePtr<CEventHandler>& event) = 0;
 	virtual bool AddRecvEvent(CMemSharePtr<CEventHandler>& event) = 0;
-	virtual bool AddAcceptEvent(CMemSharePtr<CEventHandler>& event) = 0;
+	virtual bool AddAcceptEvent(CMemSharePtr<CAcceptEventHandler>& event) = 0;
 	virtual bool DelEvent(CMemSharePtr<CEventHandler>& event) = 0;
 
 	virtual void ProcessEvent() = 0;

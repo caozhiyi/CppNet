@@ -8,8 +8,8 @@
 #include "Socket.h"
 
 CSocket::CSocket(std::shared_ptr<CEventActions>& event_actions) : CSocketBase(event_actions) {
-	_read_event = MakeNewSharedPtr<CEventHandler>(*(_pool.get()));
-	_write_event = MakeNewSharedPtr<CEventHandler>(*(_pool.get()));
+	_read_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
+	_write_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
 }
 
 CSocket::~CSocket() {
@@ -18,7 +18,7 @@ CSocket::~CSocket() {
 
 void CSocket::SyncRead(const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back) {
 	if (!_read_event) {
-		_read_event = MakeNewSharedPtr<CEventHandler>(*(_pool.get()));
+		_read_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
 	}
 	if (!_read_event->_data) {
 		_read_event->_data = _pool->PoolNew<EventOverlapped>();
@@ -28,7 +28,7 @@ void CSocket::SyncRead(const std::function<void(CMemSharePtr<CEventHandler>&, in
 	}
 
 	if (!_read_event->_buffer) {
-		_read_event->_buffer = MakeNewSharedPtr<CBuffer>(*(_pool.get()), _pool);
+		_read_event->_buffer = MakeNewSharedPtr<CBuffer>(_pool.get(), _pool);
 	}
 	
 	if (_event_actions) {
@@ -38,7 +38,7 @@ void CSocket::SyncRead(const std::function<void(CMemSharePtr<CEventHandler>&, in
 
 void CSocket::SyncWrite(char* src, int len, const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back) {
 	if (!_write_event) {
-		_write_event = MakeNewSharedPtr<CEventHandler>(*(_pool.get()));
+		_write_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
 	}
 	if (!_write_event->_data) {
 		_write_event->_data = _pool->PoolNew<EventOverlapped>();
@@ -48,7 +48,7 @@ void CSocket::SyncWrite(char* src, int len, const std::function<void(CMemSharePt
 	}
 
 	if (!_write_event->_buffer) {
-		_write_event->_buffer = MakeNewSharedPtr<CBuffer>(*(_pool.get()), _pool);
+		_write_event->_buffer = MakeNewSharedPtr<CBuffer>(_pool.get(), _pool);
 	}
 	_write_event->_buffer->Write(src, len);
 
@@ -62,7 +62,7 @@ void CSocket::SyncWrite(char* src, int len, const std::function<void(CMemSharePt
 
 void CSocket::SyncRead(unsigned int interval, const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back) {
 	if (!_read_event) {
-		_read_event = MakeNewSharedPtr<CEventHandler>(*(_pool.get()));
+		_read_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
 	}
 	if (!_read_event->_data) {
 		_read_event->_data = _pool->PoolNew<EventOverlapped>();
@@ -73,7 +73,7 @@ void CSocket::SyncRead(unsigned int interval, const std::function<void(CMemShare
 	}
 
 	if (!_read_event->_buffer) {
-		_read_event->_buffer = MakeNewSharedPtr<CBuffer>(*(_pool.get()), _pool);
+		_read_event->_buffer = MakeNewSharedPtr<CBuffer>(_pool.get(), _pool);
 	}
 
 	if (_event_actions) {
@@ -87,7 +87,7 @@ void CSocket::SyncRead(unsigned int interval, const std::function<void(CMemShare
 
 void CSocket::SyncWrite(unsigned int interval, char* src, int len, const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back) {
 	if (!_write_event) {
-		_write_event = MakeNewSharedPtr<CEventHandler>(*(_pool.get()));
+		_write_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
 	}
 	if (!_write_event->_data) {
 		_write_event->_data = _pool->PoolNew<EventOverlapped>();
@@ -100,7 +100,7 @@ void CSocket::SyncWrite(unsigned int interval, char* src, int len, const std::fu
 		_write_event->_client_socket = _read_event->_client_socket;
 	}
 	if (!_write_event->_buffer) {
-		_write_event->_buffer = MakeNewSharedPtr<CBuffer>(*(_pool.get()), _pool);
+		_write_event->_buffer = MakeNewSharedPtr<CBuffer>(_pool.get(), _pool);
 	}
 	_write_event->_buffer->Write(src, len);
 
@@ -147,6 +147,7 @@ void CSocket::_Recv(CMemSharePtr<CEventHandler>& event) {
 	
 	} else {
 		error = EVENT_ERROR_CLOSED;
+		context->_event = nullptr;
 	}
 
 	if (event->_timer_out) {
