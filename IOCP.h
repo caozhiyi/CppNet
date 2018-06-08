@@ -26,6 +26,11 @@ struct EventOverlapped {
 		_wsa_buf.len = MAX_BUFFER_LEN;
 	}
 
+	~EventOverlapped() {
+		int i = 0;
+		i++;
+	}
+
 	void Clear() {
 		_event_flag_set = 0;
 		memset(_lapped_buffer, 0, MAX_BUFFER_LEN);

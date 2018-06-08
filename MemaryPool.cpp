@@ -54,8 +54,7 @@ void* CMemaryPool::ReFill(int size, int num, bool is_large) {
 				current->_next = nullptr;
 				break;
 
-			}
-			else {
+			} else {
 				current->_next = next;
 			}
 		}

@@ -26,11 +26,16 @@ void ReadFunc(CMemSharePtr<CEventHandler>& event, int error) {
 	event->_buffer->Clear();
 	std::cout << "Thread ID : " << std::this_thread::get_id() << std::endl;
 	std::cout << "Read size : " << event->_off_set << std::endl << std::endl;*/
+	
 	event->_buffer->Clear();
 	if (error != EVENT_ERROR_CLOSED) {
 		event->_client_socket.Lock()->SyncWrite("aaaaa21231231", strlen("aaaaa21231231"), write_back);
 		event->_client_socket.Lock()->SyncRead(read_back);
 	} else {
+		if (client_map.size() < 10) {
+			int a = 0;
+			a++;
+		}
 		client_map.erase(event->_client_socket.Lock()->GetSocket());
 	}
 }

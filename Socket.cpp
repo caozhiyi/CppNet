@@ -13,7 +13,20 @@ CSocket::CSocket(std::shared_ptr<CEventActions>& event_actions) : CSocketBase(ev
 }
 
 CSocket::~CSocket() {
-	
+	if (_read_event && _read_event->_data) {
+		OVERLAPPED* lapped = &((EventOverlapped*)_read_event->_data)->_overlapped;
+		EventOverlapped* temp = (EventOverlapped*)_read_event->_data;
+		_pool->PoolDelete<EventOverlapped>(temp);
+		_read_event->_data = nullptr;
+		lapped = nullptr;
+	}
+	if (_write_event && _write_event->_data) {
+		OVERLAPPED* lapped = &((EventOverlapped*)_write_event->_data)->_overlapped;
+		EventOverlapped* temp = (EventOverlapped*)_write_event->_data;
+		_pool->PoolDelete<EventOverlapped>(temp);
+		_write_event->_data = nullptr;
+		lapped = nullptr;
+	}
 }
 
 void CSocket::SyncRead(const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back) {
