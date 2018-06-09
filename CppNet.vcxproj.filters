@@ -52,7 +52,7 @@
       <Filter>net\OS</Filter>
     </ClCompile>
     <ClCompile Include="SocketBase.cpp">
-      <Filter>net</Filter>
+      <Filter>net\OS</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -107,9 +107,6 @@
     <ClInclude Include="EventHandler.h">
       <Filter>net</Filter>
     </ClInclude>
-    <ClInclude Include="WinExpendFunc.h">
-      <Filter>net\netio</Filter>
-    </ClInclude>
     <ClInclude Include="Socket.h">
       <Filter>net</Filter>
     </ClInclude>
@@ -118,6 +115,9 @@
     </ClInclude>
     <ClInclude Include="SocketBase.h">
       <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="WinExpendFunc.h">
+      <Filter>net\OS</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

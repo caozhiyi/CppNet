@@ -41,7 +41,6 @@ bool CIOCP::Dealloc() {
 
 bool CIOCP::AddTimerEvent(unsigned int interval, int event_flag, CMemSharePtr<CEventHandler>& event) {
 	_timer.AddTimer(interval, event_flag, event);
-	event->_event_flag_set |= EVENT_TIMER;
 	return true;
 }
 
@@ -55,7 +54,6 @@ bool CIOCP::AddSendEvent(CMemSharePtr<CEventHandler>& event) {
 			}
 		}
 		((EventOverlapped*)event->_data)->_event = &event;
-		event->_event_flag_set |= EVENT_WRITE;
 		socket_ptr->SetInActions(true);
 		return _PostSend(event);
 	}
@@ -74,7 +72,6 @@ bool CIOCP::AddRecvEvent(CMemSharePtr<CEventHandler>& event) {
 		}
 		((EventOverlapped*)event->_data)->_event = &event;
 		socket_ptr->SetInActions(true);
-		event->_event_flag_set |= EVENT_READ;
 		return _PostRecv(event);
 	}
 	LOG_WARN("read event is already distroyed!");
@@ -88,10 +85,8 @@ bool CIOCP::AddAcceptEvent(CMemSharePtr<CAcceptEventHandler>& event) {
 			return false;
 		}
 	}
-
 	((EventOverlapped*)event->_data)->_event = &event;
 	event->_accept_socket->SetInActions(true);
-	event->_event_flag_set |= EVENT_ACCEPT;
 	return _PostAccept(event);
 }
 
@@ -117,65 +112,27 @@ void CIOCP::ProcessEvent() {
 		int res = GetQueuedCompletionStatus(_iocp_handler, &bytes_transfered, PULONG_PTR(&socket_context),
 			&over_lapped, wait_time);
 
-		if (!res) {
-			DWORD dwErr = GetLastError();
-			//timer out event
-			if (WAIT_TIMEOUT == GetLastError()) {
-				if (!timer_vec.empty()) {
-					for (auto iter = timer_vec.begin(); iter != timer_vec.end(); ++iter) {
-						if (iter->_event_flag & EVENT_READ) {
-							auto socket_ptr = iter->_event->_client_socket.Lock();
-							if (socket_ptr) {
-								socket_ptr->_Recv(iter->_event);
-							}
+		DWORD dw_err = 0;
+		if (res) {
+			dw_err = NO_ERROR;
 
-						} else if (iter->_event_flag & EVENT_WRITE) {
-							auto socket_ptr = iter->_event->_client_socket.Lock();
-							if (socket_ptr) {
-								socket_ptr->_Send(iter->_event);
-							}
-						}
-					}
-					timer_vec.clear();
-				}
-
-			//ERROR_NETNAME_DELETED is abnormal terminal, should notify the upper level
-			} else if (ERROR_NETNAME_DELETED !=GetLastError()) {
-				LOG_ERROR("IOCP GetQueuedCompletionStatus return error : %d", GetLastError());
-				continue;
+		} else {
+			dw_err = GetLastError();
+		}
+		if (dw_err == WAIT_TIMEOUT) {
+			if (!timer_vec.empty()) {
+				_DoTimeoutEvent(timer_vec);
 			}
-		}
 
-		if (!over_lapped) {
-			continue;
-		}
-
-		//new event happening
-		socket_context = CONTAINING_RECORD(over_lapped, EventOverlapped, _overlapped);
-		if (socket_context->_event_flag_set & EVENT_ACCEPT) {
-			CMemSharePtr<CAcceptEventHandler>* event = (CMemSharePtr<CAcceptEventHandler>*)socket_context->_event;
-			if (event) {
-				(*event)->_client_socket->_read_event->_off_set = bytes_transfered;
-				(*event)->_accept_socket->_Accept((*event));
+		} else if (ERROR_NETNAME_DELETED == dw_err || NO_ERROR == dw_err || ERROR_IO_PENDING == dw_err) {
+			if (over_lapped) {
+				socket_context = CONTAINING_RECORD(over_lapped, EventOverlapped, _overlapped);
+				_DoEvent(socket_context, bytes_transfered);
 			}
 
 		} else {
-			CMemSharePtr<CEventHandler>* event = (CMemSharePtr<CEventHandler>*)socket_context->_event;
-			if (event) {
-				(*event)->_off_set = bytes_transfered;
-				if ((*event)->_event_flag_set & EVENT_READ) {
-					auto socket_ptr = (*event)->_client_socket.Lock();
-					if (socket_ptr) {
-						socket_ptr->_Recv((*event));
-					}
-
-				} else if ((*event)->_event_flag_set & EVENT_WRITE) {
-					auto socket_ptr = (*event)->_client_socket.Lock();
-					if (socket_ptr) {
-						socket_ptr->_Send((*event));
-					}
-				}
-			}
+			LOG_ERROR("IOCP GetQueuedCompletionStatus return error : %d", dw_err);
+			continue;
 		}
 	}
 }
@@ -237,4 +194,51 @@ bool CIOCP::_PostSend(CMemSharePtr<CEventHandler>& event) {
 		return false;
 	}
 	return true;
+}
+
+void CIOCP::_DoTimeoutEvent(std::vector<TimerEvent>& timer_vec) {
+	for (auto iter = timer_vec.begin(); iter != timer_vec.end(); ++iter) {
+		if (iter->_event_flag & EVENT_READ) {
+			auto socket_ptr = iter->_event->_client_socket.Lock();
+			if (socket_ptr) {
+				socket_ptr->_Recv(iter->_event);
+			}
+
+		}
+		else if (iter->_event_flag & EVENT_WRITE) {
+			auto socket_ptr = iter->_event->_client_socket.Lock();
+			if (socket_ptr) {
+				socket_ptr->_Send(iter->_event);
+			}
+		}
+	}
+	timer_vec.clear();
+}
+
+void CIOCP::_DoEvent(EventOverlapped *socket_context, int bytes) {
+	if (socket_context->_event_flag_set & EVENT_ACCEPT) {
+		CMemSharePtr<CAcceptEventHandler>* event = (CMemSharePtr<CAcceptEventHandler>*)socket_context->_event;
+		if (event) {
+			(*event)->_client_socket->_read_event->_off_set = bytes;
+			(*event)->_accept_socket->_Accept((*event));
+		}
+
+	} else {
+		CMemSharePtr<CEventHandler>* event = (CMemSharePtr<CEventHandler>*)socket_context->_event;
+		if (event) {
+			(*event)->_off_set = bytes;
+			if (socket_context->_event_flag_set & EVENT_READ) {
+				auto socket_ptr = (*event)->_client_socket.Lock();
+				if (socket_ptr) {
+					socket_ptr->_Recv((*event));
+				}
+
+			} else if ((*event)->_event_flag_set & EVENT_WRITE) {
+				auto socket_ptr = (*event)->_client_socket.Lock();
+				if (socket_ptr) {
+					socket_ptr->_Send((*event));
+				}
+			}
+		}
+	}
 }

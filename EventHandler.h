@@ -11,10 +11,12 @@
 #define INVALID_TIMER -1
 
 enum EVENT_FLAG {
-	EVENT_READ    = 0x0001,	//read event
-	EVENT_WRITE	  = 0x0002,	//write event
-	EVENT_ACCEPT  = 0x0004,	//accept event
-	EVENT_TIMER	  = 0x0008	//timer event
+	EVENT_READ    = 0x0001,		//read event
+	EVENT_WRITE	  = 0x0002,		//write event
+	EVENT_ACCEPT  = 0x0004,		//accept event
+	EVENT_TIMER	  = 0x0008,		//timer event
+	EVENT_CONNECT = 0x0010,		//connect event
+	EVENT_DISCONNECT = 0x0020	//disconnect event
 };
 
 enum EVENT_ERROR {

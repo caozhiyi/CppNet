@@ -59,6 +59,8 @@ private:
 	bool _PostAccept(CMemSharePtr<CAcceptEventHandler>& event);
 	bool _PostSend(CMemSharePtr<CEventHandler>& event);
 
+	void _DoTimeoutEvent(std::vector<TimerEvent>& timer_vec);
+	void _DoEvent(EventOverlapped *socket_context, int bytes);
 private:
 	HANDLE	_iocp_handler;
 };
