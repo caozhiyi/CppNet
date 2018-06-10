@@ -75,19 +75,62 @@ void CSocket::SyncWrite(char* src, int len, const std::function<void(CMemSharePt
 	}
 }
 
-void CSocket::SyncConnect(const std::string& ip, short port, const std::function<void(CMemSharePtr<CEventHandler>&, int err)>& const) {
+void CSocket::SyncConnection(const std::string& ip, short port, const std::function<void(CMemSharePtr<CEventHandler>&, int err)>& call_back) {
 	if (ip.length() > 16) {
 		LOG_ERROR("a wrong ip!");
 		return;
 	}
-
-	SOCKADDR_IN addr;
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(port);
-	addr.sin_addr.S_un.S_addr = inet_addr(ip.c_str());
 	strcpy(_ip, ip.c_str());
-	if (__ConnectEx) {
-		//__ConnectEx(_sock, (sockaddr*)&addr, sizeof(addr), nullptr, 0, nullptr, 0, );
+	if (!_read_event) {
+		_read_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
+	}
+	if (!_read_event->_data) {
+		_read_event->_data = _pool->PoolNew<EventOverlapped>();
+	}
+	if (!_read_event->_call_back) {
+		_read_event->_call_back = call_back;
+	}
+
+	if (!_read_event->_buffer) {
+		_read_event->_buffer = MakeNewSharedPtr<CBuffer>(_pool.get(), _pool);
+	}
+
+	if (!_read_event->_client_socket){
+		_read_event->_client_socket = memshared_from_this();
+	}
+
+	if (_event_actions) {
+		_read_event->_event_flag_set |= EVENT_CONNECT;
+		if (_event_actions->AddConnection(_read_event, ip, port)) {
+			_post_event_num++;
+		}
+	}
+}
+
+void CSocket::SyncDisconnection(const std::function<void(CMemSharePtr<CEventHandler>&, int err)>& call_back) {
+	if (!_read_event) {
+		_read_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
+	}
+	if (!_read_event->_data) {
+		_read_event->_data = _pool->PoolNew<EventOverlapped>();
+	}
+	if (!_read_event->_call_back) {
+		_read_event->_call_back = call_back;
+	}
+
+	if (!_read_event->_buffer) {
+		_read_event->_buffer = MakeNewSharedPtr<CBuffer>(_pool.get(), _pool);
+	}
+
+	if (!_read_event->_client_socket) {
+		_read_event->_client_socket = memshared_from_this();
+	}
+
+	if (_event_actions) {
+		_read_event->_event_flag_set |= EVENT_CONNECT;
+		if (_event_actions->AddDisconnection(_read_event)) {
+			_post_event_num++;
+		}
 	}
 }
 

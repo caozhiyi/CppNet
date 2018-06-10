@@ -5,6 +5,7 @@
 #include "Buffer.h"
 #include "AcceptSocket.h"
 #include "EventHandler.h"
+#include "MemaryPool.h"
 
 std::mutex __mutex;
 
@@ -17,12 +18,7 @@ void WriteFunc(CMemSharePtr<CEventHandler>& event, int error) {
 	std::cout << "WriteFunc" << std::endl;
 	std::cout << "Thread ID : " << std::this_thread::get_id() << std::endl;
 	std::cout << "write count: " << event->_off_set << std::endl << std::endl;
-	if (error != EVENT_ERROR_CLOSED) {
-		event->_client_socket.Lock()->SyncRead(read_back);
-	} else {
-		std::unique_lock<std::mutex> lock(__mutex);
-		client_map.erase(event->_client_socket.Lock()->GetSocket());
-	}
+	event->_client_socket.Lock()->SyncRead(read_back);
 }
 std::function<void(CMemSharePtr<CEventHandler>& event, int error)> write_back = WriteFunc;
 
@@ -35,8 +31,13 @@ void ReadFunc(CMemSharePtr<CEventHandler>& event, int error) {
 	
 	event->_buffer->Clear();
 	if (error != EVENT_ERROR_CLOSED) {
+		//event->_client_socket.Lock()->SyncRead(read_back);
 		event->_client_socket.Lock()->SyncWrite("aaaaa21231231", strlen("aaaaa21231231"), write_back);
 	} else {
+		if (client_map.size() < 10) {
+			int a = 0;
+			a++;
+		}
 		std::unique_lock<std::mutex> lock(__mutex);
 		client_map.erase(event->_client_socket.Lock()->GetSocket());
 	}
@@ -59,11 +60,10 @@ int main() {
 
 	std::shared_ptr<CEventActions> event_actions(new CIOCP);
 	event_actions->Init();
-	CAcceptSocket sock(event_actions);
+	//CAcceptSocket sock(event_actions);
 
 	CMemaryPool pool;
-	auto _accept_event = MakeNewSharedPtr<CAcceptEventHandler>(&pool);
-
+	CMemSharePtr<CSocket> sock =  MakeNewSharedPtr<CSocket>(&pool, event_actions);
 	std::vector<std::thread> thread_vec;
 
 	for (int i = 0; i < 1; i++) {
@@ -71,9 +71,9 @@ int main() {
 	}
 
 	std::function<void(CMemSharePtr<CAcceptEventHandler>& event, int error)> accept_func = AcceptFunc;
-	sock.Bind(8500, "127.0.0.1");
-	sock.Listen(10);
-	sock.SyncAccept(accept_func, read_back);
+	
+	sock->SyncConnect("127.0.0.1", 8500, read_back);
+	sock->SyncWrite("aaaaa21231231", strlen("aaaaa21231231"), write_back);
 
 	for (int i = 0; i < 1; i++) {
 		thread_vec[i].join();

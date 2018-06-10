@@ -12,7 +12,7 @@
 
 class CEventHandler;
 class CBuffer;
-class CSocket : public CSocketBase {
+class CSocket : public CSocketBase, public CEnableSharedFromThis<CSocket> {
 public:
 	CSocket(std::shared_ptr<CEventActions>& event_actions);
 	~CSocket();
@@ -23,7 +23,8 @@ public:
 	void SyncRead(unsigned int interval, const std::function<void(CMemSharePtr<CEventHandler>&, int err)>& call_back = nullptr);
 	void SyncWrite(unsigned int interval, char* src, int len, const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back = nullptr);
 
-	void SyncConnect(const std::string& ip, short port, const std::function<void(CMemSharePtr<CEventHandler>&, int err)>& const = nullptr);
+	void SyncConnection(const std::string& ip, short port, const std::function<void(CMemSharePtr<CEventHandler>&, int err)>& call_back = nullptr);
+	void SyncDisconnection(const std::function<void(CMemSharePtr<CEventHandler>&, int err)>& call_back = nullptr);
 
 	void SetReadCallBack(const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back);
 	void SetWriteCallBack(const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back);

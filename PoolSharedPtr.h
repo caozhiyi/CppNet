@@ -1,4 +1,5 @@
-#pragma once
+#ifndef HEADER_CPOOLSHAREDPTR
+#define HEADER_CPOOLSHAREDPTR
 #include <atomic>
 #include <functional>
 
@@ -51,6 +52,11 @@ public:
 		return _uses;
 	}
 
+	// return weak count
+	long GetWeakCount() const {
+		return _weaks;
+	}
+
 	// return true if _uses == 0
 	bool Expired() const  {	
 		return (_uses == 0);
@@ -61,6 +67,9 @@ private:
 	std::atomic_long _weaks;
 };
 
+template<class T>
+inline void EnableShared(T *ptr, CRefCount *ref_ptr, CMemaryPool* pool, int size = 0, MemoryType type = TYPE_NEW);
+
 // base class for CMemSharePtr and CMemWeakPtr
 template<typename T>
 class CBasePtr {
@@ -68,8 +77,12 @@ public:
 	typedef CBasePtr<T>					_BasePtr;
 
 	// construct
-	CBasePtr() noexcept : _ptr(nullptr), _ref_count(nullptr), _pool(nullptr) {}
-	CBasePtr(T* ptr, CRefCount* ref, CMemaryPool* pool, MemoryType type, int large_size = 0) noexcept : _ptr(ptr), _ref_count(ref), _pool(pool), _memory_type(type), _malloc_size(large_size) {}
+	CBasePtr() noexcept : _ptr(nullptr), _ref_count(nullptr), _pool(nullptr) {
+		EnableShared(_ptr, _ref_count, _pool);
+	}
+	CBasePtr(T* ptr, CRefCount* ref, CMemaryPool* pool, MemoryType type, int large_size = 0) noexcept : _ptr(ptr), _ref_count(ref), _pool(pool), _memory_type(type), _malloc_size(large_size) {
+		EnableShared(_ptr, _ref_count, _pool, _malloc_size, _memory_type);
+	}
 
 
 	// construct CBasePtr object that takes resource from _Right
@@ -77,6 +90,7 @@ public:
 		if (_ref_count) {
 			_ref_count->IncrefUse();
 		}
+		EnableShared(_ptr, _ref_count, _pool, _malloc_size, _memory_type);
 	}
 
 	// construct CBasePtr object that takes resource from _Right
@@ -85,6 +99,7 @@ public:
 		r._ref_count	= nullptr;
 		r._pool			= nullptr;
 		_malloc_size	= 0;
+		EnableShared(_ptr, _ref_count, _pool, _malloc_size, _memory_type);
 	}
 
 	// construct CBasePtr object that takes resource from _Right
@@ -149,8 +164,6 @@ public:
 
 	// release resource and take _Other_ptr through _Other_rep
 	void Reset(T *other_ptr, CRefCount * other_rep, CMemaryPool* pool) {	
-		if (other_rep)
-			other_rep->IncrefUse();
 		_Reset0(other_ptr, other_rep, pool);
 	}
 
@@ -165,22 +178,27 @@ public:
 	}
 
 	void Resetw(T *other_ptr, CRefCount *other_rep, CMemaryPool* pool) {
-		if (other_rep)
-			other_rep->IncrefWeak();
 		_Resetw0(other_ptr, other_rep, pool);
+	}
+
+	void Resetw(T *other_ptr, CRefCount *other_rep, CMemaryPool* pool, int size, MemoryType type) {
+		_Resetw0(other_ptr, other_rep, pool, type, size);
 	}
 
 public:
 	// release resource and take _Other_ptr through _Other_rep
 	void Reset(T *other_ptr, CRefCount * other_rep) {
-		if (other_rep)
-			other_rep->IncrefUse();
 		_Reset0(other_ptr, other_rep);
 	}
 
 	// release resource and take new resource
 	void _Reset0(T *other_ptr, CRefCount *other_rep) {
-		_DecrefUse();
+		if (other_rep) {
+			other_rep->IncrefUse();
+		}
+		if (_ref_count && _ref_count->GetUseCount() > 0) {
+			_DecrefUse();
+		}
 
 		_ref_count = other_rep;
 		_ptr	   = other_ptr;
@@ -188,12 +206,18 @@ public:
 	}
 
 	// release resource and take new resource
-	void _Reset0(T *other_ptr, CRefCount *other_rep, CMemaryPool* pool) {
-		_DecrefUse();
-			
-		_ref_count	= other_rep;
-		_ptr		= other_ptr;
-		_pool		= pool;
+	void _Reset0(T *other_ptr, CRefCount *other_rep, CMemaryPool* pool, int size = 0, MemoryType type = TYPE_NEW) {
+		if (other_rep) {
+			other_rep->IncrefUse();
+		}
+		if (_ref_count && _ref_count->GetUseCount() > 0) {
+			_DecrefUse();
+		}
+		_ref_count	 = other_rep;
+		_ptr		 = other_ptr;
+		_pool		 = pool;
+		_malloc_size = size;
+		_memory_type = type;
 	}
 
 	// decrement use reference count
@@ -212,14 +236,17 @@ public:
 
 	// point to _Other_ptr through _Other_rep
 	void _Resetw(T *other_ptr, CRefCount *other_rep) {	
-		if (other_rep)
-			other_rep->IncrefWeak();
 		_Resetw0(other_ptr, other_rep);
 	}
 
 	// release resource and take new resource
 	void _Resetw0(T *other_ptr, CRefCount *other_rep) {
-		_DecrefWeak();
+		if (other_rep) {
+			other_rep->IncrefWeak();
+		}
+		if (_ref_count && _ref_count->GetWeakCount() > 0) {
+			_DecrefWeak();
+		}
 
 		_ref_count	= other_rep;
 		_ptr		= other_ptr;
@@ -228,11 +255,32 @@ public:
 
 	// release resource and take new resource
 	void _Resetw0(T *other_ptr, CRefCount *other_rep, CMemaryPool* pool) {
-		_DecrefWeak();
+		if (other_rep) {
+			other_rep->IncrefWeak();
+		}
+		if (_ref_count && _ref_count->GetWeakCount() > 0) {
+			_DecrefWeak();
+		}
 
 		_ref_count	= other_rep;
 		_ptr		= other_ptr;
 		_pool		= pool;
+	}
+
+	// release resource and take new resource
+	void _Resetw0(T *other_ptr, CRefCount *other_rep, CMemaryPool* pool, MemoryType type, int size) {
+		if (other_rep) {
+			other_rep->IncrefWeak();
+		}
+		if (_ref_count && _ref_count->GetWeakCount() > 0) {
+			_DecrefWeak();
+		}
+
+		_ref_count	 = other_rep;
+		_ptr		 = other_ptr;
+		_pool		 = pool;
+		_memory_type = type;
+		_malloc_size = size;
 	}
 
 	//release resource
@@ -307,7 +355,7 @@ public:
 	}
 
 	// return pointer to resource
-	T operator*() const noexcept {
+	T& operator*() const noexcept {
 		return (*(this->Get()));
 	}
 
@@ -372,6 +420,58 @@ public:
 	}
 };
 
+template<class T>
+class CEnableSharedFromThis {
+public:
+	typedef T _EStype;
+	CMemSharePtr<T> memshared_from_this() {
+		return (_weak_ptr.Lock());
+	}
+
+protected:
+	constexpr CEnableSharedFromThis() noexcept {
+	}
+
+	CEnableSharedFromThis(const CEnableSharedFromThis&) noexcept {
+	}
+
+	CEnableSharedFromThis& operator=(const CEnableSharedFromThis&) noexcept {
+		return (*this);
+	}
+
+	~CEnableSharedFromThis() noexcept {
+	}
+
+private:
+	template<class T1, class T2>
+	friend void DoEnable(T1 *ptr, CEnableSharedFromThis<T2> *es, CRefCount *ref_ptr, CMemaryPool* pool = 0, int size = 0, MemoryType type = TYPE_NEW);
+	CMemWeakPtr<T> _weak_ptr;
+};
+
+// reset internal weak pointer
+template<class T1, class T2>
+inline void DoEnable(T1 *ptr, CEnableSharedFromThis<T2> *es, CRefCount *ref_ptr, CMemaryPool* pool, int size, MemoryType type) {
+	es->_weak_ptr.Resetw(ptr, ref_ptr, pool, size, type);
+}
+
+template<typename T>
+struct has_member_weak_ptr {
+	template <typename _T>
+	static auto check(_T)->typename std::decay<decltype(_T::_weak_ptr)>::type;
+	static void check(...);
+	using type = decltype(check(std::declval<T>()));
+	enum { value = !std::is_void<type>::value };
+};
+
+template<class T>
+inline void EnableShared(T *ptr, CRefCount *ref_ptr, CMemaryPool* pool, int size, MemoryType type) {
+	if (ptr) {
+		if (has_member_weak_ptr<T>::value > 0) {
+			DoEnable(ptr, (CEnableSharedFromThis<T>*)ptr, ref_ptr, pool, size, type);
+		}
+	}
+}
+
 template<typename T, typename... Args >
 CMemSharePtr<T> MakeNewSharedPtr(CMemaryPool* pool, Args&&... args) {
 	T* o = pool->PoolNew<T>(std::forward<Args>(args)...);
@@ -399,3 +499,4 @@ CMemSharePtr<T> MakeLargeSharedPtr(CMemaryPool* pool, int size) {
 	CRefCount* ref = pool->PoolNew<CRefCount>();
 	return CMemSharePtr<T>(o, ref, pool, TYPE_LARGE_WITH_SIZE, size);
 }
+#endif

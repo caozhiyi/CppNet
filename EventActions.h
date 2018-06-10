@@ -16,6 +16,8 @@ public:
 	virtual bool AddSendEvent(CMemSharePtr<CEventHandler>& event) = 0;
 	virtual bool AddRecvEvent(CMemSharePtr<CEventHandler>& event) = 0;
 	virtual bool AddAcceptEvent(CMemSharePtr<CAcceptEventHandler>& event) = 0;
+	virtual bool AddConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port) = 0;
+	virtual bool AddDisconnection(CMemSharePtr<CEventHandler>& event) = 0;
 	virtual bool DelEvent(CMemSharePtr<CEventHandler>& event) = 0;
 
 	virtual void ProcessEvent() = 0;

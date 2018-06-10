@@ -5,6 +5,7 @@
 LPFN_ACCEPTEX				__AcceptEx = nullptr;
 LPFN_CONNECTEX				__ConnectEx = nullptr;
 LPFN_GETACCEPTEXSOCKADDRS	__AcceptExScokAddrs = nullptr;
+LPFN_DISCONNECTEX			__DisconnectionEx;
 
 static void* _GetExFunctnion(unsigned int socket, const GUID& which) {
 	void* func = nullptr;
@@ -20,8 +21,9 @@ static bool _InitExFunctnion() {
 	__AcceptEx = (LPFN_ACCEPTEX)_GetExFunctnion(socket, WSAID_ACCEPTEX);
 	__ConnectEx = (LPFN_CONNECTEX)_GetExFunctnion(socket, WSAID_CONNECTEX);
 	__AcceptExScokAddrs = (LPFN_GETACCEPTEXSOCKADDRS)_GetExFunctnion(socket, WSAID_GETACCEPTEXSOCKADDRS);
+	__DisconnectionEx = (LPFN_DISCONNECTEX)_GetExFunctnion(socket, WSAID_DISCONNECTEX);
 	closesocket(socket);
-	if (!__AcceptExScokAddrs || !__ConnectEx || !__AcceptEx) {
+	if (!__AcceptExScokAddrs || !__ConnectEx || !__AcceptEx || !__DisconnectionEx) {
 		return false;
 	}
 	return true;

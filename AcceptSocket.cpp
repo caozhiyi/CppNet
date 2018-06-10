@@ -69,6 +69,7 @@ void CAcceptSocket::SyncAccept(const std::function<void(CMemSharePtr<CAcceptEven
 	}
 
 	if (_event_actions) {
+		_accept_event->_event_flag_set |= EVENT_ACCEPT;
 		_event_actions->AddAcceptEvent(_accept_event);
 	}
 }
@@ -103,6 +104,7 @@ void CAcceptSocket::SyncAccept(const std::function<void(CMemSharePtr<CAcceptEven
 	}
 
 	if (_event_actions) {
+		_accept_event->_event_flag_set |= EVENT_ACCEPT;
 		_event_actions->AddAcceptEvent(_accept_event);
 	}
 }
@@ -164,5 +166,6 @@ void CAcceptSocket::_Accept(CMemSharePtr<CAcceptEventHandler>& event) {
 	if (!_accept_event->_client_socket->_read_event->_buffer) {
 		_accept_event->_client_socket->_read_event->_buffer = MakeNewSharedPtr<CBuffer>(_accept_event->_client_socket->_pool.get(), _accept_event->_client_socket->_pool);
 	}
+	_accept_event->_event_flag_set |= EVENT_ACCEPT;
 	_event_actions->AddAcceptEvent(event);
 }

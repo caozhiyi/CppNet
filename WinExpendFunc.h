@@ -7,5 +7,5 @@
 extern LPFN_ACCEPTEX				__AcceptEx;
 extern LPFN_CONNECTEX				__ConnectEx;
 extern LPFN_GETACCEPTEXSOCKADDRS	__AcceptExScokAddrs;
-
+extern LPFN_DISCONNECTEX			__DisconnectionEx;
 #endif
