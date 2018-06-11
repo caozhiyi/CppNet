@@ -1,4 +1,7 @@
-#include "IOCP.h"
+#include <sys/epoll.h>
+
+#include "CEpoll.h"
+#include "OSInfo.h"
 #include "Log.h"
 #include "EventHandler.h"
 #include "Buffer.h"
@@ -6,44 +9,37 @@
 #include "WinExpendFunc.h"
 #include "Timer.h"
 
-enum STATE_CODE {
-	EXIT_IOCP = 0,
-	WEAK_UP_IOCP = 1,
-};
-
-CIOCP::CIOCP() {
+CEpoll::CEpoll() {
 
 }
 
-CIOCP::~CIOCP() {
+CEpoll::~CEpoll() {
 
 }
 
-bool CIOCP::Init() {
-	int _threads_num = GetCpuNum() * 2;
-	//tell iocp the must thread num
-	_iocp_handler = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, _threads_num);
-	if (_iocp_handler == INVALID_HANDLE_VALUE) {
-		LOG_FATAL("IOCP create io completion port failed!");
+bool CEpoll::Init() {
+	//get epoll handle
+	_epoll_handler = epoll_create(1500);
+	if (_epoll_handler == -1) {
+		LOG_FATAL("epoll init failed!");
 		return false;
 	}
 	return true;
 }
 
-bool CIOCP::Dealloc() {
-	if (CloseHandle(_iocp_handler) == -1) {
+bool CEpoll::Dealloc() {
+	if (close(_epoll_handler) == -1) {
 		LOG_ERROR("IOCP close io completion port failed!");
 	}
-	_iocp_handler = nullptr;
 	return true;
 }
 
-bool CIOCP::AddTimerEvent(unsigned int interval, int event_flag, CMemSharePtr<CEventHandler>& event) {
+bool CEpoll::AddTimerEvent(unsigned int interval, int event_flag, CMemSharePtr<CEventHandler>& event) {
 	_timer.AddTimer(interval, event_flag, event);
 	return true;
 }
 
-bool CIOCP::AddSendEvent(CMemSharePtr<CEventHandler>& event) {
+bool CEpoll::AddSendEvent(CMemSharePtr<CEventHandler>& event) {
 	auto socket_ptr = event->_client_socket.Lock();
 	if (socket_ptr) {
 		if (!socket_ptr->IsInActions()) {
@@ -60,7 +56,7 @@ bool CIOCP::AddSendEvent(CMemSharePtr<CEventHandler>& event) {
 	return false;
 }
 
-bool CIOCP::AddRecvEvent(CMemSharePtr<CEventHandler>& event) {
+bool CEpoll::AddRecvEvent(CMemSharePtr<CEventHandler>& event) {
 	auto socket_ptr = event->_client_socket.Lock();
 	if (socket_ptr) {
 		if (!socket_ptr->IsInActions()) {
@@ -77,7 +73,7 @@ bool CIOCP::AddRecvEvent(CMemSharePtr<CEventHandler>& event) {
 	return false;
 }
 
-bool CIOCP::AddAcceptEvent(CMemSharePtr<CAcceptEventHandler>& event) {
+bool CEpoll::AddAcceptEvent(CMemSharePtr<CAcceptEventHandler>& event) {
 	if (!event->_accept_socket->IsInActions()) {
 		if (CreateIoCompletionPort((HANDLE)(event->_accept_socket->GetSocket()), _iocp_handler, 0, 0) == NULL) {
 			LOG_ERROR("IOCP bind socket to io completion port failed!");
@@ -89,7 +85,7 @@ bool CIOCP::AddAcceptEvent(CMemSharePtr<CAcceptEventHandler>& event) {
 	return _PostAccept(event);
 }
 
-bool CIOCP::AddConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port) {
+bool CEpoll::AddConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port) {
 	auto socket_ptr = event->_client_socket.Lock();
 	if (socket_ptr) {
 		if (!socket_ptr->IsInActions()) {
@@ -106,7 +102,7 @@ bool CIOCP::AddConnection(CMemSharePtr<CEventHandler>& event, const std::string&
 	return false;
 }
 
-bool CIOCP::AddDisconnection(CMemSharePtr<CEventHandler>& event) {
+bool CEpoll::AddDisconnection(CMemSharePtr<CEventHandler>& event) {
 	auto socket_ptr = event->_client_socket.Lock();
 	if (socket_ptr) {
 		if (!socket_ptr->IsInActions()) {
@@ -124,7 +120,7 @@ bool CIOCP::AddDisconnection(CMemSharePtr<CEventHandler>& event) {
 	return true;
 }
 
-bool CIOCP::DelEvent(CMemSharePtr<CEventHandler>& event) {
+bool CEpoll::DelEvent(CMemSharePtr<CEventHandler>& event) {
 	((EventOverlapped*)event->_data)->_event = nullptr;
 	auto socket_ptr = event->_client_socket.Lock();
 	if (socket_ptr) {
@@ -133,7 +129,7 @@ bool CIOCP::DelEvent(CMemSharePtr<CEventHandler>& event) {
 	return true;
 }
 
-void CIOCP::ProcessEvent() {
+void CEpoll::ProcessEvent() {
 	DWORD				bytes_transfered = 0;
 	EventOverlapped		*socket_context = nullptr;
 	OVERLAPPED          *over_lapped = nullptr;
@@ -153,7 +149,8 @@ void CIOCP::ProcessEvent() {
 		if (res) {
 			dw_err = NO_ERROR;
 
-		} else {
+		}
+		else {
 			dw_err = GetLastError();
 		}
 		if (dw_err == WAIT_TIMEOUT) {
@@ -161,21 +158,23 @@ void CIOCP::ProcessEvent() {
 				_DoTimeoutEvent(timer_vec);
 			}
 
-		} else if (ERROR_NETNAME_DELETED == dw_err || NO_ERROR == dw_err || ERROR_IO_PENDING == dw_err) {
+		}
+		else if (ERROR_NETNAME_DELETED == dw_err || NO_ERROR == dw_err || ERROR_IO_PENDING == dw_err) {
 			if (over_lapped) {
 				socket_context = CONTAINING_RECORD(over_lapped, EventOverlapped, _overlapped);
 				LOG_DEBUG("Get a new event : %d", socket_context->_event_flag_set);
 				_DoEvent(socket_context, bytes_transfered);
 			}
 
-		} else {
+		}
+		else {
 			LOG_ERROR("IOCP GetQueuedCompletionStatus return error : %d", dw_err);
 			continue;
 		}
 	}
 }
 
-bool CIOCP::_PostRecv(CMemSharePtr<CEventHandler>& event) {
+bool CEpoll::_PostRecv(CMemSharePtr<CEventHandler>& event) {
 	EventOverlapped* context = (EventOverlapped*)event->_data;
 
 	DWORD dwFlags = 0;
@@ -194,7 +193,7 @@ bool CIOCP::_PostRecv(CMemSharePtr<CEventHandler>& event) {
 	return true;
 }
 
-bool CIOCP::_PostAccept(CMemSharePtr<CAcceptEventHandler>& event) {
+bool CEpoll::_PostAccept(CMemSharePtr<CAcceptEventHandler>& event) {
 	if (!__AcceptEx) {
 		LOG_ERROR("__AcceptEx function is null!");
 		return false;
@@ -205,8 +204,8 @@ bool CIOCP::_PostAccept(CMemSharePtr<CAcceptEventHandler>& event) {
 	DWORD dwBytes = 0;
 	context->_event_flag_set |= event->_event_flag_set;
 	OVERLAPPED *lapped = &context->_overlapped;
-	
-	int res = __AcceptEx((SOCKET)event->_accept_socket->GetSocket(), (SOCKET)event->_client_socket->GetSocket(), &context->_lapped_buffer, context->_wsa_buf.len - ((sizeof(SOCKADDR_IN) + 16) * 2), 
+
+	int res = __AcceptEx((SOCKET)event->_accept_socket->GetSocket(), (SOCKET)event->_client_socket->GetSocket(), &context->_lapped_buffer, context->_wsa_buf.len - ((sizeof(SOCKADDR_IN) + 16) * 2),
 		sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, &dwBytes, lapped);
 	if (FALSE == res) {
 		if (WSA_IO_PENDING != WSAGetLastError()) {
@@ -218,13 +217,13 @@ bool CIOCP::_PostAccept(CMemSharePtr<CAcceptEventHandler>& event) {
 	return true;
 }
 
-bool CIOCP::_PostSend(CMemSharePtr<CEventHandler>& event) {
+bool CEpoll::_PostSend(CMemSharePtr<CEventHandler>& event) {
 	EventOverlapped* context = (EventOverlapped*)event->_data;
 
 	context->Clear();
 	context->_event_flag_set = event->_event_flag_set;
 	context->_wsa_buf.len = event->_buffer->Read(context->_lapped_buffer, MAX_BUFFER_LEN);
-	
+
 	OVERLAPPED *lapped = &context->_overlapped;
 	auto socket_ptr = event->_client_socket.Lock();
 	int res = WSASend(socket_ptr->GetSocket(), &context->_wsa_buf, 1, nullptr, 0, lapped, nullptr);
@@ -237,7 +236,7 @@ bool CIOCP::_PostSend(CMemSharePtr<CEventHandler>& event) {
 	return true;
 }
 
-bool CIOCP::_PostConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port) {
+bool CEpoll::_PostConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port) {
 	EventOverlapped* context = (EventOverlapped*)event->_data;
 
 	DWORD dwFlags = 0;
@@ -270,7 +269,7 @@ bool CIOCP::_PostConnection(CMemSharePtr<CEventHandler>& event, const std::strin
 	return true;
 }
 
-bool CIOCP::_PostDisconnection(CMemSharePtr<CEventHandler>& event) {
+bool CEpoll::_PostDisconnection(CMemSharePtr<CEventHandler>& event) {
 	EventOverlapped* context = (EventOverlapped*)event->_data;
 
 	context->Clear();
@@ -289,7 +288,7 @@ bool CIOCP::_PostDisconnection(CMemSharePtr<CEventHandler>& event) {
 	return true;
 }
 
-void CIOCP::_DoTimeoutEvent(std::vector<TimerEvent>& timer_vec) {
+void CEpoll::_DoTimeoutEvent(std::vector<TimerEvent>& timer_vec) {
 	for (auto iter = timer_vec.begin(); iter != timer_vec.end(); ++iter) {
 		if (iter->_event_flag & EVENT_READ) {
 			auto socket_ptr = iter->_event->_client_socket.Lock();
@@ -297,7 +296,8 @@ void CIOCP::_DoTimeoutEvent(std::vector<TimerEvent>& timer_vec) {
 				socket_ptr->_Recv(iter->_event);
 			}
 
-		} else if (iter->_event_flag & EVENT_WRITE) {
+		}
+		else if (iter->_event_flag & EVENT_WRITE) {
 			auto socket_ptr = iter->_event->_client_socket.Lock();
 			if (socket_ptr) {
 				socket_ptr->_Send(iter->_event);
@@ -307,7 +307,7 @@ void CIOCP::_DoTimeoutEvent(std::vector<TimerEvent>& timer_vec) {
 	timer_vec.clear();
 }
 
-void CIOCP::_DoEvent(EventOverlapped *socket_context, int bytes) {
+void CEpoll::_DoEvent(EventOverlapped *socket_context, int bytes) {
 	if (socket_context->_event_flag_set & EVENT_ACCEPT) {
 		CMemSharePtr<CAcceptEventHandler>* event = (CMemSharePtr<CAcceptEventHandler>*)socket_context->_event;
 		if (event) {
@@ -315,7 +315,8 @@ void CIOCP::_DoEvent(EventOverlapped *socket_context, int bytes) {
 			(*event)->_accept_socket->_Accept((*event));
 		}
 
-	} else {
+	}
+	else {
 		CMemSharePtr<CEventHandler>* event = (CMemSharePtr<CEventHandler>*)socket_context->_event;
 		if (event) {
 			(*event)->_off_set = bytes;
@@ -325,7 +326,8 @@ void CIOCP::_DoEvent(EventOverlapped *socket_context, int bytes) {
 					socket_ptr->_Recv((*event));
 				}
 
-			} else if ((*event)->_event_flag_set & EVENT_WRITE) {
+			}
+			else if ((*event)->_event_flag_set & EVENT_WRITE) {
 				auto socket_ptr = (*event)->_client_socket.Lock();
 				if (socket_ptr) {
 					socket_ptr->_Send((*event));

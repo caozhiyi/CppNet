@@ -74,7 +74,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;_X86_</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)base;$(SolutionDir)net;$(SolutionDir)net\win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)base;$(SolutionDir)net;$(SolutionDir)net\win;D:\cygwin\usr\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -83,7 +83,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;_AMD64_</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)base;$(SolutionDir)net;$(SolutionDir)net\win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)base;$(SolutionDir)net;$(SolutionDir)net\win;D:\cygwin\usr\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <HeapReserveSize>260046848</HeapReserveSize>
@@ -122,10 +122,15 @@
     <ClCompile Include="base\MemaryPool.cpp" />
     <ClCompile Include="base\PoolSharedPtr.cpp" />
     <ClCompile Include="base\TimeTool.cpp" />
+    <ClCompile Include="net\linux\AcceptSocket.cpp" />
+    <ClCompile Include="net\linux\CEpoll.cpp" />
+    <ClCompile Include="net\linux\OSInfo.cpp" />
+    <ClCompile Include="net\linux\Socket.cpp" />
+    <ClCompile Include="net\linux\SocketBase.cpp" />
+    <ClCompile Include="net\OSInfo.cpp" />
     <ClCompile Include="net\Timer.cpp" />
     <ClCompile Include="net\win\AcceptSocket.cpp" />
     <ClCompile Include="net\win\IOCP.cpp" />
-    <ClCompile Include="net\win\OSInfo.cpp" />
     <ClCompile Include="net\win\Socket.cpp" />
     <ClCompile Include="net\win\SocketBase.cpp" />
     <ClCompile Include="test\CppNet.cpp" />
@@ -146,6 +151,7 @@
     <ClInclude Include="net\AcceptSocket.h" />
     <ClInclude Include="net\EventActions.h" />
     <ClInclude Include="net\EventHandler.h" />
+    <ClInclude Include="net\linux\CEpoll.h" />
     <ClInclude Include="net\OSInfo.h" />
     <ClInclude Include="net\Socket.h" />
     <ClInclude Include="net\SocketBase.h" />

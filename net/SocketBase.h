@@ -3,9 +3,6 @@
 
 #include <memory>
 
-bool InitScoket();
-void DeallocSocket();
-
 static const int __addr_str_len = 16;
 
 class CEventActions;

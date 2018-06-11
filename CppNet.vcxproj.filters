@@ -13,6 +13,9 @@
     <Filter Include="test">
       <UniqueIdentifier>{da747bb7-8dad-4657-91c0-d2a6e6f4003f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="net\linux">
+      <UniqueIdentifier>{3619e14b-ac00-4eac-8d85-aeb35c29e7d8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="base\Buffer.cpp">
@@ -39,9 +42,6 @@
     <ClCompile Include="net\win\IOCP.cpp">
       <Filter>net\win</Filter>
     </ClCompile>
-    <ClCompile Include="net\win\OSInfo.cpp">
-      <Filter>net\win</Filter>
-    </ClCompile>
     <ClCompile Include="net\win\Socket.cpp">
       <Filter>net\win</Filter>
     </ClCompile>
@@ -53,6 +53,24 @@
     </ClCompile>
     <ClCompile Include="test\CppNet.cpp">
       <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="net\linux\AcceptSocket.cpp">
+      <Filter>net\linux</Filter>
+    </ClCompile>
+    <ClCompile Include="net\linux\OSInfo.cpp">
+      <Filter>net\linux</Filter>
+    </ClCompile>
+    <ClCompile Include="net\linux\Socket.cpp">
+      <Filter>net\linux</Filter>
+    </ClCompile>
+    <ClCompile Include="net\linux\SocketBase.cpp">
+      <Filter>net\linux</Filter>
+    </ClCompile>
+    <ClCompile Include="net\linux\CEpoll.cpp">
+      <Filter>net\linux</Filter>
+    </ClCompile>
+    <ClCompile Include="net\OSInfo.cpp">
+      <Filter>net</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -118,6 +136,9 @@
     </ClInclude>
     <ClInclude Include="net\Timer.h">
       <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\linux\CEpoll.h">
+      <Filter>net\linux</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
