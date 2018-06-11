@@ -5,7 +5,6 @@
 #include <MSWSock.h>
 #pragma comment(lib,"ws2_32.lib")
 
-
 #include "EventActions.h"
 #include "PoolSharedPtr.h"
 

@@ -12,9 +12,13 @@ public:
 	virtual ~CSingle() {}
 
 	static T& Instance() {
+		std::unique_lock<std::mutex> lock(_mutex);
 		static T instance;
 		return instance;
 	}
+
+private:
+	std::mutex	_mutex;
 };
 
 #endif

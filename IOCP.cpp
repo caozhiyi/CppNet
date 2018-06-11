@@ -22,7 +22,7 @@ CIOCP::~CIOCP() {
 
 bool CIOCP::Init() {
 	int _threads_num = GetCpuNum() * 2;
-
+	//tell iocp the must thread num
 	_iocp_handler = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, _threads_num);;
 	if (_iocp_handler == INVALID_HANDLE_VALUE) {
 		LOG_FATAL("IOCP create io completion port failed!");
@@ -271,7 +271,6 @@ bool CIOCP::_PostConnection(CMemSharePtr<CEventHandler>& event, const std::strin
 	return true;
 }
 
-#include <Mswsock.h>
 bool CIOCP::_PostDisconnection(CMemSharePtr<CEventHandler>& event) {
 	EventOverlapped* context = (EventOverlapped*)event->_data;
 
@@ -299,8 +298,7 @@ void CIOCP::_DoTimeoutEvent(std::vector<TimerEvent>& timer_vec) {
 				socket_ptr->_Recv(iter->_event);
 			}
 
-		}
-		else if (iter->_event_flag & EVENT_WRITE) {
+		} else if (iter->_event_flag & EVENT_WRITE) {
 			auto socket_ptr = iter->_event->_client_socket.Lock();
 			if (socket_ptr) {
 				socket_ptr->_Send(iter->_event);

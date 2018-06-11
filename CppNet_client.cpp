@@ -33,6 +33,7 @@ void ReadFunc(CMemSharePtr<CEventHandler>& event, int error) {
 	if (error != EVENT_ERROR_CLOSED) {
 		//event->_client_socket.Lock()->SyncRead(read_back);
 		event->_client_socket.Lock()->SyncWrite("aaaaa21231231", strlen("aaaaa21231231"), write_back);
+		event->_client_socket.Lock()->SyncDisconnection(read_back);
 	} else {
 		if (client_map.size() < 10) {
 			int a = 0;
@@ -72,7 +73,7 @@ int main() {
 
 	std::function<void(CMemSharePtr<CAcceptEventHandler>& event, int error)> accept_func = AcceptFunc;
 	
-	sock->SyncConnect("127.0.0.1", 8500, read_back);
+	sock->SyncConnection("127.0.0.1", 8500, read_back);
 	sock->SyncWrite("aaaaa21231231", strlen("aaaaa21231231"), write_back);
 
 	for (int i = 0; i < 1; i++) {

@@ -205,6 +205,9 @@ int CBuffer::Write(char* str, int len) {
 }
 
 void CBuffer::Clear() {
+	if (!_buffer_start) {
+		return;
+	}
 	CLoopBuffer* temp = _buffer_start;
 	while (temp && *temp != *_buffer_write) {
 		temp->Clear();
