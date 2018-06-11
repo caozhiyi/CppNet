@@ -2,16 +2,16 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="base">
-      <UniqueIdentifier>{b690a62c-604b-49ac-8547-0f7dfebfbb05}</UniqueIdentifier>
+      <UniqueIdentifier>{8038a441-f1ec-4aec-9143-dd104929d2d8}</UniqueIdentifier>
     </Filter>
     <Filter Include="net">
-      <UniqueIdentifier>{d0b899ae-a8d4-4808-a5ee-64822497b537}</UniqueIdentifier>
+      <UniqueIdentifier>{69f1172a-45fd-40ef-912d-03a64dbccf78}</UniqueIdentifier>
     </Filter>
     <Filter Include="net\win">
-      <UniqueIdentifier>{e68d38ab-7e33-4061-b30f-d8d452c83950}</UniqueIdentifier>
+      <UniqueIdentifier>{3d849948-bbf1-4b1b-9508-1202ea4cafbc}</UniqueIdentifier>
     </Filter>
     <Filter Include="test">
-      <UniqueIdentifier>{da747bb7-8dad-4657-91c0-d2a6e6f4003f}</UniqueIdentifier>
+      <UniqueIdentifier>{00d7f189-7dad-40f0-9b11-a7900942954a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -33,6 +33,9 @@
     <ClCompile Include="base\TimeTool.cpp">
       <Filter>base</Filter>
     </ClCompile>
+    <ClCompile Include="net\Timer.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
     <ClCompile Include="net\win\AcceptSocket.cpp">
       <Filter>net\win</Filter>
     </ClCompile>
@@ -48,10 +51,7 @@
     <ClCompile Include="net\win\SocketBase.cpp">
       <Filter>net\win</Filter>
     </ClCompile>
-    <ClCompile Include="net\Timer.cpp">
-      <Filter>net</Filter>
-    </ClCompile>
-    <ClCompile Include="test\CppNet.cpp">
+    <ClCompile Include="test\CppNet_client.cpp">
       <Filter>test</Filter>
     </ClCompile>
   </ItemGroup>
@@ -92,12 +92,6 @@
     <ClInclude Include="base\TimeTool.h">
       <Filter>base</Filter>
     </ClInclude>
-    <ClInclude Include="net\win\IOCP.h">
-      <Filter>net\win</Filter>
-    </ClInclude>
-    <ClInclude Include="net\win\WinExpendFunc.h">
-      <Filter>net\win</Filter>
-    </ClInclude>
     <ClInclude Include="net\AcceptSocket.h">
       <Filter>net</Filter>
     </ClInclude>
@@ -118,6 +112,12 @@
     </ClInclude>
     <ClInclude Include="net\Timer.h">
       <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\win\IOCP.h">
+      <Filter>net\win</Filter>
+    </ClInclude>
+    <ClInclude Include="net\win\WinExpendFunc.h">
+      <Filter>net\win</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

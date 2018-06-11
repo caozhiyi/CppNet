@@ -4,12 +4,12 @@
 #include <mutex>
 
 class CMemaryPool;
-class CTime
+class CTimeTool
 {
 public:
-	CTime();
-	~CTime();
-	CTime(CTime const& t);
+	CTimeTool();
+	~CTimeTool();
+	CTimeTool(CTimeTool const& t);
 
 	void Now();
 	std::string GetDateStr();
@@ -29,11 +29,11 @@ public:
 	//return xxxx xx xx-xx:xx:xx
 	bool GetFormatTime(char* res, int len);
 
-	bool operator==(CTime const& t);
-	bool operator>(CTime const& t);
-	bool operator>=(CTime const& t);
-	bool operator<(CTime const& t);
-	bool operator<=(CTime const& t);
+	bool operator==(CTimeTool const& t);
+	bool operator>(CTimeTool const& t);
+	bool operator>=(CTimeTool const& t);
+	bool operator<(CTimeTool const& t);
+	bool operator<=(CTimeTool const& t);
 
 private:
 	time_t		_time;

@@ -6,7 +6,7 @@
 
 #include "RunnableAloneTaskList.h"
 #include "MemaryPool.h"
-#include "Time.h"
+#include "TimeTool.h"
 #include "Single.h"
 
 enum LogLevel {
@@ -41,7 +41,7 @@ private:
 	void _CheckDateFile();
 
 private:
-	CTime			_time;
+	CTimeTool		_time;
 	std::string     _file_name;
 	std::fstream	_log_file;
 	int				_log_level;

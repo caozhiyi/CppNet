@@ -1,7 +1,9 @@
 #ifndef HEADER_BUFFER
 #define HEADER_BUFFER
+
 #include <memory>
 #include <vector>
+
 #define MAX_BUFFER_LEN 8192
 
 //when CLoopBuffer's num more than it. every time do read function will check 

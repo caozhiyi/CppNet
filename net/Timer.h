@@ -4,7 +4,7 @@
 #include <map>
 #include <vector>
 
-#include "Time.h"
+#include "TimeTool.h"
 #include "Single.h"
 #include "EventHandler.h"
 #include "Buffer.h"
@@ -44,7 +44,7 @@ public:
 
 private:
 	std::mutex							_mutex;
-	CTime								_time;
+	CTimeTool								_time;
 	std::map<unsigned int, TimerEvent>	_timer_map;
 };
 

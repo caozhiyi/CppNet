@@ -18,7 +18,9 @@ public:
 	}
 
 private:
-	std::mutex	_mutex;
+	static std::mutex	_mutex;
 };
 
+template<typename T>
+std::mutex	CSingle<T>::_mutex;
 #endif

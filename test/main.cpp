@@ -5,7 +5,7 @@
 #include <thread>
 #include <stdarg.h>
 
-#include "Time.h"
+#include "TimeTool.h"
 
 class Test {
 public:
@@ -480,7 +480,7 @@ void func2() {
 //	run2.Join();
 //}
 
-#include "Time.h"
+#include "TimeTool.h"
 #include "Log.h"
 //int main() {
 //	CLog::Instance().Start();
