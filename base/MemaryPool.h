@@ -7,6 +7,8 @@
 #include <mutex>
 #include <vector>
 #include <map>
+#include <cstring>		//for memset
+#include <stdexcept>	//for logic_error
 
 static const int __align = 8;
 static const int __max_bytes = 256;
@@ -171,7 +173,7 @@ void CMemaryPool::PoolFree(T* &m, int len) {
 template<typename T>
 T* CMemaryPool::PoolLargeMalloc() {
 	if (_number_large_add_nodes == 0 || _large_size == 0) {
-		throw std::exception("Large block of memory is not set!");
+		throw std::exception(std::logic_error("Large block of memory is not set!"));
 		return nullptr;
 	}
 	std::unique_lock<std::mutex> lock(_large_mutex);
@@ -200,7 +202,7 @@ void CMemaryPool::PoolLargeFree(T* &m) {
 	}
 	
 	if (_free_large.find(_large_size) == _free_large.end()){
-		throw std::exception("free_large map error!");
+		throw std::exception(std::logic_error("free_large map error!"));
 		return;
 	}
 
@@ -216,7 +218,7 @@ void CMemaryPool::PoolLargeFree(T* &m) {
 template<typename T>
 T* CMemaryPool::PoolLargeMalloc(int size, int& res) {
 	if (_number_large_add_nodes == 0 || _large_size == 0) {
-		throw std::exception("Large block of memory is not set!");
+		throw std::exception(std::logic_error("Large block of memory is not set!"));
 		return nullptr;
 	}
 	int large_size = RoundUp(size, _large_size);
@@ -248,7 +250,7 @@ void CMemaryPool::PoolLargeFree(T* &m, int size) {
 
 	int large_size = RoundUp(size, _large_size);
 	if (_free_large.find(large_size) == _free_large.end()) {
-		throw std::exception("free_large map error!");
+		throw std::exception(std::logic_error("free_large map error!"));
 		return;
 	}
 

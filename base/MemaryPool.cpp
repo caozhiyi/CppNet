@@ -1,5 +1,6 @@
-#include "MemaryPool.h"
 #include <assert.h>
+
+#include "MemaryPool.h"
 
 CMemaryPool::CMemaryPool() {
 	memset(_free_list, 0, sizeof(_free_list[__number_of_free_lists]));
@@ -116,7 +117,8 @@ void* CMemaryPool::ChunkAlloc(int size, int& nums, bool is_large) {
 	
 	//ƒ⁄¥Ê∑÷≈‰ ß∞‹
 	if (0 == _pool_start) {
-		throw std::exception("There memary is not enough!");
+		throw std::exception(std::logic_error("There memary is not enough!"));
+		return nullptr;
 	}
 
 	_malloc_vec.push_back(_pool_start);

@@ -1,5 +1,6 @@
 #include <ctime>
 #include <chrono>
+#include <cstring>
 
 #include "TimeTool.h"
 
@@ -17,13 +18,13 @@ CTimeTool::CTimeTool(CTimeTool const& t) {
 
 std::string CTimeTool::GetDateStr() {
 	char tmp[32];
-	sprintf_s(tmp, "%04d%02d%02d", (_tm.tm_year + 1900), _tm.tm_mon + 1, _tm.tm_mday);
+	sprintf(tmp, "%04d%02d%02d", (_tm.tm_year + 1900), _tm.tm_mon + 1, _tm.tm_mday);
 	return tmp;
 }
 
 int CTimeTool::GetDate() {
 	char tmp[32];
-	sprintf_s(tmp, "%04d%02d%02d", (_tm.tm_year + 1900), _tm.tm_mon + 1, _tm.tm_mday);
+	sprintf(tmp, "%04d%02d%02d", (_tm.tm_year + 1900), _tm.tm_mon + 1, _tm.tm_mday);
 	return atoi(tmp);
 }
 
@@ -65,7 +66,7 @@ int CTimeTool::GetMsec() {
 
 std::string CTimeTool::GetFormatTime() {
 	char res[32] = { 0 };
-	sprintf_s(res, "%04d %02d %02d-%02d:%02d:%02d", (_tm.tm_year + 1900), _tm.tm_mon + 1, _tm.tm_mday, _tm.tm_hour, _tm.tm_min, _tm.tm_sec);
+	sprintf(res, "%04d %02d %02d-%02d:%02d:%02d", (_tm.tm_year + 1900), _tm.tm_mon + 1, _tm.tm_mday, _tm.tm_hour, _tm.tm_min, _tm.tm_sec);
 	return std::move(std::string(res));
 }
 

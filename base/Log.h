@@ -37,7 +37,7 @@ public:
 	void LogFatal(const char* file, int line, const char* log...);
 
 private:
-	void _PushFormatLog(const char* file, int line, char* level, const char* log, va_list list);
+	void _PushFormatLog(const char* file, int line, const char* level, const char* log, va_list list);
 	void _CheckDateFile();
 
 private:

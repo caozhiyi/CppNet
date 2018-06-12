@@ -30,9 +30,6 @@
     <ClCompile Include="base\MemaryPool.cpp">
       <Filter>base</Filter>
     </ClCompile>
-    <ClCompile Include="base\PoolSharedPtr.cpp">
-      <Filter>base</Filter>
-    </ClCompile>
     <ClCompile Include="base\TimeTool.cpp">
       <Filter>base</Filter>
     </ClCompile>

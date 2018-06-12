@@ -92,7 +92,7 @@ void CLog::LogFatal(const char* file, int line, const char* log...) {
 	}
 }
 
-void CLog::_PushFormatLog(const char* file, int line, char* level, const char* log, va_list list) {
+void CLog::_PushFormatLog(const char* file, int line, const char* level, const char* log, va_list list) {
 	_time.Now();
 
 	char* time = _pool.PoolMalloc<char>(32);

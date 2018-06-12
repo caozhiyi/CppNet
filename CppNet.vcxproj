@@ -120,7 +120,6 @@
     <ClCompile Include="base\Log.cpp" />
     <ClCompile Include="base\LoopBuffer.cpp" />
     <ClCompile Include="base\MemaryPool.cpp" />
-    <ClCompile Include="base\PoolSharedPtr.cpp" />
     <ClCompile Include="base\TimeTool.cpp" />
     <ClCompile Include="net\linux\AcceptSocket.cpp" />
     <ClCompile Include="net\linux\CEpoll.cpp" />

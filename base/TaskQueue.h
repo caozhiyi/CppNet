@@ -5,6 +5,8 @@
 #include <mutex>
 #include <condition_variable>
 
+#define INT_MAX 2147483647
+
 template<typename T>
 class CTaskQueue {
 public:

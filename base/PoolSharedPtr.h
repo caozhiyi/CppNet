@@ -74,7 +74,7 @@ inline void EnableShared(T *ptr, CRefCount *ref_ptr, CMemaryPool* pool, int size
 template<typename T>
 class CBasePtr {
 public:
-	typedef CBasePtr<T>					_BasePtr;
+	typedef CBasePtr<T>	 _BasePtr;
 
 	// construct
 	CBasePtr() noexcept : _ptr(nullptr), _ref_count(nullptr), _pool(nullptr) {
@@ -94,7 +94,7 @@ public:
 	}
 
 	// construct CBasePtr object that takes resource from _Right
-	CBasePtr(_BasePtr&& r) : _ptr(r._ptr), _ref_count(r._ref_count), _pool(r._pool), _memory_type(type), _malloc_size(large_size) {
+	CBasePtr(_BasePtr&& r) : _ptr(r._ptr), _ref_count(r._ref_count), _pool(r._pool), _memory_type(r._memory_type), _malloc_size(r._malloc_size) {
 		r._ptr			= nullptr;
 		r._ref_count	= nullptr;
 		r._pool			= nullptr;
@@ -324,12 +324,13 @@ protected:
 template<class T>
 class CMemSharePtr : public CBasePtr<T> {	
 public:
+	typedef CBasePtr<T>	 _BasePtr;
 	// construct
-	CMemSharePtr() noexcept : CBasePtr() {}
-	CMemSharePtr(T* ptr, CRefCount* ref, CMemaryPool* pool, MemoryType type, int large_size = 0) noexcept : CBasePtr(ptr, ref, pool, type, large_size) {}
+	CMemSharePtr() noexcept : _BasePtr() {}
+	CMemSharePtr(T* ptr, CRefCount* ref, CMemaryPool* pool, MemoryType type, int large_size = 0) noexcept : _BasePtr(ptr, ref, pool, type, large_size) {}
 
-	CMemSharePtr(const _BasePtr& r) : CBasePtr(r) {}
-	CMemSharePtr(_BasePtr&& r) : CBasePtr(r) {}
+	CMemSharePtr(const _BasePtr& r) : _BasePtr(r) {}
+	CMemSharePtr(_BasePtr&& r) : _BasePtr(r) {}
 
 	CMemSharePtr& operator=(_BasePtr&& r) {
 		_BasePtr::operator=(r);
@@ -342,11 +343,11 @@ public:
 	}
 
 	~CMemSharePtr() {
-		_DecrefUse();
+		this->_DecrefUse();
 	}
 
 	_BasePtr& operator==(const _BasePtr& r) noexcept {
-		return _ptr == r._ptr;
+		return this->_ptr == r._ptr;
 	}
 
 	// return pointer to resource
@@ -375,12 +376,13 @@ public:
 template<class T>
 class CMemWeakPtr : public CBasePtr<T> {
 public:
+	typedef CBasePtr<T>	 _BasePtr;
 	CMemWeakPtr() {
-		Resetw();
+		this->Resetw();
 	}
 
 	CMemWeakPtr(_BasePtr& r) {
-		Resetw(r);
+		this->Resetw(r);
 	}
 
 	// construct CBasePtr object that takes resource from _Right
@@ -391,13 +393,13 @@ public:
 
 	// construct CBasePtr object that takes resource from _Right
 	CMemWeakPtr<T>& operator=(CMemSharePtr<T>& r) {
-		Resetw(r);
+		this->Resetw(r);
 		return (*this);
 	}
 
 	// construct CBasePtr object that takes resource from _Right
 	CMemWeakPtr<T>& operator=(CMemWeakPtr<T>& r) {
-		Resetw(r);
+		this->Resetw(r);
 		return (*this);
 	}
 
@@ -408,7 +410,7 @@ public:
 
 	// convert to CMemSharePtr
 	CMemSharePtr<T> Lock() const noexcept {
-		if (Expired()) {
+		if (this->Expired()) {
 			return CMemWeakPtr();
 		}
 		return (CMemSharePtr<T>(*this));

@@ -1,9 +1,8 @@
 #include "OSInfo.h"
 
-#ifdef linux
+#ifdef Linux
 #include <sysconf.h> 
-#else  
-#define  WIN32_LEAN_AND_MEAN
+#else 
 #include <sysinfoapi.h>
 #endif  
 
