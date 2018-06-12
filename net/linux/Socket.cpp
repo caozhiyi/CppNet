@@ -1,4 +1,4 @@
-#ifndef linux
+#ifdef linux
 #include <sys/epoll.h>
 #include "EventHandler.h"
 #include "Buffer.h"
@@ -225,53 +225,50 @@ bool operator!=(const CSocketBase& s1, const CSocketBase& s2) {
 void CSocket::_Recv(CMemSharePtr<CEventHandler>& event) {
 	auto socket_ptr = event->_client_socket.Lock();
 	
-	_post_event_num--;
 	int err = -1;
 	if (event->_timer_out) {
 		err = EVENT_ERROR_TIMEOUT;
 
-	} else if (!event->_off_set) {
-		if (_post_event_num == 0) {
-			err = EVENT_ERROR_CLOSED;
-		}
-
 	} else {
 		err = EVENT_ERROR_NO;
-
-		char buf[65536] = { 0 };
-		int recv_len = 0;
-		for (;;) {
-			recv_len = recv(socket_ptr->GetSocket(), buf, 65536, 0);
-			if (recv_len > 0) {
+		if (event->_off_set & EVENT_READ) {
+			for (;;) {
+				char buf[65536] = { 0 };
+				int recv_len = 0;
+				recv_len = recv(socket_ptr->GetSocket(), buf, 65536, 0);
+				if (recv_len < 0) {
+					break;
+				}
 				event->_buffer->Write(buf, recv_len);
+				event->_off_set += recv_len;
 				memset(buf, 0, recv_len);
-
-			} else {
-				break;
+			}
+			if (event->_off_set == 0) {
+				err = EVENT_ERROR_CLOSED;
 			}
 		}
 	}
 	if (event->_call_back && err > -1) {
 		event->_call_back(event, err);
-		event->_event_flag_set = 0;
 	}
 }
 
 void CSocket::_Send(CMemSharePtr<CEventHandler>& event) {
-	EventOverlapped* context = (EventOverlapped*)event->_data;
+	auto socket_ptr = event->_client_socket.Lock();
 
-	_post_event_num--;
 	int err = -1;
 	if (event->_timer_out) {
 		err = EVENT_ERROR_TIMEOUT;
 
-	} else if (!event->_off_set) {
-		if (_post_event_num == 0) {
-			err = EVENT_ERROR_CLOSED;
-		}
-
 	} else {
 		err = EVENT_ERROR_NO;
+		char buf[65536] = { 0 };
+		int send_len = 0;
+		send_len =  event->_buffer->Read(buf, 65536);
+		event->_off_set = send(socket_ptr->GetSocket(), buf, send_len, 0);
+		if (event->_off_set == 0) {
+			err = EVENT_ERROR_CLOSED;
+		}
 	}
 
 	if (event->_call_back && err > -1) {

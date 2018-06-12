@@ -1,3 +1,4 @@
+#ifndef linux
 #include "SocketBase.h"
 #include "WinExpendFunc.h"
 #include "Log.h"
@@ -68,3 +69,4 @@ CSocketBase::CSocketBase(std::shared_ptr<CEventActions>& event_actions) : _add_e
 CSocketBase::~CSocketBase() {
 	closesocket(_sock);
 }
+#endif

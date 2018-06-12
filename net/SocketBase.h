@@ -5,6 +5,11 @@
 
 static const int __addr_str_len = 16;
 
+#ifndef linux
+bool InitScoket();
+void DeallocSocket();
+#endif
+
 class CEventActions;
 class CMemaryPool;
 class CSocketBase

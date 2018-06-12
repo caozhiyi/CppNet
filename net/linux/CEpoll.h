@@ -1,3 +1,5 @@
+#ifdef linux
+
 #ifndef HEADER_CEPOOL
 #define HEADER_CEPOOL
 
@@ -26,15 +28,14 @@ public:
 	virtual void ProcessEvent();
 
 private:
-	bool _PostRecv(CMemSharePtr<CEventHandler>& event);
-	bool _PostAccept(CMemSharePtr<CAcceptEventHandler>& event);
-	bool _PostSend(CMemSharePtr<CEventHandler>& event);
-	bool _PostConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port);
-	bool _PostDisconnection(CMemSharePtr<CEventHandler>& event);
+	bool _AddEvent(CMemSharePtr<CEventHandler>& event, int event_flag, unsigned int sock);
+	bool _ModifyEvent(CMemSharePtr<CEventHandler>& event);
+	bool _ReserOneShot(CMemSharePtr<CEventHandler>& event, unsigned int sock);
 
 	void _DoTimeoutEvent(std::vector<TimerEvent>& timer_vec);
+	void _DoEvent(std::vector<epoll_event>& event_vec, int num);
 private:
 	int	_epoll_handler;
 };
-
 #endif
+#endif // linux

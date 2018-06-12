@@ -41,6 +41,7 @@ public:
 public:
 	CMemSharePtr<CEventHandler>		_read_event;
 	CMemSharePtr<CEventHandler>		_write_event;
+	//iocp use it
 	unsigned int					_post_event_num;
 };
 

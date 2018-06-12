@@ -1,10 +1,11 @@
+#ifdef linux
+#include <arpa/inet.h>
 #include "EventHandler.h"
 #include "Buffer.h"
 #include "Log.h"
 #include "EventActions.h"
 #include "AcceptSocket.h"
 #include "Socket.h"
-#include <arpa/inet.h>
 
 CAcceptSocket::CAcceptSocket(std::shared_ptr<CEventActions>& event_actions) : CSocketBase(event_actions){
 	
@@ -168,3 +169,4 @@ void CAcceptSocket::_Accept(CMemSharePtr<CAcceptEventHandler>& event) {
 	_accept_event->_event_flag_set |= EVENT_ACCEPT;
 	_event_actions->AddAcceptEvent(event);
 }
+#endif // linux

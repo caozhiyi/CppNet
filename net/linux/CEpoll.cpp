@@ -1,3 +1,4 @@
+#ifdef linux
 #include <sys/epoll.h>
 
 #include "CEpoll.h"
@@ -42,15 +43,18 @@ bool CEpoll::AddTimerEvent(unsigned int interval, int event_flag, CMemSharePtr<C
 bool CEpoll::AddSendEvent(CMemSharePtr<CEventHandler>& event) {
 	auto socket_ptr = event->_client_socket.Lock();
 	if (socket_ptr) {
-		if (!socket_ptr->IsInActions()) {
-			if (CreateIoCompletionPort((HANDLE)(socket_ptr->GetSocket()), _iocp_handler, 0, 0) == NULL) {
-				LOG_ERROR("IOCP bind socket to io completion port failed!");
-				return false;
-			}
+		bool res = false;
+		epoll_event* content = (epoll_event*)event->_data;
+		//if not add to epoll
+		if (!(content->events & EPOLLOUT)) {
+			res = _AddEvent(event, EPOLLOUT, socket_ptr->GetSocket());
 		}
-		((EventOverlapped*)event->_data)->_event = &event;
+
+		//reset one shot flag
+		res = _ReserOneShot(event, socket_ptr->GetSocket());
 		socket_ptr->SetInActions(true);
-		return _PostSend(event);
+		return res;
+
 	}
 	LOG_WARN("write event is already distroyed!");
 	return false;
@@ -59,34 +63,39 @@ bool CEpoll::AddSendEvent(CMemSharePtr<CEventHandler>& event) {
 bool CEpoll::AddRecvEvent(CMemSharePtr<CEventHandler>& event) {
 	auto socket_ptr = event->_client_socket.Lock();
 	if (socket_ptr) {
-		if (!socket_ptr->IsInActions()) {
-			if (CreateIoCompletionPort((HANDLE)(socket_ptr->GetSocket()), _iocp_handler, 0, 0) == NULL) {
-				LOG_ERROR("IOCP bind socket to io completion port failed!");
-				return false;
-			}
+		bool res = false;
+		epoll_event* content = (epoll_event*)event->_data;
+		//if not add to epoll
+		if (!(content->events & EPOLLIN)) {
+			res = _AddEvent(event, EPOLLIN, socket_ptr->GetSocket());
 		}
-		((EventOverlapped*)event->_data)->_event = &event;
+
+		//reset one shot flag
+		res = _ReserOneShot(event, socket_ptr->GetSocket());
 		socket_ptr->SetInActions(true);
-		return _PostRecv(event);
+		return res;
+
 	}
 	LOG_WARN("read event is already distroyed!");
 	return false;
 }
 
 bool CEpoll::AddAcceptEvent(CMemSharePtr<CAcceptEventHandler>& event) {
-	if (!event->_accept_socket->IsInActions()) {
-		if (CreateIoCompletionPort((HANDLE)(event->_accept_socket->GetSocket()), _iocp_handler, 0, 0) == NULL) {
-			LOG_ERROR("IOCP bind socket to io completion port failed!");
-			return false;
-		}
+	bool res = false;
+	epoll_event* content = (epoll_event*)event->_data;
+	//if not add to epoll
+	if (!(content->events & EPOLLIN)) {
+		res = _AddEvent(event, EPOLLIN, socket_ptr->GetSocket());
 	}
-	((EventOverlapped*)event->_data)->_event = &event;
-	event->_accept_socket->SetInActions(true);
-	return _PostAccept(event);
+
+	//reset one shot flag
+	res = _ReserOneShot(event, socket_ptr->GetSocket());
+	socket_ptr->SetInActions(true);
+	return res;
 }
 
 bool CEpoll::AddConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port) {
-	auto socket_ptr = event->_client_socket.Lock();
+	/*auto socket_ptr = event->_client_socket.Lock();
 	if (socket_ptr) {
 		if (!socket_ptr->IsInActions()) {
 			if (CreateIoCompletionPort((HANDLE)(socket_ptr->GetSocket()), _iocp_handler, 0, 0) == NULL) {
@@ -98,12 +107,12 @@ bool CEpoll::AddConnection(CMemSharePtr<CEventHandler>& event, const std::string
 		socket_ptr->SetInActions(true);
 		return _PostConnection(event, ip, port);
 	}
-	LOG_WARN("read event is already distroyed!");
+	LOG_WARN("read event is already distroyed!");*/
 	return false;
 }
 
 bool CEpoll::AddDisconnection(CMemSharePtr<CEventHandler>& event) {
-	auto socket_ptr = event->_client_socket.Lock();
+	/*auto socket_ptr = event->_client_socket.Lock();
 	if (socket_ptr) {
 		if (!socket_ptr->IsInActions()) {
 			if (CreateIoCompletionPort((HANDLE)(socket_ptr->GetSocket()), _iocp_handler, 0, 0) == NULL) {
@@ -116,175 +125,70 @@ bool CEpoll::AddDisconnection(CMemSharePtr<CEventHandler>& event) {
 		return _PostDisconnection(event);
 	}
 	LOG_WARN("read event is already distroyed!");
-	return false;
-	return true;
+	return false;*/
 }
 
 bool CEpoll::DelEvent(CMemSharePtr<CEventHandler>& event) {
-	((EventOverlapped*)event->_data)->_event = nullptr;
 	auto socket_ptr = event->_client_socket.Lock();
 	if (socket_ptr) {
-		CancelIoEx((HANDLE)socket_ptr->GetSocket(), &((EventOverlapped*)event->_data)->_overlapped);
+		int res = epoll_ctl(_epoll_handler, EPOLL_CTL_DEL, socket_ptr->GetSocket(), nullptr);
+		if (res == -1) {
+			LOG_ERROR("remove event from epoll faild! error :%d", errno);
+			return false;
+		}
 	}
 	return true;
 }
 
 void CEpoll::ProcessEvent() {
-	DWORD				bytes_transfered = 0;
-	EventOverlapped		*socket_context = nullptr;
-	OVERLAPPED          *over_lapped = nullptr;
 	unsigned int		wait_time = 0;
 	std::vector<TimerEvent> timer_vec;
+	std::vector<epoll_event> event_vec;
 	for (;;) {
 		wait_time = _timer.TimeoutCheck(timer_vec);
 		//if there is no timer event. wait until recv something
 		if (wait_time == 0 && timer_vec.empty()) {
-			wait_time = INFINITE;
+			wait_time = -1;
 		}
 
-		int res = GetQueuedCompletionStatus(_iocp_handler, &bytes_transfered, PULONG_PTR(&socket_context),
-			&over_lapped, wait_time);
+		int res = epoll_wait(_epoll_handler, &*event_vec.begin(), (int)(event_vec.size()), wait_time);
 
-		DWORD dw_err = 0;
-		if (res) {
-			dw_err = NO_ERROR;
+		if (res > 0) {
+			_DoEvent(event_vec, res);
 
-		}
-		else {
-			dw_err = GetLastError();
-		}
-		if (dw_err == WAIT_TIMEOUT) {
+		} else {
 			if (!timer_vec.empty()) {
 				_DoTimeoutEvent(timer_vec);
 			}
-
-		}
-		else if (ERROR_NETNAME_DELETED == dw_err || NO_ERROR == dw_err || ERROR_IO_PENDING == dw_err) {
-			if (over_lapped) {
-				socket_context = CONTAINING_RECORD(over_lapped, EventOverlapped, _overlapped);
-				LOG_DEBUG("Get a new event : %d", socket_context->_event_flag_set);
-				_DoEvent(socket_context, bytes_transfered);
-			}
-
-		}
-		else {
-			LOG_ERROR("IOCP GetQueuedCompletionStatus return error : %d", dw_err);
-			continue;
 		}
 	}
 }
 
-bool CEpoll::_PostRecv(CMemSharePtr<CEventHandler>& event) {
-	EventOverlapped* context = (EventOverlapped*)event->_data;
-
-	DWORD dwFlags = 0;
-	DWORD dwBytes = 0;
-	context->Clear();
-	context->_event_flag_set = event->_event_flag_set;
-	OVERLAPPED *lapped = &context->_overlapped;
-	auto socket_ptr = event->_client_socket.Lock();
-	int res = WSARecv(socket_ptr->GetSocket(), &context->_wsa_buf, 1, &dwFlags, &dwBytes, lapped, nullptr);
-
-	if ((SOCKET_ERROR == res) && (WSA_IO_PENDING != WSAGetLastError())) {
-		LOG_FATAL("IOCP post recv event failed! error code: %d", WSAGetLastError());
+bool CEpoll::_AddEvent(CMemSharePtr<CEventHandler>& event, int event_flag, unsigned int sock) {
+	epoll_event* content = (epoll_event*)event->_data;
+	content->events |= event_flag | EPOLLET;
+	content->data.ptr = event.Get();
+	
+	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_ADD, sock, content);
+	if (res == -1) {
+		LOG_ERROR("add event to epoll faild! error :%d", errno);
 		return false;
 	}
-	LOG_DEBUG("post a new event : %d", context->_event_flag_set);
 	return true;
 }
 
-bool CEpoll::_PostAccept(CMemSharePtr<CAcceptEventHandler>& event) {
-	if (!__AcceptEx) {
-		LOG_ERROR("__AcceptEx function is null!");
-		return false;
-	}
-
-	EventOverlapped* context = (EventOverlapped*)event->_data;
-	context->Clear();
-	DWORD dwBytes = 0;
-	context->_event_flag_set |= event->_event_flag_set;
-	OVERLAPPED *lapped = &context->_overlapped;
-
-	int res = __AcceptEx((SOCKET)event->_accept_socket->GetSocket(), (SOCKET)event->_client_socket->GetSocket(), &context->_lapped_buffer, context->_wsa_buf.len - ((sizeof(SOCKADDR_IN) + 16) * 2),
-		sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, &dwBytes, lapped);
-	if (FALSE == res) {
-		if (WSA_IO_PENDING != WSAGetLastError()) {
-			LOG_ERROR("IOCP post accept failed! error code:%d", WSAGetLastError());
-			return false;
-		}
-	}
-	LOG_DEBUG("post a new event : %d", context->_event_flag_set);
+bool CEpoll::_ModifyEvent(CMemSharePtr<CEventHandler>& event) {
 	return true;
 }
 
-bool CEpoll::_PostSend(CMemSharePtr<CEventHandler>& event) {
-	EventOverlapped* context = (EventOverlapped*)event->_data;
-
-	context->Clear();
-	context->_event_flag_set = event->_event_flag_set;
-	context->_wsa_buf.len = event->_buffer->Read(context->_lapped_buffer, MAX_BUFFER_LEN);
-
-	OVERLAPPED *lapped = &context->_overlapped;
-	auto socket_ptr = event->_client_socket.Lock();
-	int res = WSASend(socket_ptr->GetSocket(), &context->_wsa_buf, 1, nullptr, 0, lapped, nullptr);
-
-	if ((SOCKET_ERROR == res) && (WSA_IO_PENDING != WSAGetLastError())) {
-		LOG_FATAL("IOCP post send event failed! error code: %d", WSAGetLastError());
+bool CEpoll::_ReserOneShot(CMemSharePtr<CEventHandler>& event, unsigned int sock) {
+	epoll_event* content = (epoll_event*)event->_data;
+	content->events |= EPOLLONESHOT;
+	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_MOD, sock, content);
+	if (res == -1) {
+		LOG_ERROR("reset one shot flag faild! error :%d", errno);
 		return false;
 	}
-	LOG_DEBUG("post a new event : %d", context->_event_flag_set);
-	return true;
-}
-
-bool CEpoll::_PostConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port) {
-	EventOverlapped* context = (EventOverlapped*)event->_data;
-
-	DWORD dwFlags = 0;
-	DWORD dwBytes = 0;
-	context->Clear();
-	context->_event_flag_set = event->_event_flag_set;
-	OVERLAPPED *lapped = &context->_overlapped;
-
-	SOCKADDR_IN addr;
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(port);
-	addr.sin_addr.S_un.S_addr = inet_addr(ip.c_str());
-
-	SOCKADDR_IN local;
-	local.sin_family = AF_INET;
-	local.sin_port = htons(0);
-	local.sin_addr.S_un.S_addr = INADDR_ANY;
-
-	auto socket_ptr = event->_client_socket.Lock();
-	if (SOCKET_ERROR == bind(socket_ptr->GetSocket(), (sockaddr*)&local, sizeof(local))) {
-		LOG_FATAL("bind local host failed! error code: %d", WSAGetLastError());
-	}
-	int res = __ConnectEx(socket_ptr->GetSocket(), (sockaddr*)&addr, sizeof(addr), nullptr, 0, nullptr, lapped);
-
-	if ((SOCKET_ERROR == res) && (WSA_IO_PENDING != WSAGetLastError())) {
-		LOG_FATAL("IOCP post connect event failed! error code: %d", WSAGetLastError());
-		return false;
-	}
-	LOG_DEBUG("post a new event : %d", context->_event_flag_set);
-	return true;
-}
-
-bool CEpoll::_PostDisconnection(CMemSharePtr<CEventHandler>& event) {
-	EventOverlapped* context = (EventOverlapped*)event->_data;
-
-	context->Clear();
-	context->_event_flag_set = event->_event_flag_set;
-	context->_wsa_buf.len = event->_buffer->Read(context->_lapped_buffer, MAX_BUFFER_LEN);
-
-	OVERLAPPED *lapped = &context->_overlapped;
-	auto socket_ptr = event->_client_socket.Lock();
-	int res = __DisconnectionEx(socket_ptr->GetSocket(), lapped, 0, 0);
-
-	if ((SOCKET_ERROR == res) && (WSA_IO_PENDING != WSAGetLastError())) {
-		LOG_FATAL("IOCP post send event failed! error code: %d", WSAGetLastError());
-		return false;
-	}
-	LOG_DEBUG("post a new event : %d", context->_event_flag_set);
 	return true;
 }
 
@@ -307,32 +211,32 @@ void CEpoll::_DoTimeoutEvent(std::vector<TimerEvent>& timer_vec) {
 	timer_vec.clear();
 }
 
-void CEpoll::_DoEvent(EventOverlapped *socket_context, int bytes) {
-	if (socket_context->_event_flag_set & EVENT_ACCEPT) {
-		CMemSharePtr<CAcceptEventHandler>* event = (CMemSharePtr<CAcceptEventHandler>*)socket_context->_event;
-		if (event) {
-			(*event)->_client_socket->_read_event->_off_set = bytes;
-			(*event)->_accept_socket->_Accept((*event));
-		}
-
-	}
-	else {
-		CMemSharePtr<CEventHandler>* event = (CMemSharePtr<CEventHandler>*)socket_context->_event;
-		if (event) {
-			(*event)->_off_set = bytes;
-			if (socket_context->_event_flag_set & EVENT_READ || socket_context->_event_flag_set & EVENT_CONNECT) {
-				auto socket_ptr = (*event)->_client_socket.Lock();
-				if (socket_ptr) {
-					socket_ptr->_Recv((*event));
-				}
-
+void CEpoll::_DoEvent(std::vector<epoll_event>& event_vec, int num) {
+	CMemSharePtr<Cevent>* event = nullptr;
+	CMemSharePtr<CEventHandler>* normal_event = nullptr;
+	CMemSharePtr<CAcceptEventHandler>* accept_event = nullptr;
+	for (int i = 0; i < num; i++) {
+		event = event_vec[i].data.ptr;
+		if ((*event)->_event_flag_set & EVENT_ACCEPT) {
+			accept_event = (CMemSharePtr<CAcceptEventHandler>*)event;
+			(*accept_event)->_accept_socket->_Accept((*accept_event));
+		
+		} else if ((*event)->_event_flag_set & EVENT_READ 
+			|| (*event)->_event_flag_set & EVENT_CONNECT
+			|| (*event)->_event_flag_set & EVENT_DISCONNECT ) {
+			normal_event = (CMemSharePtr<CEventHandler>*)event;
+			auto socket_ptr = (*normal_event)->_client_socket.Lock();
+			if (socket_ptr) {
+				socket_ptr->_Recv((*normal_event));
 			}
-			else if ((*event)->_event_flag_set & EVENT_WRITE) {
-				auto socket_ptr = (*event)->_client_socket.Lock();
-				if (socket_ptr) {
-					socket_ptr->_Send((*event));
-				}
+
+		} else if ((*event)->_event_flag_set & EVENT_WRITE) {
+			normal_event = (CMemSharePtr<CEventHandler>*)event;
+			auto socket_ptr = (*normal_event)->_client_socket.Lock();
+			if (socket_ptr) {
+				socket_ptr->_Send((*normal_event));
 			}
 		}
 	}
 }
+#endif // linux

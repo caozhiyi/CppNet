@@ -1,3 +1,4 @@
+#ifdef linux
 #include "SocketBase.h"
 #include "Log.h"
 #include <sys/socket.h>
@@ -9,3 +10,4 @@ CSocketBase::CSocketBase(std::shared_ptr<CEventActions>& event_actions) : _add_e
 CSocketBase::~CSocketBase() {
 	close(_sock);
 }
+#endif // linux

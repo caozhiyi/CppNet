@@ -1,3 +1,4 @@
+#ifndef linux
 #include "EventHandler.h"
 #include "Buffer.h"
 #include "WinExpendFunc.h"
@@ -169,3 +170,4 @@ void CAcceptSocket::_Accept(CMemSharePtr<CAcceptEventHandler>& event) {
 	_accept_event->_event_flag_set |= EVENT_ACCEPT;
 	_event_actions->AddAcceptEvent(event);
 }
+#endif

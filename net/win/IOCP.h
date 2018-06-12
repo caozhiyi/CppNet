@@ -1,3 +1,4 @@
+#ifndef linux
 #ifndef HEADER_IOCP
 #define HEADER_IOCP
 
@@ -68,4 +69,5 @@ private:
 	HANDLE	_iocp_handler;
 };
 
+#endif
 #endif

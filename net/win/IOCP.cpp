@@ -1,5 +1,7 @@
+#ifndef linux
 #include "IOCP.h"
 #include "Log.h"
+#include "OSInfo.h"
 #include "EventHandler.h"
 #include "Buffer.h"
 #include "Socket.h"
@@ -121,7 +123,6 @@ bool CIOCP::AddDisconnection(CMemSharePtr<CEventHandler>& event) {
 	}
 	LOG_WARN("read event is already distroyed!");
 	return false;
-	return true;
 }
 
 bool CIOCP::DelEvent(CMemSharePtr<CEventHandler>& event) {
@@ -319,7 +320,9 @@ void CIOCP::_DoEvent(EventOverlapped *socket_context, int bytes) {
 		CMemSharePtr<CEventHandler>* event = (CMemSharePtr<CEventHandler>*)socket_context->_event;
 		if (event) {
 			(*event)->_off_set = bytes;
-			if (socket_context->_event_flag_set & EVENT_READ || socket_context->_event_flag_set & EVENT_CONNECT) {
+			if (socket_context->_event_flag_set & EVENT_READ 
+				|| socket_context->_event_flag_set & EVENT_CONNECT 
+				|| socket_context->_event_flag_set & EVENT_DISCONNECT) {
 				auto socket_ptr = (*event)->_client_socket.Lock();
 				if (socket_ptr) {
 					socket_ptr->_Recv((*event));
@@ -334,3 +337,4 @@ void CIOCP::_DoEvent(EventOverlapped *socket_context, int bytes) {
 		}
 	}
 }
+#endif
