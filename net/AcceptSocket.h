@@ -3,14 +3,14 @@
 #include <string>
 #include <memory>
 #include <functional>
-
-#include "EventHandler.h"
 #include "Buffer.h"
 #include "PoolSharedPtr.h"
 #include "SocketBase.h"
 
+class CEventHandler;
 class CAcceptEventHandler;
 class CMemaryPool;
+
 class CAcceptSocket : public CSocketBase {
 public:
 	CAcceptSocket(std::shared_ptr<CEventActions>& event_actions);

@@ -1,10 +1,9 @@
-#ifndef linux
+#ifndef __linux__
 #include "IOCP.h"
 #include "Log.h"
 #include "OSInfo.h"
 #include "EventHandler.h"
 #include "Buffer.h"
-#include "Socket.h"
 #include "WinExpendFunc.h"
 #include "Timer.h"
 

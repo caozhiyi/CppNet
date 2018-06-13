@@ -2,12 +2,9 @@
 #define HEADER_EVENTHANDLER
 #include <memory>
 #include <atomic>
-
-#include "Buffer.h"
 #include "PoolSharedPtr.h"
-#include "Socket.h"
 #include "AcceptSocket.h"
-
+#include "Socket.h"
 #define INVALID_TIMER -1
 
 enum EVENT_FLAG {
@@ -31,6 +28,7 @@ public:
 	int							_event_flag_set = 0;
 };
 
+class CBuffer;
 class CEventHandler : public Cevent {
 public:
 	CMemSharePtr<CBuffer>		_buffer;

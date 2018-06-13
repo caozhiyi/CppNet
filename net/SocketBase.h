@@ -5,7 +5,7 @@
 
 static const int __addr_str_len = 16;
 
-#ifndef linux
+#ifndef __linux__
 bool InitScoket();
 void DeallocSocket();
 #endif

@@ -1,4 +1,4 @@
-#ifndef linux
+#ifndef __linux__
 #ifndef HEADER_IOCP
 #define HEADER_IOCP
 

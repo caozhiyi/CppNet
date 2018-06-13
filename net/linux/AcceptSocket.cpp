@@ -1,5 +1,9 @@
-#ifdef linux
+#ifdef __linux__
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/epoll.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 #include "EventHandler.h"
 #include "Buffer.h"
 #include "Log.h"
@@ -26,7 +30,7 @@ bool CAcceptSocket::Bind(short port, const std::string& ip) {
 	int ret = bind(_sock, (sockaddr *)&addr, sizeof(sockaddr));
 
 	if (-1 == ret) {
-		LOG_FATAL("win32 bind socket filed!");
+		LOG_FATAL("linux bind socket filed! error code:%d", errno);
 		close(_sock);
 		return false;
 	}
@@ -37,7 +41,7 @@ bool CAcceptSocket::Bind(short port, const std::string& ip) {
 bool CAcceptSocket::Listen(unsigned int listen_size) {
 	int ret = listen(_sock, listen_size);
 	if (-1 == ret) {
-		LOG_FATAL("win32 listen socket filed!");
+		LOG_FATAL("linux listen socket filed! error code:%d", errno);
 		close(_sock);
 		return false;
 	}
@@ -51,7 +55,7 @@ void CAcceptSocket::SyncAccept(const std::function<void(CMemSharePtr<CAcceptEven
 		_accept_event = MakeNewSharedPtr<CAcceptEventHandler>(_pool.get());
 	}
 	if (!_accept_event->_data) {
-		_accept_event->_data = _pool->PoolNew<EventOverlapped>();
+		_accept_event->_data = _pool->PoolNew<epoll_event>();
 	}
 
 	if (!_accept_event->_client_socket) {
@@ -80,7 +84,7 @@ void CAcceptSocket::SyncAccept(const std::function<void(CMemSharePtr<CAcceptEven
 		_accept_event = MakeNewSharedPtr<CAcceptEventHandler>(_pool.get());
 	}
 	if (!_accept_event->_data) {
-		_accept_event->_data = _pool->PoolNew<EventOverlapped>();
+		_accept_event->_data = _pool->PoolNew<epoll_event>();
 	}
 	if (!_accept_event->_accept_socket) {
 		_accept_event->_accept_socket = this;
@@ -131,18 +135,11 @@ void CAcceptSocket::SetReadCallBack(const std::function<void(CMemSharePtr<CEvent
 }
 
 void CAcceptSocket::_Accept(CMemSharePtr<CAcceptEventHandler>& event) {
-	EventOverlapped* context = (EventOverlapped*)event->_data;
+	sockaddr_in client_addr;
+	socklen_t addr_size = 0;
 
-	SOCKADDR_IN* client_addr = NULL;
-	int remote_len = sizeof(SOCKADDR_IN);
-	SOCKADDR_IN* LocalAddr = NULL;
-	int localLen = sizeof(SOCKADDR_IN);
-
-	__AcceptExScokAddrs(context->_lapped_buffer, context->_wsa_buf.len - ((sizeof(SOCKADDR_IN) + 16) * 2),
-		sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, (LPSOCKADDR*)&LocalAddr, &localLen, (LPSOCKADDR*)&client_addr, &remote_len);
-
-	memcpy(event->_client_socket->_ip, inet_ntoa(client_addr->sin_addr), __addr_str_len);
-	event->_client_socket->_read_event->_buffer->Write(context->_lapped_buffer, event->_client_socket->_read_event->_off_set);
+	event->_client_socket->_sock = accept(event->_accept_socket->GetSocket(), (sockaddr*)&client_addr, &addr_size);
+	memcpy(event->_client_socket->_ip, inet_ntoa(client_addr.sin_addr), __addr_str_len);
 	//get client socket
 	event->_client_socket->_read_event->_client_socket = event->_client_socket;
 
@@ -152,13 +149,6 @@ void CAcceptSocket::_Accept(CMemSharePtr<CAcceptEventHandler>& event) {
 		event->_call_back(event, 0);
 	}
 
-	//call read call back function
-	if (event->_client_socket->_read_event->_call_back) {
-		event->_client_socket->_read_event->_call_back(event->_client_socket->_read_event, 0);
-	}
-
-	//post Accept
-	context->Clear();
 	event->_client_socket = MakeNewSharedPtr<CSocket>(_pool.get(), _event_actions);
 	if (!_accept_event->_client_socket->_read_event) {
 		_accept_event->_client_socket->_read_event = MakeNewSharedPtr<CEventHandler>(_accept_event->_client_socket->_pool.get());
@@ -169,4 +159,4 @@ void CAcceptSocket::_Accept(CMemSharePtr<CAcceptEventHandler>& event) {
 	_accept_event->_event_flag_set |= EVENT_ACCEPT;
 	_event_actions->AddAcceptEvent(event);
 }
-#endif // linux
+#endif // __linux__

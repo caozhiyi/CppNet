@@ -1,13 +1,11 @@
-#ifdef linux
-#include <sys/epoll.h>
-
+#ifdef __linux__
+#include <unistd.h>
 #include "CEpoll.h"
 #include "OSInfo.h"
 #include "Log.h"
 #include "EventHandler.h"
 #include "Buffer.h"
 #include "Socket.h"
-#include "WinExpendFunc.h"
 #include "Timer.h"
 
 CEpoll::CEpoll() {
@@ -22,7 +20,7 @@ bool CEpoll::Init() {
 	//get epoll handle
 	_epoll_handler = epoll_create(1500);
 	if (_epoll_handler == -1) {
-		LOG_FATAL("epoll init failed!");
+		LOG_FATAL("epoll init failed! error code:%d", errno);
 		return false;
 	}
 	return true;
@@ -30,7 +28,7 @@ bool CEpoll::Init() {
 
 bool CEpoll::Dealloc() {
 	if (close(_epoll_handler) == -1) {
-		LOG_ERROR("IOCP close io completion port failed!");
+		LOG_ERROR("IOCP close io completion port failed! error code:%d", errno);
 	}
 	return true;
 }
@@ -56,7 +54,7 @@ bool CEpoll::AddSendEvent(CMemSharePtr<CEventHandler>& event) {
 		return res;
 
 	}
-	LOG_WARN("write event is already distroyed!");
+	LOG_WARN("write event is already distroyed! in %s", "AddSendEvent");
 	return false;
 }
 
@@ -76,20 +74,19 @@ bool CEpoll::AddRecvEvent(CMemSharePtr<CEventHandler>& event) {
 		return res;
 
 	}
-	LOG_WARN("read event is already distroyed!");
+	LOG_WARN("read event is already distroyed!in %s", "AddRecvEvent");
 	return false;
 }
 
 bool CEpoll::AddAcceptEvent(CMemSharePtr<CAcceptEventHandler>& event) {
 	bool res = false;
 	epoll_event* content = (epoll_event*)event->_data;
+	auto socket_ptr = event->_accept_socket;
 	//if not add to epoll
 	if (!(content->events & EPOLLIN)) {
 		res = _AddEvent(event, EPOLLIN, socket_ptr->GetSocket());
 	}
 
-	//reset one shot flag
-	res = _ReserOneShot(event, socket_ptr->GetSocket());
 	socket_ptr->SetInActions(true);
 	return res;
 }
@@ -144,6 +141,7 @@ void CEpoll::ProcessEvent() {
 	unsigned int		wait_time = 0;
 	std::vector<TimerEvent> timer_vec;
 	std::vector<epoll_event> event_vec;
+	event_vec.resize(1000);
 	for (;;) {
 		wait_time = _timer.TimeoutCheck(timer_vec);
 		//if there is no timer event. wait until recv something
@@ -152,6 +150,10 @@ void CEpoll::ProcessEvent() {
 		}
 
 		int res = epoll_wait(_epoll_handler, &*event_vec.begin(), (int)(event_vec.size()), wait_time);
+
+		if (res == -1) {
+			LOG_ERROR("epoll_wait faild! error :%d", errno);
+		}
 
 		if (res > 0) {
 			_DoEvent(event_vec, res);
@@ -167,8 +169,21 @@ void CEpoll::ProcessEvent() {
 bool CEpoll::_AddEvent(CMemSharePtr<CEventHandler>& event, int event_flag, unsigned int sock) {
 	epoll_event* content = (epoll_event*)event->_data;
 	content->events |= event_flag | EPOLLET;
-	content->data.ptr = event.Get();
+	content->data.ptr = (void*)&event;
 	
+	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_ADD, sock, content);
+	if (res == -1) {
+		LOG_ERROR("add event to epoll faild! error :%d", errno);
+		return false;
+	}
+	return true;
+}
+
+bool CEpoll::_AddEvent(CMemSharePtr<CAcceptEventHandler>& event, int event_flag, unsigned int sock) {
+	epoll_event* content = (epoll_event*)event->_data;
+	content->events |= event_flag | EPOLLET;
+	content->data.ptr = (void*)&event;
+	content->data.ptr = ((uintptr_t)content->data.ptr) | 1;
 	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_ADD, sock, content);
 	if (res == -1) {
 		LOG_ERROR("add event to epoll faild! error :%d", errno);
@@ -212,31 +227,33 @@ void CEpoll::_DoTimeoutEvent(std::vector<TimerEvent>& timer_vec) {
 }
 
 void CEpoll::_DoEvent(std::vector<epoll_event>& event_vec, int num) {
-	CMemSharePtr<Cevent>* event = nullptr;
 	CMemSharePtr<CEventHandler>* normal_event = nullptr;
 	CMemSharePtr<CAcceptEventHandler>* accept_event = nullptr;
+	void* event = nullptr;
 	for (int i = 0; i < num; i++) {
 		event = event_vec[i].data.ptr;
-		if ((*event)->_event_flag_set & EVENT_ACCEPT) {
+		if (((uintptr_t)event) & 1) {
+			event = (void*)(((uintptr_t)event) & (uintptr_t)~1);
 			accept_event = (CMemSharePtr<CAcceptEventHandler>*)event;
 			(*accept_event)->_accept_socket->_Accept((*accept_event));
 		
-		} else if ((*event)->_event_flag_set & EVENT_READ 
-			|| (*event)->_event_flag_set & EVENT_CONNECT
-			|| (*event)->_event_flag_set & EVENT_DISCONNECT ) {
-			normal_event = (CMemSharePtr<CEventHandler>*)event;
-			auto socket_ptr = (*normal_event)->_client_socket.Lock();
-			if (socket_ptr) {
-				socket_ptr->_Recv((*normal_event));
-			}
+		} else {
+			normal_event = (CMemSharePtr<CEventHandler>*)event_vec[i].data.ptr;
+			if ((*normal_event)->_event_flag_set & EVENT_READ
+				|| (*normal_event)->_event_flag_set & EVENT_CONNECT
+				|| (*normal_event)->_event_flag_set & EVENT_DISCONNECT) {
+				auto socket_ptr = (*normal_event)->_client_socket.Lock();
+				if (socket_ptr) {
+					socket_ptr->_Recv((*normal_event));
+				}
 
-		} else if ((*event)->_event_flag_set & EVENT_WRITE) {
-			normal_event = (CMemSharePtr<CEventHandler>*)event;
-			auto socket_ptr = (*normal_event)->_client_socket.Lock();
-			if (socket_ptr) {
-				socket_ptr->_Send((*normal_event));
+			} else if ((*normal_event)->_event_flag_set & EVENT_WRITE) {
+				auto socket_ptr = (*normal_event)->_client_socket.Lock();
+				if (socket_ptr) {
+					socket_ptr->_Send((*normal_event));
+				}
 			}
 		}
 	}
 }
-#endif // linux
+#endif // __linux__

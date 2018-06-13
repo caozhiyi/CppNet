@@ -1,4 +1,4 @@
-#ifndef linux
+#ifndef __linux__
 
 #ifndef HEADER_WINEXPENDFUNC
 #define HEADER_WINEXPENDFUNC
@@ -12,4 +12,4 @@ extern LPFN_GETACCEPTEXSOCKADDRS	__AcceptExScokAddrs;
 extern LPFN_DISCONNECTEX			__DisconnectionEx;
 #endif
 
-#endif // linux
+#endif // __linux__

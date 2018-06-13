@@ -1,9 +1,9 @@
-#ifdef linux
+#ifdef __linux__
 #include <sys/epoll.h>
+#include <sys/socket.h>
 #include "EventHandler.h"
 #include "Buffer.h"
 #include "Log.h"
-#include "IOCP.h"
 #include "EventActions.h"
 #include "Socket.h"
 
@@ -77,7 +77,7 @@ void CSocket::SyncWrite(char* src, int len, const std::function<void(CMemSharePt
 
 void CSocket::SyncConnection(const std::string& ip, short port, const std::function<void(CMemSharePtr<CEventHandler>&, int err)>& call_back) {
 	if (ip.length() > 16) {
-		LOG_ERROR("a wrong ip!");
+		LOG_ERROR("a wrong ip! %s", ip.c_str());
 		return;
 	}
 	strcpy(_ip, ip.c_str());

@@ -1,4 +1,4 @@
-#ifndef linux
+#ifndef __linux__
 #include "EventHandler.h"
 #include "Buffer.h"
 #include "WinExpendFunc.h"

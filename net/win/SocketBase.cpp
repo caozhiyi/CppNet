@@ -1,4 +1,4 @@
-#ifndef linux
+#ifndef __linux__
 #include "SocketBase.h"
 #include "WinExpendFunc.h"
 #include "Log.h"

@@ -5,7 +5,6 @@
 #include <memory>
 #include <functional>
 
-#include "EventHandler.h"
 #include "Buffer.h"
 #include "PoolSharedPtr.h"
 #include "SocketBase.h"

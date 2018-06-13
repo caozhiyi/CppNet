@@ -1,10 +1,17 @@
 #include <thread>
 #include <iostream>
+#ifdef __linux__
+#include "CEpoll.h"
+#else
 #include "IOCP.h"
+#endif // __linux__
+
 #include "Socket.h"
 #include "Buffer.h"
 #include "AcceptSocket.h"
 #include "EventHandler.h"
+
+
 
 std::mutex __mutex;
 
@@ -51,13 +58,22 @@ void AcceptFunc(CMemSharePtr<CAcceptEventHandler>& event, int error) {
 }
 #include "Log.h"
 int main() {
+#ifndef __linux__
 	InitScoket();
+#endif
+	
 
 	CLog::Instance().SetLogLevel(LOG_DEBUG_LEVEL);
 	CLog::Instance().SetLogName("CppNet.txt");
 	CLog::Instance().Start();
 
+#ifdef __linux__
+	std::shared_ptr<CEventActions> event_actions(new CEpoll);
+#else
 	std::shared_ptr<CEventActions> event_actions(new CIOCP);
+#endif // __linux__
+
+	
 	event_actions->Init();
 	CAcceptSocket sock(event_actions);
 
@@ -71,12 +87,14 @@ int main() {
 	}
 
 	std::function<void(CMemSharePtr<CAcceptEventHandler>& event, int error)> accept_func = AcceptFunc;
-	sock.Bind(8500, "127.0.0.1");
+	sock.Bind(8500, "0.0.0.0");
 	sock.Listen(10);
 	sock.SyncAccept(accept_func, read_back);
 
 	for (int i = 0; i < 1; i++) {
 		thread_vec[i].join();
 	}
+#ifndef __linux__
 	DeallocSocket();
+#endif
 }

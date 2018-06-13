@@ -1,4 +1,4 @@
-#ifdef linux
+#ifdef __linux__
 
 #ifndef HEADER_LINUXFUNC
 #define HEADER_LINUXFUNC
@@ -13,4 +13,4 @@ int SetSocketNoblocking(unsigned int sock) {
 }
 
 #endif
-#endif // linux
+#endif // __linux__

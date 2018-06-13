@@ -13,6 +13,9 @@
     <Filter Include="test">
       <UniqueIdentifier>{00d7f189-7dad-40f0-9b11-a7900942954a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="net\linux">
+      <UniqueIdentifier>{e2de0143-dda7-47a6-bd25-80d6780c4eee}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="base\Buffer.cpp">
@@ -22,12 +25,6 @@
       <Filter>base</Filter>
     </ClCompile>
     <ClCompile Include="base\LoopBuffer.cpp">
-      <Filter>base</Filter>
-    </ClCompile>
-    <ClCompile Include="base\MemaryPool.cpp">
-      <Filter>base</Filter>
-    </ClCompile>
-    <ClCompile Include="base\PoolSharedPtr.cpp">
       <Filter>base</Filter>
     </ClCompile>
     <ClCompile Include="base\TimeTool.cpp">
@@ -42,9 +39,6 @@
     <ClCompile Include="net\win\IOCP.cpp">
       <Filter>net\win</Filter>
     </ClCompile>
-    <ClCompile Include="net\win\OSInfo.cpp">
-      <Filter>net\win</Filter>
-    </ClCompile>
     <ClCompile Include="net\win\Socket.cpp">
       <Filter>net\win</Filter>
     </ClCompile>
@@ -53,6 +47,24 @@
     </ClCompile>
     <ClCompile Include="test\CppNet_client.cpp">
       <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="net\OSInfo.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\linux\AcceptSocket.cpp">
+      <Filter>net\linux</Filter>
+    </ClCompile>
+    <ClCompile Include="net\linux\CEpoll.cpp">
+      <Filter>net\linux</Filter>
+    </ClCompile>
+    <ClCompile Include="net\linux\Socket.cpp">
+      <Filter>net\linux</Filter>
+    </ClCompile>
+    <ClCompile Include="net\linux\SocketBase.cpp">
+      <Filter>net\linux</Filter>
+    </ClCompile>
+    <ClCompile Include="base\MemaryPool.cpp">
+      <Filter>base</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -118,6 +130,12 @@
     </ClInclude>
     <ClInclude Include="net\win\WinExpendFunc.h">
       <Filter>net\win</Filter>
+    </ClInclude>
+    <ClInclude Include="net\linux\CEpoll.h">
+      <Filter>net\linux</Filter>
+    </ClInclude>
+    <ClInclude Include="net\linux\LinuxFunc.h">
+      <Filter>net\linux</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

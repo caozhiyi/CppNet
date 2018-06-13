@@ -1,13 +1,12 @@
-#ifdef linux
+#ifdef __linux__
 
 #ifndef HEADER_CEPOOL
 #define HEADER_CEPOOL
-
+#include <sys/epoll.h>
 #include "EventActions.h"
 
 #define MAX_BUFFER_LEN        8192
 class Cevent;
-
 class CEpoll: public CEventActions
 {
 public:
@@ -29,6 +28,7 @@ public:
 
 private:
 	bool _AddEvent(CMemSharePtr<CEventHandler>& event, int event_flag, unsigned int sock);
+	bool _AddEvent(CMemSharePtr<CAcceptEventHandler>& event, int event_flag, unsigned int sock);
 	bool _ModifyEvent(CMemSharePtr<CEventHandler>& event);
 	bool _ReserOneShot(CMemSharePtr<CEventHandler>& event, unsigned int sock);
 
@@ -38,4 +38,4 @@ private:
 	int	_epoll_handler;
 };
 #endif
-#endif // linux
+#endif // __linux__

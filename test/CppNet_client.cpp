@@ -65,6 +65,12 @@ int main() {
 
 	CMemaryPool pool;
 	CMemSharePtr<CSocket> sock =  MakeNewSharedPtr<CSocket>(&pool, event_actions);
+
+	void* data = &sock;
+	data = (void *)((uintptr_t)data | 1);
+	data = (void*)((uintptr_t)data & (uintptr_t)~1);
+	CMemSharePtr<CSocket> sock1 = *(CMemSharePtr<CSocket>*)data;
+
 	std::vector<std::thread> thread_vec;
 
 	for (int i = 0; i < 1; i++) {
@@ -73,7 +79,7 @@ int main() {
 
 	std::function<void(CMemSharePtr<CAcceptEventHandler>& event, int error)> accept_func = AcceptFunc;
 	
-	sock->SyncConnection("127.0.0.1", 8500, read_back);
+	sock->SyncConnection("192.168.182.131", 8500, read_back);
 	sock->SyncWrite("aaaaa21231231", strlen("aaaaa21231231"), write_back);
 
 	for (int i = 0; i < 1; i++) {
