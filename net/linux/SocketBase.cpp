@@ -8,6 +8,9 @@ CSocketBase::CSocketBase(std::shared_ptr<CEventActions>& event_actions) : _add_e
 }
 
 CSocketBase::~CSocketBase() {
+	if (event_actions) {
+		event_actions->DelEvent(_sock);
+	}
 	close(_sock);
 }
 #endif // __linux__

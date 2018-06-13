@@ -18,8 +18,11 @@ public:
 	virtual bool AddAcceptEvent(CMemSharePtr<CAcceptEventHandler>& event) = 0;
 	virtual bool AddConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port) = 0;
 	virtual bool AddDisconnection(CMemSharePtr<CEventHandler>& event) = 0;
+#ifdef __linux__
+	virtual bool DelEvent(unsigned int sock) = 0;
+#else
 	virtual bool DelEvent(CMemSharePtr<CEventHandler>& event) = 0;
-
+#endif // __linux__
 	virtual void ProcessEvent() = 0;
 
 	virtual CTimer& Timer() { return _timer; }

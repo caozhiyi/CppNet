@@ -10,6 +10,7 @@
 #include "EventActions.h"
 #include "AcceptSocket.h"
 #include "Socket.h"
+#include "LinuxFunc.h"
 
 CAcceptSocket::CAcceptSocket(std::shared_ptr<CEventActions>& event_actions) : CSocketBase(event_actions){
 	
@@ -21,6 +22,8 @@ CAcceptSocket::~CAcceptSocket() {
 
 bool CAcceptSocket::Bind(short port, const std::string& ip) {
 	_sock = socket(PF_INET, SOCK_STREAM, 0);
+
+	SetSocketNoblocking(_sock);
 
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;
@@ -138,25 +141,35 @@ void CAcceptSocket::_Accept(CMemSharePtr<CAcceptEventHandler>& event) {
 	sockaddr_in client_addr;
 	socklen_t addr_size = 0;
 
-	event->_client_socket->_sock = accept(event->_accept_socket->GetSocket(), (sockaddr*)&client_addr, &addr_size);
-	memcpy(event->_client_socket->_ip, inet_ntoa(client_addr.sin_addr), __addr_str_len);
-	//get client socket
-	event->_client_socket->_read_event->_client_socket = event->_client_socket;
-
-	//call accept call back function
-	event->_event_flag_set = 0;
-	if (event->_call_back) {
-		event->_call_back(event, 0);
+	int sock = 0;
+	for (;;) {
+		//may get more than one connections
+		sock = accept(event->_accept_socket->GetSocket(), (sockaddr*)&client_addr, &addr_size);
+		if (sock == EWOULDBLOCK) {
+			break;
+		}
+		if (sock < 0) {
+			LOG_FATAL("accept socket filed! error code:%d", errno);
+			break;
+		}
+		//set the socket noblocking
+		SetSocketNoblocking(sock);
+		event->_client_socket->_sock = sock;
+		memcpy(event->_client_socket->_ip, inet_ntoa(client_addr.sin_addr), __addr_str_len);
+		//get client socket
+		event->_client_socket->_read_event->_client_socket = event->_client_socket;
+		//call accept call back function
+		event->_event_flag_set = 0;
+		if (event->_call_back) {
+			event->_call_back(event, 0);
+		}
+		event->_client_socket = MakeNewSharedPtr<CSocket>(_pool.get(), _event_actions);
+		if (!_accept_event->_client_socket->_read_event) {
+			_accept_event->_client_socket->_read_event = MakeNewSharedPtr<CEventHandler>(_accept_event->_client_socket->_pool.get());
+		}
+		if (!_accept_event->_client_socket->_read_event->_buffer) {
+			_accept_event->_client_socket->_read_event->_buffer = MakeNewSharedPtr<CBuffer>(_accept_event->_client_socket->_pool.get(), _accept_event->_client_socket->_pool);
+		}
 	}
-
-	event->_client_socket = MakeNewSharedPtr<CSocket>(_pool.get(), _event_actions);
-	if (!_accept_event->_client_socket->_read_event) {
-		_accept_event->_client_socket->_read_event = MakeNewSharedPtr<CEventHandler>(_accept_event->_client_socket->_pool.get());
-	}
-	if (!_accept_event->_client_socket->_read_event->_buffer) {
-		_accept_event->_client_socket->_read_event->_buffer = MakeNewSharedPtr<CBuffer>(_accept_event->_client_socket->_pool.get(), _accept_event->_client_socket->_pool);
-	}
-	_accept_event->_event_flag_set |= EVENT_ACCEPT;
-	_event_actions->AddAcceptEvent(event);
 }
 #endif // __linux__

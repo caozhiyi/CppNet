@@ -45,7 +45,12 @@ bool CEpoll::AddSendEvent(CMemSharePtr<CEventHandler>& event) {
 		epoll_event* content = (epoll_event*)event->_data;
 		//if not add to epoll
 		if (!(content->events & EPOLLOUT)) {
-			res = _AddEvent(event, EPOLLOUT, socket_ptr->GetSocket());
+			if (socket_ptr->IsInActions()) {
+				res = _ModifyEvent(event, EPOLLOUT, socket_ptr->GetSocket());
+
+			} else {
+				res = _AddEvent(event, EPOLLOUT, socket_ptr->GetSocket());
+			}
 		}
 
 		//reset one shot flag
@@ -65,7 +70,12 @@ bool CEpoll::AddRecvEvent(CMemSharePtr<CEventHandler>& event) {
 		epoll_event* content = (epoll_event*)event->_data;
 		//if not add to epoll
 		if (!(content->events & EPOLLIN)) {
-			res = _AddEvent(event, EPOLLIN, socket_ptr->GetSocket());
+			if (socket_ptr->IsInActions()) {
+				res = _ModifyEvent(event, EPOLLIN, socket_ptr->GetSocket());
+
+			} else {
+				res = _AddEvent(event, EPOLLIN, socket_ptr->GetSocket());
+			}
 		}
 
 		//reset one shot flag
@@ -84,7 +94,12 @@ bool CEpoll::AddAcceptEvent(CMemSharePtr<CAcceptEventHandler>& event) {
 	auto socket_ptr = event->_accept_socket;
 	//if not add to epoll
 	if (!(content->events & EPOLLIN)) {
-		res = _AddEvent(event, EPOLLIN, socket_ptr->GetSocket());
+		if (socket_ptr->IsInActions()) {
+			res = _ModifyEvent(event, EPOLLIN, socket_ptr->GetSocket());
+		
+		} else {
+			res = _AddEvent(event, EPOLLIN, socket_ptr->GetSocket());
+		}
 	}
 
 	socket_ptr->SetInActions(true);
@@ -92,47 +107,50 @@ bool CEpoll::AddAcceptEvent(CMemSharePtr<CAcceptEventHandler>& event) {
 }
 
 bool CEpoll::AddConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port) {
-	/*auto socket_ptr = event->_client_socket.Lock();
-	if (socket_ptr) {
-		if (!socket_ptr->IsInActions()) {
-			if (CreateIoCompletionPort((HANDLE)(socket_ptr->GetSocket()), _iocp_handler, 0, 0) == NULL) {
-				LOG_ERROR("IOCP bind socket to io completion port failed!");
-				return false;
-			}
-		}
-		((EventOverlapped*)event->_data)->_event = &event;
-		socket_ptr->SetInActions(true);
-		return _PostConnection(event, ip, port);
+	if (ip.empty()){
+		return false;
 	}
-	LOG_WARN("read event is already distroyed!");*/
+	auto socket_ptr = event->_client_socket.Lock();
+	if (socket_ptr) {
+		//the socket must not in epoll
+		if (socket_ptr->IsInActions()) {
+			return false;
+		}
+		socket_ptr->SetInActions(true);
+		
+		struct sockaddr_in addr;
+		addr.sin_family = AF_INET;
+		addr.sin_port = htons(port);
+		addr.sin_addr.s_addr = inet_addr(ip.c_str());
+
+		int res = connect(socket_ptr->GetSocket(), (sockaddr *)&addr, sizeof(addr));
+		if (errno == EINPROGRESS) {
+			res = _AddEvent(event, EPOLLOUT, socket_ptr->GetSocket());
+		}
+		if (res == 0) {
+			return true;
+		}
+		LOG_WARN("connect event failed! %d", errno);
+		return false;
+	}
+	LOG_WARN("connection event is already distroyed!");
 	return false;
 }
 
 bool CEpoll::AddDisconnection(CMemSharePtr<CEventHandler>& event) {
-	/*auto socket_ptr = event->_client_socket.Lock();
-	if (socket_ptr) {
-		if (!socket_ptr->IsInActions()) {
-			if (CreateIoCompletionPort((HANDLE)(socket_ptr->GetSocket()), _iocp_handler, 0, 0) == NULL) {
-				LOG_ERROR("IOCP bind socket to io completion port failed!");
-				return false;
-			}
-		}
-		((EventOverlapped*)event->_data)->_event = &event;
-		socket_ptr->SetInActions(true);
-		return _PostDisconnection(event);
-	}
-	LOG_WARN("read event is already distroyed!");
-	return false;*/
-}
-
-bool CEpoll::DelEvent(CMemSharePtr<CEventHandler>& event) {
 	auto socket_ptr = event->_client_socket.Lock();
 	if (socket_ptr) {
-		int res = epoll_ctl(_epoll_handler, EPOLL_CTL_DEL, socket_ptr->GetSocket(), nullptr);
-		if (res == -1) {
-			LOG_ERROR("remove event from epoll faild! error :%d", errno);
-			return false;
-		}
+		DelEvent(socket_ptr->GetSocket());
+		close(socket_ptr->GetSocket());
+	}
+	return true;
+}
+
+bool CEpoll::DelEvent(unsigned int sock) {
+	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_DEL, sock, nullptr);
+	if (res == -1) {
+		LOG_ERROR("remove event from epoll faild! error :%d", errno);
+		return false;
 	}
 	return true;
 }
@@ -192,7 +210,14 @@ bool CEpoll::_AddEvent(CMemSharePtr<CAcceptEventHandler>& event, int event_flag,
 	return true;
 }
 
-bool CEpoll::_ModifyEvent(CMemSharePtr<CEventHandler>& event) {
+bool CEpoll::_ModifyEvent(CMemSharePtr<CAcceptEventHandler>& event, int event_flag, unsigned int sock) {
+	epoll_event* content = (epoll_event*)event->_data;
+	content->events |= event_flag;
+	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_MOD, sock, content);
+	if (res == -1) {
+		LOG_ERROR("modify event to epoll faild! error :%d", errno);
+		return false;
+	}
 	return true;
 }
 
@@ -239,15 +264,14 @@ void CEpoll::_DoEvent(std::vector<epoll_event>& event_vec, int num) {
 		
 		} else {
 			normal_event = (CMemSharePtr<CEventHandler>*)event_vec[i].data.ptr;
-			if ((*normal_event)->_event_flag_set & EVENT_READ
-				|| (*normal_event)->_event_flag_set & EVENT_CONNECT
-				|| (*normal_event)->_event_flag_set & EVENT_DISCONNECT) {
+			if ((*normal_event)->_event_flag_set & EVENT_READ) {
 				auto socket_ptr = (*normal_event)->_client_socket.Lock();
 				if (socket_ptr) {
 					socket_ptr->_Recv((*normal_event));
 				}
 
-			} else if ((*normal_event)->_event_flag_set & EVENT_WRITE) {
+			} else if ((*normal_event)->_event_flag_set & EVENT_WRITE
+				|| (*normal_event)->_event_flag_set & EVENT_CONNECT) {
 				auto socket_ptr = (*normal_event)->_client_socket.Lock();
 				if (socket_ptr) {
 					socket_ptr->_Send((*normal_event));

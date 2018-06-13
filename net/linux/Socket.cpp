@@ -82,26 +82,26 @@ void CSocket::SyncConnection(const std::string& ip, short port, const std::funct
 	}
 	strcpy(_ip, ip.c_str());
 	if (!_read_event) {
-		_read_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
+		_write_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
 	}
-	if (!_read_event->_data) {
-		_read_event->_data = _pool->PoolNew<epoll_event>();
+	if (!_write_event->_data) {
+		_write_event->_data = _pool->PoolNew<epoll_event>();
 	}
-	if (!_read_event->_call_back) {
-		_read_event->_call_back = call_back;
-	}
-
-	if (!_read_event->_buffer) {
-		_read_event->_buffer = MakeNewSharedPtr<CBuffer>(_pool.get(), _pool);
+	if (!_write_event->_call_back) {
+		_write_event->_call_back = call_back;
 	}
 
-	if (!_read_event->_client_socket){
-		_read_event->_client_socket = memshared_from_this();
+	if (!_write_event->_buffer) {
+		_write_event->_buffer = MakeNewSharedPtr<CBuffer>(_pool.get(), _pool);
+	}
+
+	if (!_write_event->_client_socket){
+		_write_event->_client_socket = memshared_from_this();
 	}
 
 	if (_event_actions) {
-		_read_event->_event_flag_set |= EVENT_CONNECT;
-		if (_event_actions->AddConnection(_read_event, ip, port)) {
+		_write_event->_event_flag_set |= EVENT_CONNECT;
+		if (_event_actions->AddConnection(_write_event, ip, port)) {
 			_post_event_num++;
 		}
 	}
@@ -228,6 +228,8 @@ void CSocket::_Recv(CMemSharePtr<CEventHandler>& event) {
 	int err = -1;
 	if (event->_timer_out) {
 		err = EVENT_ERROR_TIMEOUT;
+		event->_timer_out = false;
+		event->_event_flag_set &= ~EVENT_TIMER;
 
 	} else {
 		err = EVENT_ERROR_NO;
@@ -236,7 +238,12 @@ void CSocket::_Recv(CMemSharePtr<CEventHandler>& event) {
 				char buf[65536] = { 0 };
 				int recv_len = 0;
 				recv_len = recv(socket_ptr->GetSocket(), buf, 65536, 0);
+				if (recv_len == EWOULDBLOCK) {
+					break;
+				}
 				if (recv_len < 0) {
+					LOG_ERROR("recv filed! %d", errno);
+					return;
 					break;
 				}
 				event->_buffer->Write(buf, recv_len);
@@ -259,6 +266,8 @@ void CSocket::_Send(CMemSharePtr<CEventHandler>& event) {
 	int err = -1;
 	if (event->_timer_out) {
 		err = EVENT_ERROR_TIMEOUT;
+		event->_timer_out = false;
+		event->_event_flag_set &= ~EVENT_TIMER;
 
 	} else {
 		err = EVENT_ERROR_NO;
@@ -276,5 +285,4 @@ void CSocket::_Send(CMemSharePtr<CEventHandler>& event) {
 		event->_event_flag_set = 0;
 	}
 }
-
 #endif
