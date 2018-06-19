@@ -83,7 +83,7 @@ void CTimeTool::Now() {
 	time_t it = _time / 1000;
 	{
 		std::unique_lock<std::mutex> lock(_mutex);
-		_tm = *std::localtime(&it);
+		_tm = *std::gmtime(&it);
 	}
 }
 

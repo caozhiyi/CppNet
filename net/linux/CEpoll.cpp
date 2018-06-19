@@ -169,6 +169,7 @@ void CEpoll::ProcessEvent() {
 		int res = epoll_wait(_epoll_handler, &*event_vec.begin(), (int)(event_vec.size()), wait_time);
 
 		if (res == -1) {
+			int err = errno;
 			LOG_ERROR("epoll_wait faild! error :%d", errno);
 		}
 

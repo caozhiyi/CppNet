@@ -234,6 +234,7 @@ void CSocket::_Recv(CMemSharePtr<CEventHandler>& event) {
 	} else {
 		err = EVENT_ERROR_NO;
 		if (event->_event_flag_set & EVENT_READ) {
+			event->_off_set = 0;
 			for (;;) {
 				char buf[65536] = { 0 };
 				int recv_len = 0;
@@ -245,6 +246,8 @@ void CSocket::_Recv(CMemSharePtr<CEventHandler>& event) {
 						LOG_ERROR("recv filed! %d", errno);
 						break;
 					}
+				} else if (recv_len == 0) {
+					break;
 				}
 				event->_buffer->Write(buf, recv_len);
 				event->_off_set += recv_len;
