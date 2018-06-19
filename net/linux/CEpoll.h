@@ -29,7 +29,7 @@ public:
 private:
 	bool _AddEvent(CMemSharePtr<CEventHandler>& event, int event_flag, unsigned int sock);
 	bool _AddEvent(CMemSharePtr<CAcceptEventHandler>& event, int event_flag, unsigned int sock);
-	bool _ModifyEvent(CMemSharePtr<CAcceptEventHandler>& event, int event_flag, unsigned int sock);
+	bool _ModifyEvent(CMemSharePtr<CEventHandler>& event, int event_flag, unsigned int sock);
 	bool _ReserOneShot(CMemSharePtr<CEventHandler>& event, unsigned int sock);
 
 	void _DoTimeoutEvent(std::vector<TimerEvent>& timer_vec);

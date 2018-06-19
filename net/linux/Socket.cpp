@@ -233,18 +233,18 @@ void CSocket::_Recv(CMemSharePtr<CEventHandler>& event) {
 
 	} else {
 		err = EVENT_ERROR_NO;
-		if (event->_off_set & EVENT_READ) {
+		if (event->_event_flag_set & EVENT_READ) {
 			for (;;) {
 				char buf[65536] = { 0 };
 				int recv_len = 0;
 				recv_len = recv(socket_ptr->GetSocket(), buf, 65536, 0);
-				if (recv_len == EWOULDBLOCK) {
-					break;
-				}
 				if (recv_len < 0) {
-					LOG_ERROR("recv filed! %d", errno);
-					return;
-					break;
+					if (errno == EWOULDBLOCK || errno == EAGAIN) {
+						break;
+					} else {
+						LOG_ERROR("recv filed! %d", errno);
+						break;
+					}
 				}
 				event->_buffer->Write(buf, recv_len);
 				event->_off_set += recv_len;
@@ -274,7 +274,12 @@ void CSocket::_Send(CMemSharePtr<CEventHandler>& event) {
 		char buf[65536] = { 0 };
 		int send_len = 0;
 		send_len =  event->_buffer->Read(buf, 65536);
-		event->_off_set = send(socket_ptr->GetSocket(), buf, send_len, 0);
+		int res = send(socket_ptr->GetSocket(), buf, send_len, 0);
+		if (res < 0) {
+			LOG_ERROR("send filed! %d", errno);
+			return;
+		}
+		event->_off_set = res;
 		if (event->_off_set == 0) {
 			err = EVENT_ERROR_CLOSED;
 		}

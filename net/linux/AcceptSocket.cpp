@@ -145,7 +145,7 @@ void CAcceptSocket::_Accept(CMemSharePtr<CAcceptEventHandler>& event) {
 	for (;;) {
 		//may get more than one connections
 		sock = accept(event->_accept_socket->GetSocket(), (sockaddr*)&client_addr, &addr_size);
-		if (sock == EWOULDBLOCK) {
+		if (errno == EWOULDBLOCK || errno == EAGAIN) {
 			break;
 		}
 		if (sock < 0) {

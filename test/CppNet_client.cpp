@@ -30,7 +30,7 @@ void ReadFunc(CMemSharePtr<CEventHandler>& event, int error) {
 	std::cout << "Read size : " << event->_off_set << std::endl << std::endl;
 	
 	event->_buffer->Clear();
-	if (error != EVENT_ERROR_CLOSED) {
+	if (error != EVENT_ERROR_CLOSED || error == EVENT_CONNECT) {
 		//event->_client_socket.Lock()->SyncRead(read_back);
 		event->_client_socket.Lock()->SyncWrite("aaaaa21231231", strlen("aaaaa21231231"), write_back);
 		event->_client_socket.Lock()->SyncDisconnection(read_back);
@@ -66,10 +66,10 @@ int main() {
 	CMemaryPool pool;
 	CMemSharePtr<CSocket> sock =  MakeNewSharedPtr<CSocket>(&pool, event_actions);
 
-	void* data = &sock;
+	/*void* data = &sock;
 	data = (void *)((uintptr_t)data | 1);
 	data = (void*)((uintptr_t)data & (uintptr_t)~1);
-	CMemSharePtr<CSocket> sock1 = *(CMemSharePtr<CSocket>*)data;
+	CMemSharePtr<CSocket> sock1 = *(CMemSharePtr<CSocket>*)data;*/
 
 	std::vector<std::thread> thread_vec;
 
@@ -87,3 +87,52 @@ int main() {
 	}
 	DeallocSocket();
 }
+
+//#include <winsock2.h>
+//#include <MSWSock.h>
+//#pragma comment(lib,"ws2_32.lib")
+//
+//int main() {
+//	static WSADATA __wsa_data;
+//	static bool __has_init = false;
+//	if (!__has_init && WSAStartup(MAKEWORD(2, 2), &__wsa_data) != 0) {
+//		return false;
+//
+//	}
+//	else {
+//		__has_init = true;
+//	}
+//
+//	SOCKADDR_IN addr;
+//	addr.sin_family = AF_INET;
+//	addr.sin_port = htons(8500);
+//	addr.sin_addr.S_un.S_addr = inet_addr("192.168.182.131");
+//
+//	auto func = [addr](int i) {
+//	SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+//
+//	connect(sock, (sockaddr*)&addr, sizeof(addr));
+//	char buf[] = "Hello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello world";
+//	for (;;) {
+//	send(sock, buf, strlen(buf), 0);
+//
+//	char buf2[20] = { 0 };
+//	recv(sock, buf2, 20, 0);
+//
+//	Sleep(1000);
+//	}
+//	closesocket(sock);
+//	};
+//
+//	/*std::thread thread[1500];
+//	for (int i = 0; i < 1500; i++) {
+//	Sleep(1);
+//	thread[i] = std::thread(func, i);
+//	}
+//	for (int i = 0; i < 1500; i++) {
+//	thread[i].join();
+//	}*/
+//
+//	int a = 0;
+//	a++;
+//}
