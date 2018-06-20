@@ -10,6 +10,8 @@
 #include <cstring>		//for memset
 #include <stdexcept>	//for logic_error
 
+#include <iostream>
+
 static const int __align = 8;
 static const int __max_bytes = 256;
 static const int __number_of_free_lists = __max_bytes / __align;
@@ -98,7 +100,6 @@ T* CMemaryPool::PoolNew(Args&&... args) {
 		T* res = new(bytes) T(std::forward<Args>(args)...);
 		return res;
 	}
-
 	*my_free = result->_next;
 	T* res = new(result) T(std::forward<Args>(args)...);
 	return res;

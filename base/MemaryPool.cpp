@@ -1,14 +1,17 @@
 #include <assert.h>
-
 #include "MemaryPool.h"
 
 CMemaryPool::CMemaryPool() {
-	memset(_free_list, 0, sizeof(_free_list[__number_of_free_lists]));
+	for (int i = 0; i < __number_of_free_lists; i++) {
+		_free_list[i] = nullptr;
+	}
 	_create_thread_id = std::this_thread::get_id();
 }
 
 CMemaryPool::CMemaryPool(const int large_sz, const int add_num) : _large_size(RoundUp(large_sz)), _number_large_add_nodes(add_num){
-	memset(_free_list, 0, sizeof(_free_list[__number_of_free_lists]));
+	for (int i = 0; i < __number_of_free_lists; i++) {
+		_free_list[i] = nullptr;
+	}
 	_create_thread_id = std::this_thread::get_id();
 }
 
@@ -71,8 +74,7 @@ void* CMemaryPool::ReFill(int size, int num, bool is_large) {
 				current->_next = nullptr;
 				break;
 
-			}
-			else {
+			} else {
 				current->_next = next;
 			}
 		}
@@ -114,7 +116,6 @@ void* CMemaryPool::ChunkAlloc(int size, int& nums, bool is_large) {
 	
 
 	_pool_start = (char*)malloc(bytes_to_get);
-	
 	//ƒ⁄¥Ê∑÷≈‰ ß∞‹
 	if (0 == _pool_start) {
 		throw std::exception(std::logic_error("There memary is not enough!"));

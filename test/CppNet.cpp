@@ -57,6 +57,7 @@ void AcceptFunc(CMemSharePtr<CAcceptEventHandler>& event, int error) {
 	event->_client_socket->SyncRead(read_back);
 }
 #include "Log.h"
+//#include "LinuxFunc.h"
 int main() {
 #ifndef __linux__
 	InitScoket();

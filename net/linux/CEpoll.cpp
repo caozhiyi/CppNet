@@ -9,6 +9,7 @@
 #include "Buffer.h"
 #include "Socket.h"
 #include "Timer.h"
+#include "LinuxFunc.h"
 
 CEpoll::CEpoll() {
 
@@ -25,6 +26,7 @@ bool CEpoll::Init() {
 		LOG_FATAL("epoll init failed! error code:%d", errno);
 		return false;
 	}
+	SetCoreFileUnlimit();
 	return true;
 }
 
