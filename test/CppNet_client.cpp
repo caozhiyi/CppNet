@@ -79,7 +79,7 @@ int main() {
 
 	std::function<void(CMemSharePtr<CAcceptEventHandler>& event, int error)> accept_func = AcceptFunc;
 	
-	sock->SyncConnection("192.168.182.131", 8500, read_back);
+	sock->SyncConnection("172.16.81.132", 8500, read_back);
 	sock->SyncWrite("aaaaa21231231", strlen("aaaaa21231231"), write_back);
 
 	for (int i = 0; i < 1; i++) {

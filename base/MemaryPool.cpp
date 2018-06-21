@@ -1,10 +1,16 @@
 #include <assert.h>
 #include "MemaryPool.h"
+#include "Log.h"
+
+#include <iostream>
+using namespace std;
 
 CMemaryPool::CMemaryPool() {
 	for (int i = 0; i < __number_of_free_lists; i++) {
 		_free_list[i] = nullptr;
 	}
+	_pool_start = nullptr;
+	_pool_end = nullptr;
 	_create_thread_id = std::this_thread::get_id();
 }
 
@@ -12,6 +18,8 @@ CMemaryPool::CMemaryPool(const int large_sz, const int add_num) : _large_size(Ro
 	for (int i = 0; i < __number_of_free_lists; i++) {
 		_free_list[i] = nullptr;
 	}
+	_pool_start = nullptr;
+	_pool_end = nullptr;
 	_create_thread_id = std::this_thread::get_id();
 }
 
@@ -35,8 +43,16 @@ int CMemaryPool::GetLargeSize() const {
 void* CMemaryPool::ReFill(int size, int num, bool is_large) {
 	int nums = num;
 
-	char* chunk = (char*)ChunkAlloc(size, nums);
-	MemNode** my_free;
+	char* chunk = nullptr;
+	try {
+		chunk = (char*)ChunkAlloc(size, nums);
+
+	} catch (const std::exception& e) {
+		LOG_ERROR("malloc memory failed! info : %s", e.what());
+		abort();
+	}
+	
+	MemNode* volatile* my_free;
 	MemNode* res, *current, *next;
 	if (1 == nums) {
 		return chunk;
@@ -111,14 +127,16 @@ void* CMemaryPool::ChunkAlloc(int size, int& nums, bool is_large) {
 		}
 
 	} else {
-		free(_pool_start);
+		MemNode* volatile* my_free = &_free_list[FreeListIndex(left_bytes)];
+		((MemNode*)_pool_start)->_next = *my_free;
+		*my_free = (MemNode*)_pool_start;
 	}
-	
 
 	_pool_start = (char*)malloc(bytes_to_get);
 	//ƒ⁄¥Ê∑÷≈‰ ß∞‹
 	if (0 == _pool_start) {
 		throw std::exception(std::logic_error("There memary is not enough!"));
+		cout << "There memary is not enough!" << endl;
 		return nullptr;
 	}
 
