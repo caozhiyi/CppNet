@@ -143,12 +143,13 @@ public:
 	}
 
 	// return pointer to resource
-	T* Get() const noexcept {	
+	T* Get() noexcept {
+		std::unique_lock<std::mutex> lock(_mutex);
 		return (_ptr);
 	}
 
 	// test if expired
-	bool Expired() const noexcept {	
+	bool Expired() noexcept {
 		return (!_ref_count || _ref_count->Expired());
 	}
 
@@ -200,6 +201,7 @@ public:
 			_DecrefUse();
 		}
 
+		std::unique_lock<std::mutex> lock(_mutex);
 		_ref_count = other_rep;
 		_ptr	   = other_ptr;
 		_pool	   = nullptr;
@@ -213,6 +215,8 @@ public:
 		if (_ref_count && _ref_count->GetUseCount() > 0) {
 			_DecrefUse();
 		}
+
+		std::unique_lock<std::mutex> lock(_mutex);
 		_ref_count	 = other_rep;
 		_ptr		 = other_ptr;
 		_pool		 = pool;
@@ -248,6 +252,7 @@ public:
 			_DecrefWeak();
 		}
 
+		std::unique_lock<std::mutex> lock(_mutex);
 		_ref_count	= other_rep;
 		_ptr		= other_ptr;
 		_pool		= nullptr;
@@ -262,6 +267,7 @@ public:
 			_DecrefWeak();
 		}
 
+		std::unique_lock<std::mutex> lock(_mutex);
 		_ref_count	= other_rep;
 		_ptr		= other_ptr;
 		_pool		= pool;
@@ -276,6 +282,7 @@ public:
 			_DecrefWeak();
 		}
 
+		std::unique_lock<std::mutex> lock(_mutex);
 		_ref_count	 = other_rep;
 		_ptr		 = other_ptr;
 		_pool		 = pool;
@@ -318,6 +325,8 @@ protected:
 
 	int			_malloc_size;
 	MemoryType	_memory_type;
+
+	std::mutex	_mutex;
 };
 
 // class for reference counted resource management
@@ -351,22 +360,23 @@ public:
 	}
 
 	// return pointer to resource
-	T *operator->() const noexcept {
+	T *operator->() noexcept {
 		return (this->Get());
 	}
 
 	// return pointer to resource
-	T& operator*() const noexcept {
+	T& operator*() noexcept {
 		return (*(this->Get()));
 	}
 
 	// return true if no other CMemSharePtr object owns this resource
 	bool unique() const noexcept {
+		std::unique_lock<std::mutex> lock(this->_mutex);
 		return (this->UseCount() == 1);
 	}
 
 	// test if CMemSharePtr object owns no resource
-	explicit operator bool() const noexcept {
+	explicit operator bool() noexcept {
 		return (this->Get() != 0);
 	}
 };
@@ -409,7 +419,8 @@ public:
 	}
 
 	// convert to CMemSharePtr
-	CMemSharePtr<T> Lock() const noexcept {
+	CMemSharePtr<T> Lock() noexcept {
+		//std::unique_lock<std::mutex> lock(this->_mutex);
 		if (this->Expired()) {
 			return CMemWeakPtr();
 		}
@@ -417,7 +428,7 @@ public:
 	}
 
 	// test if CMemSharePtr object owns no resource
-	explicit operator bool() const noexcept {
+	explicit operator bool() noexcept {
 		return (this->Get() != 0);
 	}
 };

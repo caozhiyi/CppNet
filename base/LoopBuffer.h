@@ -1,7 +1,7 @@
 #ifndef HEADER_LOOPBUFFER
 #define HEADER_LOOPBUFFER
 #include <memory>
-
+#include <mutex>
 class CMemaryPool;
 class CLoopBuffer {
 public:
@@ -56,6 +56,7 @@ private:
 	char*	_buffer_end;
 	bool	_can_read;		//when _read == _write£¬Is there any data can be read.
 	int		_index;			//buffer use it. compare CLoopBuffers
+	std::mutex _mutex;
 
 	CLoopBuffer*					_next;		//point to next node
 	std::shared_ptr<CMemaryPool>	_pool;

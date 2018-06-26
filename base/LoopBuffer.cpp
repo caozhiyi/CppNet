@@ -38,6 +38,7 @@ CLoopBuffer::~CLoopBuffer() {
 }
 
 int CLoopBuffer::Read(char* res, int len) {
+	std::unique_lock<std::mutex> lock(_mutex);
 	if (!_buffer_start) {
 		return 0;
 	}
@@ -112,6 +113,7 @@ int CLoopBuffer::Read(char* res, int len) {
 }
 
 int CLoopBuffer::Write(char* str, int len) {
+	std::unique_lock<std::mutex> lock(_mutex);
 	if (_read < _write) {
 		if (_write + len <= _buffer_end) {
 			memcpy(_write, str, len);
@@ -190,6 +192,7 @@ int CLoopBuffer::Write(char* str, int len) {
 }
 
 void CLoopBuffer::Clear() {
+	std::unique_lock<std::mutex> lock(_mutex);
 	_read = _buffer_start;
 	_write = _buffer_start;
 	_can_read = false;

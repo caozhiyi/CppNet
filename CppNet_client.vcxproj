@@ -26,6 +26,7 @@
     <ClCompile Include="base\TimeTool.cpp" />
     <ClCompile Include="net\linux\AcceptSocket.cpp" />
     <ClCompile Include="net\linux\CEpoll.cpp" />
+    <ClCompile Include="net\linux\LinuxFunc.cpp" />
     <ClCompile Include="net\linux\Socket.cpp" />
     <ClCompile Include="net\linux\SocketBase.cpp" />
     <ClCompile Include="net\OSInfo.cpp" />

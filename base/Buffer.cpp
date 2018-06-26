@@ -27,6 +27,7 @@ int CBuffer::Read(char* res, int len) {
 		return 0;
 	}
 
+	std::unique_lock<std::mutex> lock(_mutex);
 	if (_buffer_num > __max_node_size) {
 		ReleaseUnuseBuffer();
 	}
@@ -92,6 +93,7 @@ int CBuffer::Write(char* str, int len) {
 	int size = 0, current_write_bytes = 0;
 	int left = len;
 
+	std::unique_lock<std::mutex> lock(_mutex);
 	//first buffer node
 	if (!_buffer_write && !_buffer_read) {
 		try {
@@ -208,6 +210,7 @@ void CBuffer::Clear() {
 	if (!_buffer_start) {
 		return;
 	}
+	std::unique_lock<std::mutex> lock(_mutex);
 	CLoopBuffer* temp = _buffer_start;
 	while (temp && *temp != *_buffer_write) {
 		temp->Clear();
@@ -246,6 +249,7 @@ int CBuffer::GetFreeSize() const {
 	if (!_buffer_write) {
 		return 0;
 	}
+	
 	int res = 0;
 	if (*_buffer_write >= *_buffer_read) {
 		CLoopBuffer* temp = _buffer_write;
@@ -354,8 +358,7 @@ int CBuffer::FindStr(const char* s, int s_len) const {
 				find = true;
 				break;
 
-			}
-			else {
+			} else {
 				res_len += temp->GetCanReadSize();
 			}
 		}
@@ -402,7 +405,7 @@ void CBuffer::ReleaseUnuseBuffer() {
 	if (!_buffer_start) {
 		return;
 	}
-
+	std::unique_lock<std::mutex> lock(_mutex);
 	if (*_buffer_read <= *_buffer_write) {
 		CLoopBuffer* temp = _buffer_write->GetNext();
 		while (temp && temp->CheckUnused() && temp != _buffer_end) {
@@ -442,7 +445,7 @@ std::vector<CLoopBuffer*> CBuffer::GetReadBuffer() {
 	if (!_buffer_read) {
 		return res;
 	}
-
+	std::unique_lock<std::mutex> lock(_mutex);
 	if (*_buffer_read < *_buffer_write) {
 		CLoopBuffer* temp = _buffer_read;
 		while (temp && *temp != *_buffer_write) {

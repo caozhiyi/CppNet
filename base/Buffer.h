@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <vector>
+#include <mutex>
 
 #define MAX_BUFFER_LEN 8192
 
@@ -56,6 +57,7 @@ public:
 	CLoopBuffer* _buffer_read;
 	CLoopBuffer* _buffer_write;
 
+	std::mutex	 _mutex;
 	std::shared_ptr<CMemaryPool>	_pool;
 };
 #endif

@@ -127,7 +127,7 @@ void CSocket::SyncDisconnection(const std::function<void(CMemSharePtr<CEventHand
 	}
 
 	if (_event_actions) {
-		_read_event->_event_flag_set |= EVENT_CONNECT;
+		_read_event->_event_flag_set |= EVENT_DISCONNECT;
 		if (_event_actions->AddDisconnection(_read_event)) {
 			_post_event_num++;
 		}
@@ -223,12 +223,18 @@ bool operator!=(const CSocketBase& s1, const CSocketBase& s2) {
 
 
 void CSocket::_Recv(CMemSharePtr<CEventHandler>& event) {
+	if (!event->_client_socket) {
+		return;
+	}
 	auto socket_ptr = event->_client_socket.Lock();
-	
+	if (!socket_ptr) {
+		return;
+	}
 	int err = -1;
 	if (event->_timer_out) {
 		err = EVENT_ERROR_TIMEOUT;
 		event->_timer_out = false;
+		//reset timer flag
 		event->_event_flag_set &= ~EVENT_TIMER;
 
 	} else {
@@ -240,7 +246,7 @@ void CSocket::_Recv(CMemSharePtr<CEventHandler>& event) {
 				int recv_len = 0;
 				recv_len = recv(socket_ptr->GetSocket(), buf, 65536, 0);
 				if (recv_len < 0) {
-					if (errno == EWOULDBLOCK || errno == EAGAIN) {
+					if (errno == EWOULDBLOCK || errno == EAGAIN || errno == EBADMSG) {
 						break;
 					} else {
 						LOG_ERROR("recv filed! %d", errno);
@@ -258,13 +264,19 @@ void CSocket::_Recv(CMemSharePtr<CEventHandler>& event) {
 			}
 		}
 	}
-	if (event->_call_back && err > -1) {
+	if (event->_call_back) {
 		event->_call_back(event, err);
 	}
 }
 
 void CSocket::_Send(CMemSharePtr<CEventHandler>& event) {
+	if (!event->_client_socket) {
+		return;
+	}
 	auto socket_ptr = event->_client_socket.Lock();
+	if (!socket_ptr) {
+		return;
+	}
 
 	int err = -1;
 	if (event->_timer_out) {
@@ -274,23 +286,27 @@ void CSocket::_Send(CMemSharePtr<CEventHandler>& event) {
 
 	} else {
 		err = EVENT_ERROR_NO;
-		char buf[65536] = { 0 };
-		int send_len = 0;
-		send_len =  event->_buffer->Read(buf, 65536);
-		int res = send(socket_ptr->GetSocket(), buf, send_len, 0);
-		if (res < 0) {
-			LOG_ERROR("send filed! %d", errno);
-			return;
+		event->_off_set = 0;
+		if (event->_buffer && event->_buffer->GetCanReadSize()) {
+			char buf[65536] = { 0 };
+			int send_len = 0;
+			send_len = event->_buffer->Read(buf, 65536);
+			int res = send(socket_ptr->GetSocket(), buf, send_len, 0);
+			if (res < 0) {
+				if (errno != EBADMSG) {
+					LOG_ERROR("send filed! %d", errno);
+				}
+			}
+			event->_off_set = res;
 		}
-		event->_off_set = res;
+
 		if (event->_off_set == 0) {
 			err = EVENT_ERROR_CLOSED;
 		}
-	}
 
-	if (event->_call_back && err > -1) {
-		event->_call_back(event, err);
-		event->_event_flag_set = 0;
+		if (event->_call_back) {
+			event->_call_back(event, err);
+		}
 	}
 }
 #endif

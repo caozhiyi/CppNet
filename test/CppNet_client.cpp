@@ -22,6 +22,12 @@ void WriteFunc(CMemSharePtr<CEventHandler>& event, int error) {
 }
 std::function<void(CMemSharePtr<CEventHandler>& event, int error)> write_back = WriteFunc;
 
+void ConnectionFunc(CMemSharePtr<CEventHandler>& event, int error) {
+	std::cout << "ConnectionFunc" << std::endl;
+	std::unique_lock<std::mutex> lock(__mutex);
+	event->_client_socket.Lock()->SyncWrite("aaaaa21231231", strlen("aaaaa21231231"), write_back);
+}
+
 void ReadFunc(CMemSharePtr<CEventHandler>& event, int error) {
 	std::cout << "ReadFunc" << std::endl;
 	std::cout << *(event->_buffer) << std::endl;
@@ -33,7 +39,7 @@ void ReadFunc(CMemSharePtr<CEventHandler>& event, int error) {
 	if (error != EVENT_ERROR_CLOSED || error == EVENT_CONNECT) {
 		//event->_client_socket.Lock()->SyncRead(read_back);
 		event->_client_socket.Lock()->SyncWrite("aaaaa21231231", strlen("aaaaa21231231"), write_back);
-		event->_client_socket.Lock()->SyncDisconnection(read_back);
+		//event->_client_socket.Lock()->SyncDisconnection(read_back);
 	} else {
 		if (client_map.size() < 10) {
 			int a = 0;
@@ -53,6 +59,11 @@ void AcceptFunc(CMemSharePtr<CAcceptEventHandler>& event, int error) {
 }
 #include "Log.h"
 int main() {
+
+	std::map<int, int> test_map;
+	test_map[1] = 100;
+	test_map.erase(2);
+
 	InitScoket();
 
 	CLog::Instance().SetLogLevel(LOG_DEBUG_LEVEL);
@@ -79,8 +90,8 @@ int main() {
 
 	std::function<void(CMemSharePtr<CAcceptEventHandler>& event, int error)> accept_func = AcceptFunc;
 	
-	sock->SyncConnection("172.16.81.132", 8500, read_back);
-	sock->SyncWrite("aaaaa21231231", strlen("aaaaa21231231"), write_back);
+	sock->SyncConnection("172.16.81.132", 8500, ConnectionFunc);
+	//sock->SyncWrite("aaaaa21231231", strlen("aaaaa21231231"), write_back);
 
 	for (int i = 0; i < 1; i++) {
 		thread_vec[i].join();

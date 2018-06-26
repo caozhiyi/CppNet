@@ -20,20 +20,23 @@ CEpoll::~CEpoll() {
 }
 
 bool CEpoll::Init() {
-	//get epoll handle
+	//get epoll handle. the param is invalid since linux 2.6.8
 	_epoll_handler = epoll_create(1500);
 	if (_epoll_handler == -1) {
 		LOG_FATAL("epoll init failed! error code:%d", errno);
 		return false;
 	}
+	//make coredump file
 	SetCoreFileUnlimit();
+	LOG_DEBUG("epoll init success, %d", errno);
 	return true;
 }
 
 bool CEpoll::Dealloc() {
 	if (close(_epoll_handler) == -1) {
-		LOG_ERROR("IOCP close io completion port failed! error code:%d", errno);
+		LOG_ERROR("epoll close failed! error code:%d", errno);
 	}
+	LOG_DEBUG("epoll close success, %d", errno);
 	return true;
 }
 
@@ -194,7 +197,7 @@ bool CEpoll::_AddEvent(CMemSharePtr<CEventHandler>& event, int event_flag, unsig
 
 	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_ADD, sock, content);
 	if (res == -1) {
-		LOG_ERROR("add event to epoll faild! error :%d", errno);
+		LOG_ERROR("add event to epoll faild! error :%d, sock: %d", errno, sock);
 		return false;
 	}
 	LOG_DEBUG("add a event to epoll, %d", event->_event_flag_set);
@@ -208,10 +211,10 @@ bool CEpoll::_AddEvent(CMemSharePtr<CAcceptEventHandler>& event, int event_flag,
 	content->data.ptr = ((uintptr_t)content->data.ptr) | 1;
 	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_ADD, sock, content);
 	if (res == -1) {
-		LOG_ERROR("add event to epoll faild! error :%d", errno);
+		LOG_ERROR("add event to epoll faild! error :%d, sock: %d", errno, sock);
 		return false;
 	}
-	LOG_DEBUG("add a event to epoll, %d", event->_event_flag_set);
+	LOG_DEBUG("add a event to epoll, event flag: %d, sock : %d", event->_event_flag_set, sock);
 	return true;
 }
 
@@ -221,10 +224,10 @@ bool CEpoll::_ModifyEvent(CMemSharePtr<CEventHandler>& event, int event_flag, un
 	content->data.ptr = (void*)&event->_client_socket;
 	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_MOD, sock, content);
 	if (res == -1) {
-		LOG_ERROR("modify event to epoll faild! error :%d", errno);
+		LOG_ERROR("modify event to epoll faild! error :%d, sock: %d", errno, sock);
 		return false;
 	}
-	LOG_DEBUG("modify a event to epoll, %d", event->_event_flag_set);
+	LOG_DEBUG("add a event to epoll, event flag: %d, sock : %d", event->_event_flag_set, sock);
 	return true;
 }
 
@@ -233,10 +236,10 @@ bool CEpoll::_ReserOneShot(CMemSharePtr<CEventHandler>& event, unsigned int sock
 	content->events |= EPOLLONESHOT;
 	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_MOD, sock, content);
 	if (res == -1) {
-		LOG_ERROR("reset one shot flag faild! error :%d", errno);
+		LOG_ERROR("reset one shot flag faild! error :%d, sock: %d", errno, sock);
 		return false;
 	}
-	LOG_DEBUG("reset one shot, %d", event->_event_flag_set);
+	LOG_DEBUG("reset one shot, event flag: %d, sock : %d", event->_event_flag_set, sock);
 	return true;
 }
 
@@ -276,17 +279,22 @@ void CEpoll::_DoEvent(std::vector<epoll_event>& event_vec, int num) {
 		
 		} else {
 			normal_sock = (CMemWeakPtr<CSocket>*)event_vec[i].data.ptr;
+			if (!normal_sock) {
+				continue;
+			}
 			auto socket_ptr = normal_sock->Lock();
+			if (!socket_ptr) {
+				continue;
+			}
 			if (event_vec[i].events & EPOLLIN) {
 				if (socket_ptr) {
-					LOG_DEBUG("get a epollin event, index : %d", i);
 					socket_ptr->_Recv(socket_ptr->_read_event);
 				}
 
-			} else if (event_vec[i].events & EPOLLOUT) {
+			}
+			else if (event_vec[i].events & EPOLLOUT) {
 				auto socket_ptr = normal_sock->Lock();
 				if (socket_ptr) {
-					LOG_DEBUG("get a epollout event, index : %d", i);
 					socket_ptr->_Send(socket_ptr->_write_event);
 				}
 			}

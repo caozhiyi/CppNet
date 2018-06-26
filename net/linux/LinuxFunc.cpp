@@ -1,3 +1,4 @@
+#ifdef __linux__
 #include <fcntl.h>
 #include <sys/resource.h>
 #include "LinuxFunc.h"
@@ -20,3 +21,4 @@ void SetCoreFileUnlimit() {
 		}
 	}
 }
+#endif

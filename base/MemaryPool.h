@@ -10,8 +10,6 @@
 #include <cstring>		//for memset
 #include <stdexcept>	//for logic_error
 
-#include <iostream>
-
 static const int __align = 8;
 static const int __max_bytes = 256;
 static const int __number_of_free_lists = __max_bytes / __align;
@@ -77,7 +75,7 @@ private:
 	std::vector<char*>		_malloc_vec;
 	std::recursive_mutex	_mutex;
 
-	std::mutex	_large_mutex;
+	std::recursive_mutex	_large_mutex;
 	int			_number_large_add_nodes;			//everytime add nodes num
 	int			_large_size;						//bulk memory size
 	std::map<int, MemNode*>	_free_large;			//bulk memory list
@@ -119,9 +117,9 @@ void CMemaryPool::PoolDelete(T* &c) {
 	}
 
 	MemNode* node = (MemNode*)c;
+	std::unique_lock<std::recursive_mutex> lock(_mutex);
 	MemNode** my_free = &(_free_list[FreeListIndex(sz)]);
 
-	std::unique_lock<std::recursive_mutex> lock(_mutex);
 	c->~T();
 	node->_next = *my_free;
 	*my_free = node;
@@ -163,9 +161,9 @@ void CMemaryPool::PoolFree(T* &m, int len) {
 	}
 
 	MemNode* node = (MemNode*)m;
+	std::unique_lock<std::recursive_mutex> lock(_mutex);
 	MemNode** my_free = &(_free_list[FreeListIndex(len)]);
 
-	std::unique_lock<std::recursive_mutex> lock(_mutex);
 	node->_next = *my_free;
 	*my_free = node;
 	m = nullptr;
@@ -177,8 +175,8 @@ T* CMemaryPool::PoolLargeMalloc() {
 		throw std::exception(std::logic_error("Large block of memory is not set!"));
 		return nullptr;
 	}
-	std::unique_lock<std::mutex> lock(_large_mutex);
 
+	std::unique_lock<std::recursive_mutex> lock(_large_mutex);
 	if (_free_large.find(_large_size) == _free_large.end()) {
 		_free_large[_large_size] = nullptr;
 	}
@@ -208,8 +206,7 @@ void CMemaryPool::PoolLargeFree(T* &m) {
 	}
 
 	MemNode* node = (MemNode*)m;
-
-	std::unique_lock<std::mutex> lock(_large_mutex);
+	std::unique_lock<std::recursive_mutex> lock(_large_mutex);
 	MemNode** my_free = &_free_large[_large_size];
 	node->_next = *my_free;
 	*my_free = node;
@@ -225,7 +222,7 @@ T* CMemaryPool::PoolLargeMalloc(int size, int& res) {
 	int large_size = RoundUp(size, _large_size);
 	res = large_size;
 
-	std::unique_lock<std::mutex> lock(_large_mutex);
+	std::unique_lock<std::recursive_mutex> lock(_large_mutex);
 	if (_free_large.find(large_size) == _free_large.end()) {
 		_free_large[large_size] = nullptr;
 	}
@@ -256,12 +253,10 @@ void CMemaryPool::PoolLargeFree(T* &m, int size) {
 	}
 
 	MemNode* node = (MemNode*)m;
-
-	std::unique_lock<std::mutex> lock(_large_mutex);
+	std::unique_lock<std::recursive_mutex> lock(_large_mutex);
 	MemNode** my_free = &_free_large[large_size];
 	node->_next = *my_free;
 	*my_free = node;
 	m = nullptr;
 }
-
 #endif

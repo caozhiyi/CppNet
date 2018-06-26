@@ -2,19 +2,16 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="base">
-      <UniqueIdentifier>{8038a441-f1ec-4aec-9143-dd104929d2d8}</UniqueIdentifier>
+      <UniqueIdentifier>{fa8fc09d-10bf-4850-883d-8dd3da5f8196}</UniqueIdentifier>
     </Filter>
     <Filter Include="net">
-      <UniqueIdentifier>{69f1172a-45fd-40ef-912d-03a64dbccf78}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="net\win">
-      <UniqueIdentifier>{3d849948-bbf1-4b1b-9508-1202ea4cafbc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="test">
-      <UniqueIdentifier>{00d7f189-7dad-40f0-9b11-a7900942954a}</UniqueIdentifier>
+      <UniqueIdentifier>{65a9ffe9-f946-4a5f-bb6a-ae0186c5c9ca}</UniqueIdentifier>
     </Filter>
     <Filter Include="net\linux">
-      <UniqueIdentifier>{e2de0143-dda7-47a6-bd25-80d6780c4eee}</UniqueIdentifier>
+      <UniqueIdentifier>{3bb0576a-5f98-4537-ae79-05c8686a3fc5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="test">
+      <UniqueIdentifier>{5d58e182-dec9-4ea9-87c0-f2af8bfe9fc6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -27,28 +24,16 @@
     <ClCompile Include="base\LoopBuffer.cpp">
       <Filter>base</Filter>
     </ClCompile>
+    <ClCompile Include="base\MemaryPool.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
     <ClCompile Include="base\TimeTool.cpp">
       <Filter>base</Filter>
     </ClCompile>
-    <ClCompile Include="net\Timer.cpp">
+    <ClCompile Include="net\OSInfo.cpp">
       <Filter>net</Filter>
     </ClCompile>
-    <ClCompile Include="net\win\AcceptSocket.cpp">
-      <Filter>net\win</Filter>
-    </ClCompile>
-    <ClCompile Include="net\win\IOCP.cpp">
-      <Filter>net\win</Filter>
-    </ClCompile>
-    <ClCompile Include="net\win\Socket.cpp">
-      <Filter>net\win</Filter>
-    </ClCompile>
-    <ClCompile Include="net\win\SocketBase.cpp">
-      <Filter>net\win</Filter>
-    </ClCompile>
-    <ClCompile Include="test\CppNet_client.cpp">
-      <Filter>test</Filter>
-    </ClCompile>
-    <ClCompile Include="net\OSInfo.cpp">
+    <ClCompile Include="net\Timer.cpp">
       <Filter>net</Filter>
     </ClCompile>
     <ClCompile Include="net\linux\AcceptSocket.cpp">
@@ -63,10 +48,10 @@
     <ClCompile Include="net\linux\SocketBase.cpp">
       <Filter>net\linux</Filter>
     </ClCompile>
-    <ClCompile Include="base\MemaryPool.cpp">
-      <Filter>base</Filter>
+    <ClCompile Include="test\CppNet.cpp">
+      <Filter>test</Filter>
     </ClCompile>
-    <ClCompile Include="net\linux\LinuxFunc.cpp">
+    <ClCompile Include="base\LinuxFunc.cpp">
       <Filter>net\linux</Filter>
     </ClCompile>
   </ItemGroup>
@@ -127,12 +112,6 @@
     </ClInclude>
     <ClInclude Include="net\Timer.h">
       <Filter>net</Filter>
-    </ClInclude>
-    <ClInclude Include="net\win\IOCP.h">
-      <Filter>net\win</Filter>
-    </ClInclude>
-    <ClInclude Include="net\win\WinExpendFunc.h">
-      <Filter>net\win</Filter>
     </ClInclude>
     <ClInclude Include="net\linux\CEpoll.h">
       <Filter>net\linux</Filter>

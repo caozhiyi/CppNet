@@ -10,11 +10,11 @@
 #include "Single.h"
 
 enum LogLevel {
-	LOG_DEBUG_LEVEL		= 0x0001,
-	LOG_INFO_LEVEL		= 0x0003,
-	LOG_WARN_LEVEL		= 0x0007,
-	LOG_ERROR_LEVEL		= 0x000F,
-	LOG_FATAL_LEVEL		= 0x001F,
+	LOG_DEBUG_LEVEL		= 1,
+	LOG_INFO_LEVEL		= 2,
+	LOG_WARN_LEVEL		= 3,
+	LOG_ERROR_LEVEL		= 4,
+	LOG_FATAL_LEVEL		= 5,
 };
 
 class CLog: public CRunnableAloneTaskList<char*>, public CSingle<CLog>

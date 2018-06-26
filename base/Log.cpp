@@ -48,7 +48,7 @@ LogLevel CLog::GetLogLevel() {
 }
 
 void CLog::LogDebug(const char* file, int line, const char* log...) {
-	if (_log_level & LOG_DEBUG_LEVEL) {
+	if (_log_level <= LOG_DEBUG_LEVEL) {
 		va_list list;
 		va_start(list, log);
 		_PushFormatLog(file, line, "DEBUG", log, list);
@@ -57,7 +57,7 @@ void CLog::LogDebug(const char* file, int line, const char* log...) {
 }
 
 void CLog::LogInfo(const char* file, int line, const char* log...) {
-	if (_log_level & LOG_INFO_LEVEL) {
+	if (_log_level <= LOG_INFO_LEVEL) {
 		va_list list;
 		va_start(list, log);
 		_PushFormatLog(file, line, "INFO", log, list);
@@ -66,7 +66,7 @@ void CLog::LogInfo(const char* file, int line, const char* log...) {
 }
 
 void CLog::LogWarn(const char* file, int line, const char* log...) {
-	if (_log_level & LOG_WARN_LEVEL) {
+	if (_log_level <= LOG_WARN_LEVEL) {
 		va_list list;
 		va_start(list, log);
 		_PushFormatLog(file, line, "WARN", log, list);
@@ -75,7 +75,7 @@ void CLog::LogWarn(const char* file, int line, const char* log...) {
 }
 
 void CLog::LogError(const char* file, int line, const char* log...) {
-	if (_log_level & LOG_ERROR_LEVEL) {
+	if (_log_level <= LOG_ERROR_LEVEL) {
 		va_list list;
 		va_start(list, log);
 		_PushFormatLog(file, line, "ERROR", log, list);
@@ -84,7 +84,7 @@ void CLog::LogError(const char* file, int line, const char* log...) {
 }
 
 void CLog::LogFatal(const char* file, int line, const char* log...) {
-	if (_log_level & LOG_FATAL_LEVEL) {
+	if (_log_level <= LOG_FATAL_LEVEL) {
 		va_list list;
 		va_start(list, log);
 		_PushFormatLog(file, line, "FATAL", log, list);
