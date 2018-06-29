@@ -16,6 +16,7 @@ CSocket::CSocket(std::shared_ptr<CEventActions>& event_actions) : CSocketBase(ev
 }
 
 CSocket::~CSocket() {
+	LOG_DEBUG("delete from epoll, socket : %d, TheadId : %d", _sock, std::this_thread::get_id());
 	//delete from epoll
 	if (_event_actions) {
 		if (_event_actions->DelEvent(_read_event)) {
@@ -23,7 +24,7 @@ CSocket::~CSocket() {
 			close(_sock);
 		}
 	}
-
+	
 	if (_read_event && _read_event->_data) {
 		epoll_event* temp = (epoll_event*)_read_event->_data;
 		_pool->PoolDelete<epoll_event>(temp);
@@ -263,21 +264,26 @@ void CSocket::_Recv(CMemSharePtr<CEventHandler>& event) {
 				int recv_len = 0;
 				recv_len = recv(socket_ptr->GetSocket(), buf, 65536, 0);
 				if (recv_len < 0) {
-					if (errno == EWOULDBLOCK || errno == EAGAIN || errno == EBADMSG) {
+					if (errno == EWOULDBLOCK || errno == EAGAIN || errno == EINTR) {
 						break;
+
+					} else if (errno == EBADMSG) {
+						err = EVENT_ERROR_CLOSED;
+						LOG_ERROR("recv 0 cause closed! socket : %d, errno : %d", socket_ptr->GetSocket(), errno);
+						break;
+
 					} else {
 						LOG_ERROR("recv filed! %d", errno);
 						break;
 					}
 				} else if (recv_len == 0) {
+					err = EVENT_ERROR_CLOSED;
+					LOG_ERROR("recv 0 cause closed! socket : %d, errno : %d", socket_ptr->GetSocket(), errno);
 					break;
 				}
 				event->_buffer->Write(buf, recv_len);
 				event->_off_set += recv_len;
 				memset(buf, 0, recv_len);
-			}
-			if (event->_off_set == 0) {
-				err = EVENT_ERROR_CLOSED;
 			}
 		}
 	}
@@ -310,15 +316,19 @@ void CSocket::_Send(CMemSharePtr<CEventHandler>& event) {
 			send_len = event->_buffer->Read(buf, 65536);
 			int res = send(socket_ptr->GetSocket(), buf, send_len, 0);
 			if (res < 0) {
-				if (errno != EBADMSG) {
+				if (errno == EWOULDBLOCK || errno == EAGAIN || errno == EINTR) {
+					//wait next time to do
+
+				} else if (errno == EBADMSG) {
+					err = EVENT_ERROR_CLOSED;
+					LOG_ERROR("send 0 cause closed! socket : %d, errno : %d", socket_ptr->GetSocket(), errno);
+				} else {
+					err = EVENT_ERROR_CLOSED;
 					LOG_ERROR("send filed! %d", errno);
+					LOG_ERROR("send 0 cause closed! socket : %d, errno : %d", socket_ptr->GetSocket(), errno);
 				}
 			}
 			event->_off_set = res;
-		}
-
-		if (event->_off_set == 0) {
-			err = EVENT_ERROR_CLOSED;
 		}
 
 		if (event->_call_back) {

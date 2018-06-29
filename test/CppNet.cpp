@@ -28,6 +28,7 @@ void WriteFunc(CMemSharePtr<CEventHandler>& event, int error) {
 		event->_client_socket.Lock()->SyncRead(read_back);
 	} else {
 		std::unique_lock<std::mutex> lock(__mutex);
+		std::cout << "~~~~~~~erase socket" << error << std::endl;
 		client_map.erase(event->_client_socket.Lock()->GetSocket());
 	}
 }
@@ -45,6 +46,7 @@ void ReadFunc(CMemSharePtr<CEventHandler>& event, int error) {
 		event->_client_socket.Lock()->SyncWrite("aaaaa21231231", strlen("aaaaa21231231"), write_back);
 	} else {
 		std::unique_lock<std::mutex> lock(__mutex);
+		std::cout << "~~~~~~~erase socket" << error << std::endl;
 		client_map.erase(event->_client_socket.Lock()->GetSocket());
 	}
 }
