@@ -9,7 +9,8 @@ public:
 	CEventActions() {}
 	virtual ~CEventActions() {}
 
-	virtual bool Init() = 0;
+	//param is net io thread num, default cpu number
+	virtual bool Init(int thread_num = 0) = 0;
 	virtual bool Dealloc() = 0;
 
 	virtual bool AddTimerEvent(unsigned int interval, int event_flag, CMemSharePtr<CEventHandler>& event) = 0;

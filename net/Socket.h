@@ -22,7 +22,13 @@ public:
 	void SyncRead(unsigned int interval, const std::function<void(CMemSharePtr<CEventHandler>&, int err)>& call_back = nullptr);
 	void SyncWrite(unsigned int interval, char* src, int len, const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back = nullptr);
 
+#ifndef __linux__
+	void SyncConnection(const std::string& ip, short port, char* buf, int buf_len, const std::function<void(CMemSharePtr<CEventHandler>&, int err)>& call_back = nullptr);
+#else
 	void SyncConnection(const std::string& ip, short port, const std::function<void(CMemSharePtr<CEventHandler>&, int err)>& call_back = nullptr);
+#endif
+
+
 	void SyncDisconnection(const std::function<void(CMemSharePtr<CEventHandler>&, int err)>& call_back = nullptr);
 
 	void SetReadCallBack(const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back);
@@ -40,8 +46,10 @@ public:
 public:
 	CMemSharePtr<CEventHandler>		_read_event;
 	CMemSharePtr<CEventHandler>		_write_event;
+#ifndef __linux__
 	//iocp use it save post event num;
 	unsigned int					_post_event_num;
+#endif
 };
 
 #endif

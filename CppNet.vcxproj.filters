@@ -66,6 +66,9 @@
     <ClCompile Include="net\linux\SocketBase.cpp">
       <Filter>net\linux</Filter>
     </ClCompile>
+    <ClCompile Include="net\linux\EpollImpl.cpp">
+      <Filter>net\linux</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\Buffer.h">
@@ -135,6 +138,9 @@
       <Filter>net\linux</Filter>
     </ClInclude>
     <ClInclude Include="net\linux\LinuxFunc.h">
+      <Filter>net\linux</Filter>
+    </ClInclude>
+    <ClInclude Include="net\linux\EpollImpl.h">
       <Filter>net\linux</Filter>
     </ClInclude>
   </ItemGroup>

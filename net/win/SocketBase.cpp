@@ -58,6 +58,14 @@ void DeallocSocket() {
 	WSACleanup();
 }
 
+CSocketBase::CSocketBase() : _add_event_actions(false), _invalid(false), _event_actions(nullptr), _pool(new CMemaryPool(1024, 20)) {
+	memset(_ip, 0, __addr_str_len);
+	_sock = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
+	if (_sock == INVALID_SOCKET) {
+		LOG_FATAL("init a new socket failed!");
+	}
+}
+
 CSocketBase::CSocketBase(std::shared_ptr<CEventActions>& event_actions) : _add_event_actions(false), _invalid(false), _event_actions(event_actions), _pool(new CMemaryPool(1024, 20)) {
 	memset(_ip, 0, __addr_str_len);
 	_sock = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);

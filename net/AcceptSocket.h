@@ -20,12 +20,15 @@ public:
 
 	bool Listen(unsigned int listen_size);
 
-	void SyncAccept(const std::function<void(CMemSharePtr<CAcceptEventHandler>&, int error)>& call_back = nullptr);
+#ifndef __linux__
 	void SyncAccept(const std::function<void(CMemSharePtr<CAcceptEventHandler>&, int error)>& accept_back = nullptr,
 		const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& read_back = nullptr);
+	void SetReadCallBack(const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back);
+#else
+	void SyncAccept(const std::function<void(CMemSharePtr<CAcceptEventHandler>&, int error)>& call_back = nullptr);
+#endif
 
 	void SetAcceptCallBack(const std::function<void(CMemSharePtr<CAcceptEventHandler>&, int error)>& call_back);
-	void SetReadCallBack(const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back);
 
 public:
 	void _Accept(CMemSharePtr<CAcceptEventHandler>& event);

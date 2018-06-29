@@ -2,40 +2,32 @@
 
 #ifndef HEADER_CEPOOL
 #define HEADER_CEPOOL
+#include <map>
+#include <thread>
+#include <memory>
+
 #include <sys/epoll.h>
+
 #include "EventActions.h"
 
 #define MAX_BUFFER_LEN        8192
 class Cevent;
-class CEpoll: public CEventActions
+class CEpollImpl;
+class CEpoll
 {
 public:
 	CEpoll();
 	~CEpoll();
 
-	virtual bool Init();
-	virtual bool Dealloc();
+	bool Init(int thread_num = 0);
+	bool Dealloc();
 
-	virtual bool AddTimerEvent(unsigned int interval, int event_flag, CMemSharePtr<CEventHandler>& event);
-	virtual bool AddSendEvent(CMemSharePtr<CEventHandler>& event);
-	virtual bool AddRecvEvent(CMemSharePtr<CEventHandler>& event);
-	virtual bool AddAcceptEvent(CMemSharePtr<CAcceptEventHandler>& event);
-	virtual bool AddConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port);
-	virtual bool AddDisconnection(CMemSharePtr<CEventHandler>& event);
-	virtual bool DelEvent(CMemSharePtr<CEventHandler>& event);
-
-	virtual void ProcessEvent();
+	void SyncAccept(std::shared_ptr<CAcceptSocket> sock, const std::function<void(CMemSharePtr<CAcceptEventHandler>&, int error)>& call_back = nullptr);
+	void SyncConnect(std::shared_ptr<CSocket> sock, const std::string& ip, short port, const std::function<void(CMemSharePtr<CEventHandler>&, int err)>& call_back = nullptr);
 
 private:
-	bool _AddEvent(CMemSharePtr<CEventHandler>& event, int event_flag, unsigned int sock);
-	bool _AddEvent(CMemSharePtr<CAcceptEventHandler>& event, int event_flag, unsigned int sock);
-	bool _ModifyEvent(CMemSharePtr<CEventHandler>& event, int event_flag, unsigned int sock);
-	bool _ReserOneShot(CMemSharePtr<CEventHandler>& event, int event_flag, unsigned int sock);
-
-	void _DoTimeoutEvent(std::vector<TimerEvent>& timer_vec);
-	void _DoEvent(std::vector<epoll_event>& event_vec, int num);
-private:
-	int	_epoll_handler;
+	CAcceptSocket	_accept_socket;
+	std::map<std::thread::id, std::shared_ptr<CEpollImpl>>	_epoll_map;
 };
 #endif
 #endif // __linux__
