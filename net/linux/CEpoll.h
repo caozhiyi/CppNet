@@ -22,7 +22,7 @@ public:
 	virtual bool AddAcceptEvent(CMemSharePtr<CAcceptEventHandler>& event);
 	virtual bool AddConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port);
 	virtual bool AddDisconnection(CMemSharePtr<CEventHandler>& event);
-	virtual bool DelEvent(unsigned int sock);
+	virtual bool DelEvent(CMemSharePtr<CEventHandler>& event);
 
 	virtual void ProcessEvent();
 
@@ -30,7 +30,7 @@ private:
 	bool _AddEvent(CMemSharePtr<CEventHandler>& event, int event_flag, unsigned int sock);
 	bool _AddEvent(CMemSharePtr<CAcceptEventHandler>& event, int event_flag, unsigned int sock);
 	bool _ModifyEvent(CMemSharePtr<CEventHandler>& event, int event_flag, unsigned int sock);
-	bool _ReserOneShot(CMemSharePtr<CEventHandler>& event, unsigned int sock);
+	bool _ReserOneShot(CMemSharePtr<CEventHandler>& event, int event_flag, unsigned int sock);
 
 	void _DoTimeoutEvent(std::vector<TimerEvent>& timer_vec);
 	void _DoEvent(std::vector<epoll_event>& event_vec, int num);

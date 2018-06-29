@@ -62,13 +62,13 @@
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
     <ClCompile Include="base\Buffer.cpp" />
-    <ClCompile Include="base\LinuxFunc.cpp" />
     <ClCompile Include="base\Log.cpp" />
     <ClCompile Include="base\LoopBuffer.cpp" />
     <ClCompile Include="base\MemaryPool.cpp" />
     <ClCompile Include="base\TimeTool.cpp" />
     <ClCompile Include="net\linux\AcceptSocket.cpp" />
     <ClCompile Include="net\linux\CEpoll.cpp" />
+    <ClCompile Include="net\linux\LinuxFunc.cpp" />
     <ClCompile Include="net\linux\Socket.cpp" />
     <ClCompile Include="net\linux\SocketBase.cpp" />
     <ClCompile Include="net\OSInfo.cpp" />

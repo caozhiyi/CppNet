@@ -62,7 +62,7 @@ bool CEpoll::AddSendEvent(CMemSharePtr<CEventHandler>& event) {
 		}
 
 		//reset one shot flag
-		res = _ReserOneShot(event, socket_ptr->GetSocket());
+		res = _ReserOneShot(event, EPOLLOUT, socket_ptr->GetSocket());
 		socket_ptr->SetInActions(true);
 		return res;
 
@@ -87,8 +87,10 @@ bool CEpoll::AddRecvEvent(CMemSharePtr<CEventHandler>& event) {
 		}
 
 		//reset one shot flag
-		res = _ReserOneShot(event, socket_ptr->GetSocket());
-		socket_ptr->SetInActions(true);
+		res = _ReserOneShot(event, EPOLLOUT, socket_ptr->GetSocket());
+		if (res) {
+			socket_ptr->SetInActions(true);
+		}
 		return res;
 
 	}
@@ -143,19 +145,25 @@ bool CEpoll::AddConnection(CMemSharePtr<CEventHandler>& event, const std::string
 bool CEpoll::AddDisconnection(CMemSharePtr<CEventHandler>& event) {
 	auto socket_ptr = event->_client_socket.Lock();
 	if (socket_ptr) {
-		DelEvent(socket_ptr->GetSocket());
-		close(socket_ptr->GetSocket());
+		if (DelEvent(event)) {
+			close(socket_ptr->GetSocket());
+		}
 	}
 	return true;
 }
 
-bool CEpoll::DelEvent(unsigned int sock) {
-	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_DEL, sock, nullptr);
-	if (res == -1) {
-		LOG_ERROR("remove event from epoll faild! error :%d", errno);
+bool CEpoll::DelEvent(CMemSharePtr<CEventHandler>& event) {
+	auto socket_ptr = event->_client_socket.Lock();
+	if (!socket_ptr) {
 		return false;
 	}
-	LOG_DEBUG("del a socket from epoll, %d", sock);
+	epoll_event* content = (epoll_event*)event->_data;
+	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_DEL, socket_ptr->GetSocket(), content);
+	if (res == -1) {
+		LOG_ERROR("remove event from epoll faild! error :%d, socket : %d", errno, socket_ptr->GetSocket());
+		return false;
+	}
+	LOG_DEBUG("del a socket from epoll, %d", socket_ptr->GetSocket());
 	return true;
 }
 
@@ -179,7 +187,7 @@ void CEpoll::ProcessEvent() {
 		}
 
 		if (res > 0) {
-			LOG_DEBUG("epoll_wait get events! num :%d", res);
+			LOG_DEBUG("epoll_wait get events! num :%d, TheadId : %d", res, std::this_thread::get_id());
 			_DoEvent(event_vec, res);
 
 		} else {
@@ -197,10 +205,15 @@ bool CEpoll::_AddEvent(CMemSharePtr<CEventHandler>& event, int event_flag, unsig
 
 	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_ADD, sock, content);
 	if (res == -1) {
-		LOG_ERROR("add event to epoll faild! error :%d, sock: %d", errno, sock);
-		return false;
+		if (errno == EEXIST) {
+			res = _ModifyEvent(event, event_flag, sock);
+		}
+		if (res == -1) {
+			LOG_ERROR("add event to epoll faild! error :%d, sock: %d", errno, sock);
+			return false;
+		}
 	}
-	LOG_DEBUG("add a event to epoll, %d", event->_event_flag_set);
+	LOG_DEBUG("add a event to epoll, event : %d, sock : %d", event->_event_flag_set, sock);
 	return true;
 }
 
@@ -224,20 +237,30 @@ bool CEpoll::_ModifyEvent(CMemSharePtr<CEventHandler>& event, int event_flag, un
 	content->data.ptr = (void*)&event->_client_socket;
 	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_MOD, sock, content);
 	if (res == -1) {
-		LOG_ERROR("modify event to epoll faild! error :%d, sock: %d", errno, sock);
-		return false;
+		if (errno == ENOENT) {
+			res = epoll_ctl(_epoll_handler, EPOLL_CTL_ADD, sock, content);
+		}
+		if (res == -1) {
+			LOG_ERROR("modify event to epoll faild! error :%d, sock: %d", errno, sock);
+			return false;
+		}
 	}
-	LOG_DEBUG("add a event to epoll, event flag: %d, sock : %d", event->_event_flag_set, sock);
+	LOG_DEBUG("modify a event to epoll, event flag: %d, sock : %d", event->_event_flag_set, sock);
 	return true;
 }
 
-bool CEpoll::_ReserOneShot(CMemSharePtr<CEventHandler>& event, unsigned int sock) {
+bool CEpoll::_ReserOneShot(CMemSharePtr<CEventHandler>& event, int event_flag, unsigned int sock) {
 	epoll_event* content = (epoll_event*)event->_data;
 	content->events |= EPOLLONESHOT;
 	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_MOD, sock, content);
 	if (res == -1) {
-		LOG_ERROR("reset one shot flag faild! error :%d, sock: %d", errno, sock);
-		return false;
+		if (errno == ENOENT) {
+			res = _ModifyEvent(event, EPOLLONESHOT | event_flag, sock);
+		}
+		if (res == -1) {
+			LOG_ERROR("reset one shot flag faild! error :%d, sock: %d", errno, sock);
+			return false;
+		}
 	}
 	LOG_DEBUG("reset one shot, event flag: %d, sock : %d", event->_event_flag_set, sock);
 	return true;
@@ -291,8 +314,7 @@ void CEpoll::_DoEvent(std::vector<epoll_event>& event_vec, int num) {
 					socket_ptr->_Recv(socket_ptr->_read_event);
 				}
 
-			}
-			else if (event_vec[i].events & EPOLLOUT) {
+			} else if (event_vec[i].events & EPOLLOUT) {
 				auto socket_ptr = normal_sock->Lock();
 				if (socket_ptr) {
 					socket_ptr->_Send(socket_ptr->_write_event);

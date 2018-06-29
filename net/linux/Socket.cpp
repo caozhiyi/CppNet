@@ -1,11 +1,14 @@
 #ifdef __linux__
 #include <sys/epoll.h>
 #include <sys/socket.h>
+#include <unistd.h>
+
 #include "EventHandler.h"
 #include "Buffer.h"
 #include "Log.h"
 #include "EventActions.h"
 #include "Socket.h"
+#include "Runnable.h"
 
 CSocket::CSocket(std::shared_ptr<CEventActions>& event_actions) : CSocketBase(event_actions), _post_event_num(0){
 	_read_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
@@ -13,6 +16,14 @@ CSocket::CSocket(std::shared_ptr<CEventActions>& event_actions) : CSocketBase(ev
 }
 
 CSocket::~CSocket() {
+	//delete from epoll
+	if (_event_actions) {
+		if (_event_actions->DelEvent(_read_event)) {
+			CRunnable::Sleep(5000);
+			close(_sock);
+		}
+	}
+
 	if (_read_event && _read_event->_data) {
 		epoll_event* temp = (epoll_event*)_read_event->_data;
 		_pool->PoolDelete<epoll_event>(temp);
@@ -31,6 +42,7 @@ void CSocket::SyncRead(const std::function<void(CMemSharePtr<CEventHandler>&, in
 	}
 	if (!_read_event->_data) {
 		_read_event->_data = _pool->PoolNew<epoll_event>();
+		((epoll_event*)_read_event->_data)->events = 0;
 	}
 	if (!_read_event->_call_back) {
 		_read_event->_call_back = call_back;
@@ -54,6 +66,7 @@ void CSocket::SyncWrite(char* src, int len, const std::function<void(CMemSharePt
 	}
 	if (!_write_event->_data) {
 		_write_event->_data = _pool->PoolNew<epoll_event>();
+		((epoll_event*)_write_event->_data)->events = 0;
 	}
 	if (!_write_event->_call_back) {
 		_write_event->_call_back = call_back;
@@ -86,6 +99,7 @@ void CSocket::SyncConnection(const std::string& ip, short port, const std::funct
 	}
 	if (!_write_event->_data) {
 		_write_event->_data = _pool->PoolNew<epoll_event>();
+		((epoll_event*)_write_event->_data)->events = 0;
 	}
 	if (!_write_event->_call_back) {
 		_write_event->_call_back = call_back;
@@ -113,6 +127,7 @@ void CSocket::SyncDisconnection(const std::function<void(CMemSharePtr<CEventHand
 	}
 	if (!_read_event->_data) {
 		_read_event->_data = _pool->PoolNew<epoll_event>();
+		((epoll_event*)_read_event->_data)->events = 0;
 	}
 	if (!_read_event->_call_back) {
 		_read_event->_call_back = call_back;
@@ -140,6 +155,7 @@ void CSocket::SyncRead(unsigned int interval, const std::function<void(CMemShare
 	}
 	if (!_read_event->_data) {
 		_read_event->_data = _pool->PoolNew<epoll_event>();
+		((epoll_event*)_read_event->_data)->events = 0;
 	}
 
 	if (!_read_event->_call_back) {
@@ -170,6 +186,7 @@ void CSocket::SyncWrite(unsigned int interval, char* src, int len, const std::fu
 	}
 	if (!_write_event->_data) {
 		_write_event->_data = _pool->PoolNew<epoll_event>();
+		((epoll_event*)_write_event->_data)->events = 0;
 	}
 	if (!_write_event->_call_back) {
 		_write_event->_call_back = call_back;

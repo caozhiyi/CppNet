@@ -48,7 +48,7 @@ void* CMemaryPool::ReFill(int size, int num, bool is_large) {
 		chunk = (char*)ChunkAlloc(size, nums);
 
 	} catch (const std::exception& e) {
-		LOG_ERROR("malloc memory failed! info : %s", e.what());
+		LOG_FATAL("malloc memory failed! info : %s", e.what());
 		abort();
 	}
 	

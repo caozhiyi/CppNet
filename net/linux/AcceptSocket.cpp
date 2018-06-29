@@ -59,6 +59,7 @@ void CAcceptSocket::SyncAccept(const std::function<void(CMemSharePtr<CAcceptEven
 	}
 	if (!_accept_event->_data) {
 		_accept_event->_data = _pool->PoolNew<epoll_event>();
+		((epoll_event*)_accept_event->_data)->events = 0;
 	}
 
 	if (!_accept_event->_client_socket) {
@@ -88,6 +89,7 @@ void CAcceptSocket::SyncAccept(const std::function<void(CMemSharePtr<CAcceptEven
 	}
 	if (!_accept_event->_data) {
 		_accept_event->_data = _pool->PoolNew<epoll_event>();
+		((epoll_event*)_accept_event->_data)->events = 0;
 	}
 	if (!_accept_event->_accept_socket) {
 		_accept_event->_accept_socket = this;

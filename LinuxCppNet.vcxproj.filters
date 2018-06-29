@@ -51,7 +51,7 @@
     <ClCompile Include="test\CppNet.cpp">
       <Filter>test</Filter>
     </ClCompile>
-    <ClCompile Include="base\LinuxFunc.cpp">
+    <ClCompile Include="net\linux\LinuxFunc.cpp">
       <Filter>net\linux</Filter>
     </ClCompile>
   </ItemGroup>
