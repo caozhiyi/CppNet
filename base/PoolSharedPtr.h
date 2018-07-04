@@ -2,6 +2,7 @@
 #define HEADER_CPOOLSHAREDPTR
 #include <atomic>
 #include <functional>
+#include <stddef.h>
 
 #include "MemaryPool.h"
 
@@ -68,7 +69,7 @@ private:
 };
 
 template<class T>
-inline void EnableShared(T *ptr, CRefCount *ref_ptr, CMemaryPool* pool, int size = 0, MemoryType type = TYPE_NEW);
+inline void EnableShared(T *ptr, CRefCount *ref_ptr, CMemoryPool* pool, int size = 0, MemoryType type = TYPE_NEW);
 
 // base class for CMemSharePtr and CMemWeakPtr
 template<typename T>
@@ -80,7 +81,7 @@ public:
 	CBasePtr() noexcept : _ptr(nullptr), _ref_count(nullptr), _pool(nullptr) {
 		EnableShared(_ptr, _ref_count, _pool);
 	}
-	CBasePtr(T* ptr, CRefCount* ref, CMemaryPool* pool, MemoryType type, int large_size = 0) noexcept : _ptr(ptr), _ref_count(ref), _pool(pool), _memory_type(type), _malloc_size(large_size) {
+	CBasePtr(T* ptr, CRefCount* ref, CMemoryPool* pool, MemoryType type, int large_size = 0) noexcept : _ptr(ptr), _ref_count(ref), _pool(pool), _memory_type(type), _malloc_size(large_size) {
 		EnableShared(_ptr, _ref_count, _pool, _malloc_size, _memory_type);
 	}
 
@@ -164,7 +165,7 @@ public:
 	}
 
 	// release resource and take _Other_ptr through _Other_rep
-	void Reset(T *other_ptr, CRefCount * other_rep, CMemaryPool* pool) {	
+	void Reset(T *other_ptr, CRefCount * other_rep, CMemoryPool* pool) {	
 		_Reset0(other_ptr, other_rep, pool);
 	}
 
@@ -178,11 +179,11 @@ public:
 		Resetw(other._ptr, other._ref_count, other._pool);
 	}
 
-	void Resetw(T *other_ptr, CRefCount *other_rep, CMemaryPool* pool) {
+	void Resetw(T *other_ptr, CRefCount *other_rep, CMemoryPool* pool) {
 		_Resetw0(other_ptr, other_rep, pool);
 	}
 
-	void Resetw(T *other_ptr, CRefCount *other_rep, CMemaryPool* pool, int size, MemoryType type) {
+	void Resetw(T *other_ptr, CRefCount *other_rep, CMemoryPool* pool, int size, MemoryType type) {
 		_Resetw0(other_ptr, other_rep, pool, type, size);
 	}
 
@@ -208,7 +209,7 @@ public:
 	}
 
 	// release resource and take new resource
-	void _Reset0(T *other_ptr, CRefCount *other_rep, CMemaryPool* pool, int size = 0, MemoryType type = TYPE_NEW) {
+	void _Reset0(T *other_ptr, CRefCount *other_rep, CMemoryPool* pool, int size = 0, MemoryType type = TYPE_NEW) {
 		if (other_rep) {
 			other_rep->IncrefUse();
 		}
@@ -259,7 +260,7 @@ public:
 	}
 
 	// release resource and take new resource
-	void _Resetw0(T *other_ptr, CRefCount *other_rep, CMemaryPool* pool) {
+	void _Resetw0(T *other_ptr, CRefCount *other_rep, CMemoryPool* pool) {
 		if (other_rep) {
 			other_rep->IncrefWeak();
 		}
@@ -274,7 +275,7 @@ public:
 	}
 
 	// release resource and take new resource
-	void _Resetw0(T *other_ptr, CRefCount *other_rep, CMemaryPool* pool, MemoryType type, int size) {
+	void _Resetw0(T *other_ptr, CRefCount *other_rep, CMemoryPool* pool, MemoryType type, int size) {
 		if (other_rep) {
 			other_rep->IncrefWeak();
 		}
@@ -321,7 +322,7 @@ public:
 protected:
 	T			*_ptr;
 	CRefCount	*_ref_count;
-	CMemaryPool	*_pool;
+	CMemoryPool	*_pool;
 
 	int			_malloc_size;
 	MemoryType	_memory_type;
@@ -336,7 +337,8 @@ public:
 	typedef CBasePtr<T>	 _BasePtr;
 	// construct
 	CMemSharePtr() noexcept : _BasePtr() {}
-	CMemSharePtr(T* ptr, CRefCount* ref, CMemaryPool* pool, MemoryType type, int large_size = 0) noexcept : _BasePtr(ptr, ref, pool, type, large_size) {}
+	CMemSharePtr(nullptr_t) noexcept : _BasePtr() {}
+	CMemSharePtr(T* ptr, CRefCount* ref, CMemoryPool* pool, MemoryType type, int large_size = 0) noexcept : _BasePtr(ptr, ref, pool, type, large_size) {}
 
 	CMemSharePtr(const _BasePtr& r) : _BasePtr(r) {}
 	CMemSharePtr(_BasePtr&& r) : _BasePtr(r) {}
@@ -457,13 +459,13 @@ protected:
 
 private:
 	template<class T1, class T2>
-	friend void DoEnable(T1 *ptr, CEnableSharedFromThis<T2> *es, CRefCount *ref_ptr, CMemaryPool* pool = 0, int size = 0, MemoryType type = TYPE_NEW);
+	friend void DoEnable(T1 *ptr, CEnableSharedFromThis<T2> *es, CRefCount *ref_ptr, CMemoryPool* pool, int size, MemoryType type);
 	CMemWeakPtr<T> _weak_ptr;
 };
 
 // reset internal weak pointer
 template<class T1, class T2>
-inline void DoEnable(T1 *ptr, CEnableSharedFromThis<T2> *es, CRefCount *ref_ptr, CMemaryPool* pool, int size, MemoryType type) {
+inline void DoEnable(T1 *ptr, CEnableSharedFromThis<T2> *es, CRefCount *ref_ptr, CMemoryPool* pool = nullptr, int size = 0, MemoryType type = TYPE_NEW) {
 	es->_weak_ptr.Resetw(ptr, ref_ptr, pool, size, type);
 }
 
@@ -477,7 +479,7 @@ struct has_member_weak_ptr {
 };
 
 template<class T>
-inline void EnableShared(T *ptr, CRefCount *ref_ptr, CMemaryPool* pool, int size, MemoryType type) {
+inline void EnableShared(T *ptr, CRefCount *ref_ptr, CMemoryPool* pool, int size, MemoryType type) {
 	if (ptr) {
 		if (has_member_weak_ptr<T>::value > 0) {
 			DoEnable(ptr, (CEnableSharedFromThis<T>*)ptr, ref_ptr, pool, size, type);
@@ -486,28 +488,28 @@ inline void EnableShared(T *ptr, CRefCount *ref_ptr, CMemaryPool* pool, int size
 }
 
 template<typename T, typename... Args >
-CMemSharePtr<T> MakeNewSharedPtr(CMemaryPool* pool, Args&&... args) {
+CMemSharePtr<T> MakeNewSharedPtr(CMemoryPool* pool, Args&&... args) {
 	T* o = pool->PoolNew<T>(std::forward<Args>(args)...);
 	CRefCount* ref = pool->PoolNew<CRefCount>();
 	return CMemSharePtr<T>(o, ref, pool, TYPE_NEW);
 }
 
 template<typename T>
-CMemSharePtr<T> MakeMallocSharedPtr(CMemaryPool* pool, int size) {
+CMemSharePtr<T> MakeMallocSharedPtr(CMemoryPool* pool, int size) {
 	T* o = (T*)pool->PoolMalloc<T>(size);
 	CRefCount* ref = pool->PoolNew<CRefCount>();
 	return CMemSharePtr<T>(o, ref, pool, TYPE_MALLOC, size);
 }
 
 template<typename T>
-CMemSharePtr<T> MakeLargeSharedPtr(CMemaryPool* pool) {
+CMemSharePtr<T> MakeLargeSharedPtr(CMemoryPool* pool) {
 	T* o = pool->PoolLargeMalloc<T>();
 	CRefCount* ref = pool->PoolNew<CRefCount>();
 	return CMemSharePtr<T>(o, ref, pool, TYPE_LARGE);
 }
 
 template<typename T>
-CMemSharePtr<T> MakeLargeSharedPtr(CMemaryPool* pool, int size) {
+CMemSharePtr<T> MakeLargeSharedPtr(CMemoryPool* pool, int size) {
 	T* o = pool->PoolLargeMalloc<T>(size);
 	CRefCount* ref = pool->PoolNew<CRefCount>();
 	return CMemSharePtr<T>(o, ref, pool, TYPE_LARGE_WITH_SIZE, size);

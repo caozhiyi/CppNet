@@ -46,13 +46,13 @@ private:
 	std::fstream	_log_file;
 	int				_log_level;
 	int				_cur_date;
-	CMemaryPool		_pool;
+	CMemoryPool		_pool;
 };
 
-#define LOG_DEBUG(log, ...)			CLog::Instance().LogDebug(__FILE__, __LINE__, log, __VA_ARGS__);
-#define LOG_INFO(log, ...)			CLog::Instance().LogInfo(__FILE__, __LINE__, log, __VA_ARGS__);
-#define LOG_WARN(log, ...)			CLog::Instance().LogWarn(__FILE__, __LINE__, log, __VA_ARGS__);
-#define LOG_ERROR(log, ...)			CLog::Instance().LogError(__FILE__, __LINE__, log, __VA_ARGS__);
-#define LOG_FATAL(log, ...)			CLog::Instance().LogFatal(__FILE__, __LINE__, log, __VA_ARGS__);
+#define LOG_DEBUG(log, ...)			CLog::Instance().LogDebug(__FILE__, __LINE__, log, ##__VA_ARGS__);
+#define LOG_INFO(log, ...)			CLog::Instance().LogInfo(__FILE__, __LINE__, log, ##__VA_ARGS__);
+#define LOG_WARN(log, ...)			CLog::Instance().LogWarn(__FILE__, __LINE__, log, ##__VA_ARGS__);
+#define LOG_ERROR(log, ...)			CLog::Instance().LogError(__FILE__, __LINE__, log, ##__VA_ARGS__);
+#define LOG_FATAL(log, ...)			CLog::Instance().LogFatal(__FILE__, __LINE__, log, ##__VA_ARGS__);
 
 #endif

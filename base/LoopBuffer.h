@@ -2,12 +2,12 @@
 #define HEADER_LOOPBUFFER
 #include <memory>
 #include <mutex>
-class CMemaryPool;
+class CMemoryPool;
 class CLoopBuffer {
 public:
 	//maybe throw exception
-	explicit CLoopBuffer(std::shared_ptr<CMemaryPool>& pool, int index);
-	explicit CLoopBuffer(std::shared_ptr<CMemaryPool>& pool, int size, int index);
+	explicit CLoopBuffer(std::shared_ptr<CMemoryPool>& pool, int index);
+	explicit CLoopBuffer(std::shared_ptr<CMemoryPool>& pool, int size, int index);
 	~CLoopBuffer();
 
 	int Read(char* res, int len);
@@ -59,7 +59,7 @@ private:
 	std::mutex _mutex;
 
 	CLoopBuffer*					_next;		//point to next node
-	std::shared_ptr<CMemaryPool>	_pool;
+	std::shared_ptr<CMemoryPool>	_pool;
 };
 #endif
 

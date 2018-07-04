@@ -8,11 +8,11 @@
 #include "Timer.h"
 
 enum STATE_CODE {
-	EXIT_IOCP = 0,
-	WEAK_UP_IOCP = 1,
+	EXIT_IOCP = 0xFFFFFFFF,
+	WEAK_UP_IOCP = 0xAAAAFFFF,
 };
 
-CIOCP::CIOCP() {
+CIOCP::CIOCP() : _is_inited(false) {
 
 }
 
@@ -21,21 +21,19 @@ CIOCP::~CIOCP() {
 }
 
 bool CIOCP::Init() {
-	int _threads_num = GetCpuNum() * 2;
+	int _threads_num = GetCpuNum();
 	//tell iocp the must thread num
 	_iocp_handler = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, _threads_num);
 	if (_iocp_handler == INVALID_HANDLE_VALUE) {
 		LOG_FATAL("IOCP create io completion port failed!");
 		return false;
 	}
+	_is_inited = true;
 	return true;
 }
 
 bool CIOCP::Dealloc() {
-	if (CloseHandle(_iocp_handler) == -1) {
-		LOG_ERROR("IOCP close io completion port failed!");
-	}
-	_iocp_handler = nullptr;
+	PostQueuedCompletionStatus(_iocp_handler, 0, EXIT_IOCP, nullptr);
 	return true;
 }
 
@@ -90,7 +88,7 @@ bool CIOCP::AddAcceptEvent(CMemSharePtr<CAcceptEventHandler>& event) {
 	return _PostAccept(event);
 }
 
-bool CIOCP::AddConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port) {
+bool CIOCP::AddConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, char* buf, int buf_len) {
 	auto socket_ptr = event->_client_socket.Lock();
 	if (socket_ptr) {
 		if (!socket_ptr->IsInActions()) {
@@ -101,7 +99,7 @@ bool CIOCP::AddConnection(CMemSharePtr<CEventHandler>& event, const std::string&
 		}
 		((EventOverlapped*)event->_data)->_event = &event;
 		socket_ptr->SetInActions(true);
-		return _PostConnection(event, ip, port);
+		return _PostConnection(event, ip, port, buf, buf_len);
 	}
 	LOG_WARN("read event is already distroyed!");
 	return false;
@@ -152,6 +150,9 @@ void CIOCP::ProcessEvent() {
 		DWORD dw_err = 0;
 		if (res) {
 			dw_err = NO_ERROR;
+			if ((PULONG_PTR)socket_context == (PULONG_PTR)EXIT_IOCP){
+				break;
+			}
 
 		} else {
 			dw_err = GetLastError();
@@ -173,6 +174,12 @@ void CIOCP::ProcessEvent() {
 			continue;
 		}
 	}
+	if (_is_inited) {
+		if (CloseHandle(_iocp_handler) == -1) {
+			LOG_ERROR("IOCP close io completion port failed!");
+		}
+	}
+	_is_inited = false;
 }
 
 bool CIOCP::_PostRecv(CMemSharePtr<CEventHandler>& event) {
@@ -237,7 +244,7 @@ bool CIOCP::_PostSend(CMemSharePtr<CEventHandler>& event) {
 	return true;
 }
 
-bool CIOCP::_PostConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port) {
+bool CIOCP::_PostConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, char* buf, int buf_len) {
 	EventOverlapped* context = (EventOverlapped*)event->_data;
 
 	DWORD dwFlags = 0;
@@ -260,7 +267,7 @@ bool CIOCP::_PostConnection(CMemSharePtr<CEventHandler>& event, const std::strin
 	if (SOCKET_ERROR == bind(socket_ptr->GetSocket(), (sockaddr*)&local, sizeof(local))) {
 		LOG_FATAL("bind local host failed! error code: %d", WSAGetLastError());
 	}
-	int res = __ConnectEx(socket_ptr->GetSocket(), (sockaddr*)&addr, sizeof(addr), nullptr, 0, nullptr, lapped);
+	int res = __ConnectEx(socket_ptr->GetSocket(), (sockaddr*)&addr, sizeof(addr), buf, buf_len, nullptr, lapped);
 
 	if ((SOCKET_ERROR == res) && (WSA_IO_PENDING != WSAGetLastError())) {
 		LOG_FATAL("IOCP post connect event failed! error code: %d", WSAGetLastError());
@@ -275,7 +282,6 @@ bool CIOCP::_PostDisconnection(CMemSharePtr<CEventHandler>& event) {
 
 	context->Clear();
 	context->_event_flag_set = event->_event_flag_set;
-	context->_wsa_buf.len = event->_buffer->Read(context->_lapped_buffer, MAX_BUFFER_LEN);
 
 	OVERLAPPED *lapped = &context->_overlapped;
 	auto socket_ptr = event->_client_socket.Lock();
@@ -318,6 +324,7 @@ void CIOCP::_DoEvent(EventOverlapped *socket_context, int bytes) {
 	} else {
 		CMemSharePtr<CEventHandler>* event = (CMemSharePtr<CEventHandler>*)socket_context->_event;
 		if (event) {
+			(*event)->_event_flag_set = socket_context->_event_flag_set;
 			(*event)->_off_set = bytes;
 			if (socket_context->_event_flag_set & EVENT_READ 
 				|| socket_context->_event_flag_set & EVENT_CONNECT 

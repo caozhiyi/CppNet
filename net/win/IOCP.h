@@ -50,7 +50,7 @@ public:
 	virtual bool AddSendEvent(CMemSharePtr<CEventHandler>& event);
 	virtual bool AddRecvEvent(CMemSharePtr<CEventHandler>& event);
 	virtual bool AddAcceptEvent(CMemSharePtr<CAcceptEventHandler>& event);
-	virtual bool AddConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port);
+	virtual bool AddConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, char* buf, int buf_len);
 	virtual bool AddDisconnection(CMemSharePtr<CEventHandler>& event);
 	virtual bool DelEvent(CMemSharePtr<CEventHandler>& event);
 
@@ -60,13 +60,14 @@ private:
 	bool _PostRecv(CMemSharePtr<CEventHandler>& event);
 	bool _PostAccept(CMemSharePtr<CAcceptEventHandler>& event);
 	bool _PostSend(CMemSharePtr<CEventHandler>& event);
-	bool _PostConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port);
+	bool _PostConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, char* buf, int buf_len);
 	bool _PostDisconnection(CMemSharePtr<CEventHandler>& event);
 
 	void _DoTimeoutEvent(std::vector<TimerEvent>& timer_vec);
 	void _DoEvent(EventOverlapped *socket_context, int bytes);
 private:
 	HANDLE	_iocp_handler;
+	bool	_is_inited;
 };
 
 #endif

@@ -5,6 +5,8 @@
 
 int SetSocketNoblocking(unsigned int sock);
 
+int SetReusePort(unsigned int sock);
+
 void SetCoreFileUnlimit();
 
 #endif

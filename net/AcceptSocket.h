@@ -9,9 +9,9 @@
 
 class CEventHandler;
 class CAcceptEventHandler;
-class CMemaryPool;
+class CMemoryPool;
 
-class CAcceptSocket : public CSocketBase {
+class CAcceptSocket : public CSocketBase, public CEnableSharedFromThis<CAcceptSocket> {
 public:
 	CAcceptSocket(std::shared_ptr<CEventActions>& event_actions);
 	~CAcceptSocket();
@@ -20,14 +20,9 @@ public:
 
 	bool Listen(unsigned int listen_size);
 
-#ifndef __linux__
-	void SyncAccept(const std::function<void(CMemSharePtr<CAcceptEventHandler>&, int error)>& accept_back = nullptr,
-		const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& read_back = nullptr);
-	void SetReadCallBack(const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back);
-#else
-	void SyncAccept(const std::function<void(CMemSharePtr<CAcceptEventHandler>&, int error)>& call_back = nullptr);
-#endif
+	void SyncAccept();
 
+	void SetReadCallBack(const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back);
 	void SetAcceptCallBack(const std::function<void(CMemSharePtr<CAcceptEventHandler>&, int error)>& call_back);
 
 public:

@@ -3,7 +3,7 @@
 
 #include <mutex>
 
-class CMemaryPool;
+class CMemoryPool;
 class CTimeTool
 {
 public:

@@ -1,11 +1,19 @@
 #ifdef __linux__
 #include <fcntl.h>
 #include <sys/resource.h>
+#include <sys/socket.h>
 #include "LinuxFunc.h"
 
 int SetSocketNoblocking(unsigned int sock) {
 	int old_option = fcntl(sock, F_GETFL);
 	int new_option = old_option | O_NONBLOCK;
+	fcntl(sock, F_SETFL, new_option);
+	return old_option;
+}
+
+int SetReusePort(unsigned int sock) {
+	int old_option = fcntl(sock, F_GETFL);
+	int new_option = old_option | SO_REUSEPORT;
 	fcntl(sock, F_SETFL, new_option);
 	return old_option;
 }

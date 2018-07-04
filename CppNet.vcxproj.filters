@@ -66,7 +66,10 @@
     <ClCompile Include="net\linux\SocketBase.cpp">
       <Filter>net\linux</Filter>
     </ClCompile>
-    <ClCompile Include="net\linux\EpollImpl.cpp">
+    <ClCompile Include="net\NetObject.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\linux\LinuxFunc.cpp">
       <Filter>net\linux</Filter>
     </ClCompile>
   </ItemGroup>
@@ -140,8 +143,8 @@
     <ClInclude Include="net\linux\LinuxFunc.h">
       <Filter>net\linux</Filter>
     </ClInclude>
-    <ClInclude Include="net\linux\EpollImpl.h">
-      <Filter>net\linux</Filter>
+    <ClInclude Include="net\NetObject.h">
+      <Filter>net</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

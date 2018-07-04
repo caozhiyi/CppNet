@@ -12,11 +12,11 @@
 static const int __max_node_size = 12;	
 
 class CLoopBuffer;
-class CMemaryPool;
+class CMemoryPool;
 class CBuffer
 {
 public:
-	CBuffer(std::shared_ptr<CMemaryPool>& pool);
+	CBuffer(std::shared_ptr<CMemoryPool>& pool);
 	~CBuffer();
 
 	int Read(char* res, int len);
@@ -58,6 +58,6 @@ public:
 	CLoopBuffer* _buffer_write;
 
 	std::mutex	 _mutex;
-	std::shared_ptr<CMemaryPool>	_pool;
+	std::shared_ptr<CMemoryPool>	_pool;
 };
 #endif

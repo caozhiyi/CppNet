@@ -22,7 +22,9 @@ void CLog::Run() {
 				_log_file << log << std::endl;
 			}
 			_pool.PoolLargeFree(log);
-		} 
+		} else {
+			break;
+		}
 	}
 }
 

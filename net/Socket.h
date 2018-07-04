@@ -16,20 +16,18 @@ public:
 	CSocket(std::shared_ptr<CEventActions>& event_actions);
 	~CSocket();
 
-	void SyncRead(const std::function<void(CMemSharePtr<CEventHandler>&, int err)>& call_back = nullptr);
-	void SyncWrite(char* src, int len, const std::function<void(CMemSharePtr<CEventHandler>&, int err)>& call_back = nullptr);
+	void SyncRead();
+	void SyncWrite(char* src, int len);
 
-	void SyncRead(unsigned int interval, const std::function<void(CMemSharePtr<CEventHandler>&, int err)>& call_back = nullptr);
-	void SyncWrite(unsigned int interval, char* src, int len, const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back = nullptr);
+	void SyncRead(unsigned int interval);
+	void SyncWrite(unsigned int interval, char* src, int len);
 
 #ifndef __linux__
-	void SyncConnection(const std::string& ip, short port, char* buf, int buf_len, const std::function<void(CMemSharePtr<CEventHandler>&, int err)>& call_back = nullptr);
+	void SyncConnection(const std::string& ip, short port, char* buf, int buf_len);
 #else
-	void SyncConnection(const std::string& ip, short port, const std::function<void(CMemSharePtr<CEventHandler>&, int err)>& call_back = nullptr);
+	void SyncConnection(const std::string& ip, short port);
 #endif
-
-
-	void SyncDisconnection(const std::function<void(CMemSharePtr<CEventHandler>&, int err)>& call_back = nullptr);
+	void SyncDisconnection();
 
 	void SetReadCallBack(const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back);
 	void SetWriteCallBack(const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back);

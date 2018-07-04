@@ -5,7 +5,7 @@
 #include <iostream>
 using namespace std;
 
-CMemaryPool::CMemaryPool() {
+CMemoryPool::CMemoryPool() {
 	for (int i = 0; i < __number_of_free_lists; i++) {
 		_free_list[i] = nullptr;
 	}
@@ -14,7 +14,7 @@ CMemaryPool::CMemaryPool() {
 	_create_thread_id = std::this_thread::get_id();
 }
 
-CMemaryPool::CMemaryPool(const int large_sz, const int add_num) : _large_size(RoundUp(large_sz)), _number_large_add_nodes(add_num){
+CMemoryPool::CMemoryPool(const int large_sz, const int add_num) : _large_size(RoundUp(large_sz)), _number_large_add_nodes(add_num){
 	for (int i = 0; i < __number_of_free_lists; i++) {
 		_free_list[i] = nullptr;
 	}
@@ -23,7 +23,7 @@ CMemaryPool::CMemaryPool(const int large_sz, const int add_num) : _large_size(Ro
 	_create_thread_id = std::this_thread::get_id();
 }
 
-CMemaryPool::~CMemaryPool() {
+CMemoryPool::~CMemoryPool() {
 	//assert(_create_thread_id == std::this_thread::get_id());
 	for (auto iter = _malloc_vec.begin(); iter != _malloc_vec.end(); ++iter) {
 		if (*iter) {
@@ -32,15 +32,15 @@ CMemaryPool::~CMemaryPool() {
 	}
 }
 
-std::thread::id CMemaryPool::GetCreateThreadId() {
+std::thread::id CMemoryPool::GetCreateThreadId() {
 	return _create_thread_id;
 }
 
-int CMemaryPool::GetLargeSize() const {
+int CMemoryPool::GetLargeSize() const {
 	return _large_size;
 }
 
-void* CMemaryPool::ReFill(int size, int num, bool is_large) {
+void* CMemoryPool::ReFill(int size, int num, bool is_large) {
 	int nums = num;
 
 	char* chunk = nullptr;
@@ -98,7 +98,7 @@ void* CMemaryPool::ReFill(int size, int num, bool is_large) {
 	return res;
 }
 
-void* CMemaryPool::ChunkAlloc(int size, int& nums, bool is_large) {
+void* CMemoryPool::ChunkAlloc(int size, int& nums, bool is_large) {
 	char* res;
 	int need_bytes = size * nums;
 	int left_bytes = _pool_end - _pool_start;

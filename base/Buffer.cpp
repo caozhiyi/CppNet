@@ -4,7 +4,7 @@
 #include "LoopBuffer.h"
 #include "Log.h"
 
-CBuffer::CBuffer(std::shared_ptr<CMemaryPool>& pool) : 
+CBuffer::CBuffer(std::shared_ptr<CMemoryPool>& pool) : 
 	_pool(pool), 
 	_buffer_num(0),
 	_buffer_start(nullptr),

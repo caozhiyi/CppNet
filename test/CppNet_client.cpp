@@ -7,143 +7,56 @@
 #include "EventHandler.h"
 #include "MemaryPool.h"
 
-std::mutex __mutex;
-
-std::map<unsigned int, CMemSharePtr<CSocket>> client_map;
-
-void ReadFunc(CMemSharePtr<CEventHandler>& event, int error);
-std::function<void(CMemSharePtr<CEventHandler>& event, int error)> read_back = ReadFunc;
-
-void WriteFunc(CMemSharePtr<CEventHandler>& event, int error) {
+void WriteFunc(CMemSharePtr<CSocket>& sock, int error) {
 	std::cout << "WriteFunc" << std::endl;
 	std::cout << "Thread ID : " << std::this_thread::get_id() << std::endl;
-	std::cout << "write count: " << event->_off_set << std::endl << std::endl;
-	event->_client_socket.Lock()->SyncRead(read_back);
+	std::cout << "write count: " << sock->_write_event->_off_set << std::endl << std::endl;
+	sock->SyncRead();
 }
-std::function<void(CMemSharePtr<CEventHandler>& event, int error)> write_back = WriteFunc;
 
-void ConnectionFunc(CMemSharePtr<CEventHandler>& event, int error) {
+void ConnectionFunc(CMemSharePtr<CSocket>& sock, int error) {
 	std::cout << "ConnectionFunc" << std::endl;
-	std::unique_lock<std::mutex> lock(__mutex);
-	event->_client_socket.Lock()->SyncWrite("aaaaa21231231", strlen("aaaaa21231231"), write_back);
+	sock->SyncWrite("aaaaa21231231", strlen("aaaaa21231231"));
 }
 
-void ReadFunc(CMemSharePtr<CEventHandler>& event, int error) {
+void DisConnectionFunc(CMemSharePtr<CSocket>& sock, int error) {
+	std::cout << "DisConnectionFunc" << std::endl;
+}
+
+void ReadFunc(CMemSharePtr<CSocket>& sock, int error) {
 	std::cout << "ReadFunc" << std::endl;
-	std::cout << *(event->_buffer) << std::endl;
-	event->_buffer->Clear();
+	std::cout << *(sock->_read_event->_buffer) << std::endl;
+	sock->_read_event->_buffer->Clear();
 	std::cout << "Thread ID : " << std::this_thread::get_id() << std::endl;
-	std::cout << "Read size : " << event->_off_set << std::endl << std::endl;
-	
-	event->_buffer->Clear();
-	if (error != EVENT_ERROR_CLOSED || error == EVENT_CONNECT) {
-		//event->_client_socket.Lock()->SyncRead(read_back);
-		event->_client_socket.Lock()->SyncWrite("aaaaa21231231", strlen("aaaaa21231231"), write_back);
-		//event->_client_socket.Lock()->SyncDisconnection(read_back);
-	} else {
-		if (client_map.size() < 10) {
-			int a = 0;
-			a++;
-		}
-		std::unique_lock<std::mutex> lock(__mutex);
-		client_map.erase(event->_client_socket.Lock()->GetSocket());
+	std::cout << "Read size : " << sock->_read_event->_off_set << std::endl << std::endl;
+	if (error != EVENT_ERROR_CLOSED) {
+		sock->SyncWrite("aaaaa21231231", strlen("aaaaa21231231"));
 	}
 }
 
-void AcceptFunc(CMemSharePtr<CAcceptEventHandler>& event, int error) {
-	client_map[event->_client_socket->GetSocket()] = event->_client_socket;
-	std::cout << "AcceptFunc" << std::endl;
-	std::cout << "client address :" << event->_client_socket->GetAddress() << std::endl << std::endl;
-	std::unique_lock<std::mutex> lock(__mutex);
-	event->_client_socket->SyncRead(read_back);
-}
 #include "Log.h"
+#include "NetObject.h"
+
 int main() {
-
-	std::map<int, int> test_map;
-	test_map[1] = 100;
-	test_map.erase(2);
-
-	InitScoket();
-
-	CLog::Instance().SetLogLevel(LOG_DEBUG_LEVEL);
+	CLog::Instance().SetLogLevel(LOG_WARN_LEVEL);
 	CLog::Instance().SetLogName("CppNet.txt");
 	CLog::Instance().Start();
 
-	std::shared_ptr<CEventActions> event_actions(new CIOCP);
-	event_actions->Init();
-	//CAcceptSocket sock(event_actions);
+	CNetObject net;
+	net.Init(2);
 
-	CMemaryPool pool;
-	CMemSharePtr<CSocket> sock =  MakeNewSharedPtr<CSocket>(&pool, event_actions);
+	net.SetConnectionCallback(ConnectionFunc);
+	net.SetWriteCallback(WriteFunc);
+	net.SetReadCallback(ReadFunc);
+	net.SetDisconnectionCallback(DisConnectionFunc);
 
-	/*void* data = &sock;
-	data = (void *)((uintptr_t)data | 1);
-	data = (void*)((uintptr_t)data & (uintptr_t)~1);
-	CMemSharePtr<CSocket> sock1 = *(CMemSharePtr<CSocket>*)data;*/
-
-	std::vector<std::thread> thread_vec;
-
-	for (int i = 0; i < 1; i++) {
-		thread_vec.push_back(std::thread(std::bind(&CEventActions::ProcessEvent, event_actions)));
-	}
-
-	std::function<void(CMemSharePtr<CAcceptEventHandler>& event, int error)> accept_func = AcceptFunc;
+	auto sock = net.Connection(8921, "127.0.0.1");
+	CRunnable::Sleep(2000);
 	
-	sock->SyncConnection("172.16.81.132", 8500, ConnectionFunc);
-	//sock->SyncWrite("aaaaa21231231", strlen("aaaaa21231231"), write_back);
-
-	for (int i = 0; i < 1; i++) {
-		thread_vec[i].join();
-	}
-	DeallocSocket();
+	sock->SyncDisconnection();
+	//net.MainLoop();
+	//net.Dealloc();
+	net.Join();
+	CLog::Instance().Stop();
+	CLog::Instance().Join();
 }
-
-//#include <winsock2.h>
-//#include <MSWSock.h>
-//#pragma comment(lib,"ws2_32.lib")
-//
-//int main() {
-//	static WSADATA __wsa_data;
-//	static bool __has_init = false;
-//	if (!__has_init && WSAStartup(MAKEWORD(2, 2), &__wsa_data) != 0) {
-//		return false;
-//
-//	}
-//	else {
-//		__has_init = true;
-//	}
-//
-//	SOCKADDR_IN addr;
-//	addr.sin_family = AF_INET;
-//	addr.sin_port = htons(8500);
-//	addr.sin_addr.S_un.S_addr = inet_addr("192.168.182.131");
-//
-//	auto func = [addr](int i) {
-//	SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
-//
-//	connect(sock, (sockaddr*)&addr, sizeof(addr));
-//	char buf[] = "Hello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello worldHello world";
-//	for (;;) {
-//	send(sock, buf, strlen(buf), 0);
-//
-//	char buf2[20] = { 0 };
-//	recv(sock, buf2, 20, 0);
-//
-//	Sleep(1000);
-//	}
-//	closesocket(sock);
-//	};
-//
-//	/*std::thread thread[1500];
-//	for (int i = 0; i < 1500; i++) {
-//	Sleep(1);
-//	thread[i] = std::thread(func, i);
-//	}
-//	for (int i = 0; i < 1500; i++) {
-//	thread[i].join();
-//	}*/
-//
-//	int a = 0;
-//	a++;
-//}

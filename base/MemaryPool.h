@@ -15,12 +15,12 @@ static const int __max_bytes = 256;
 static const int __number_of_free_lists = __max_bytes / __align;
 static const int __number_add_nodes = 20;
 
-class CMemaryPool {
+class CMemoryPool {
 public:
-	CMemaryPool();
+	CMemoryPool();
 	//bulk memory size. everytime add nodes num
-	CMemaryPool(const int large_sz, const int add_num);
-	~CMemaryPool();
+	CMemoryPool(const int large_sz, const int add_num);
+	~CMemoryPool();
 
 	//for object. invocation of constructors and destructors
 	template<typename T, typename... Args >
@@ -82,7 +82,7 @@ private:
 };
 
 template<typename T, typename... Args>
-T* CMemaryPool::PoolNew(Args&&... args) {
+T* CMemoryPool::PoolNew(Args&&... args) {
 	int sz = sizeof(T);
 	if (sz > __max_bytes) {
 		void* bytes = malloc(sz);
@@ -104,7 +104,7 @@ T* CMemaryPool::PoolNew(Args&&... args) {
 }
 
 template<typename T>
-void CMemaryPool::PoolDelete(T* &c) {
+void CMemoryPool::PoolDelete(T* &c) {
 	if (!c) {
 		return;
 	}
@@ -127,7 +127,7 @@ void CMemaryPool::PoolDelete(T* &c) {
 }
 
 template<typename T>
-T* CMemaryPool::PoolMalloc(int sz) {
+T* CMemoryPool::PoolMalloc(int sz) {
 	if (sz > __max_bytes) {
 		void* bytes = malloc(sz);
 		memset(bytes, 0, sz);
@@ -149,7 +149,7 @@ T* CMemaryPool::PoolMalloc(int sz) {
 }
 
 template<typename T>
-void CMemaryPool::PoolFree(T* &m, int len) {
+void CMemoryPool::PoolFree(T* &m, int len) {
 	if (!m) {
 		return;
 	}
@@ -170,7 +170,7 @@ void CMemaryPool::PoolFree(T* &m, int len) {
 }
 
 template<typename T>
-T* CMemaryPool::PoolLargeMalloc() {
+T* CMemoryPool::PoolLargeMalloc() {
 	if (_number_large_add_nodes == 0 || _large_size == 0) {
 		throw std::exception(std::logic_error("Large block of memory is not set!"));
 		return nullptr;
@@ -195,7 +195,7 @@ T* CMemaryPool::PoolLargeMalloc() {
 }
 
 template<typename T>
-void CMemaryPool::PoolLargeFree(T* &m) {
+void CMemoryPool::PoolLargeFree(T* &m) {
 	if (!m) {
 		return;
 	}
@@ -214,7 +214,7 @@ void CMemaryPool::PoolLargeFree(T* &m) {
 }
 
 template<typename T>
-T* CMemaryPool::PoolLargeMalloc(int size, int& res) {
+T* CMemoryPool::PoolLargeMalloc(int size, int& res) {
 	if (_number_large_add_nodes == 0 || _large_size == 0) {
 		throw std::exception(std::logic_error("Large block of memory is not set!"));
 		return nullptr;
@@ -241,7 +241,7 @@ T* CMemaryPool::PoolLargeMalloc(int size, int& res) {
 }
 
 template<typename T>
-void CMemaryPool::PoolLargeFree(T* &m, int size) {
+void CMemoryPool::PoolLargeFree(T* &m, int size) {
 	if (!m) {
 		return;
 	}

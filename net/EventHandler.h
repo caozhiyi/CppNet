@@ -13,13 +13,13 @@ enum EVENT_FLAG {
 	EVENT_ACCEPT		= 0x0004,		//accept event
 	EVENT_TIMER			= 0x0008,		//timer event
 	EVENT_CONNECT		= 0x0010,		//connect event
-	EVENT_DISCONNECT	= 0x0020	//disconnect event
+	EVENT_DISCONNECT	= 0x0020		//disconnect event
 };
 
 enum EVENT_ERROR {
-	EVENT_ERROR_NO		= 0,
-	EVENT_ERROR_TIMEOUT = 1,
-	EVENT_ERROR_CLOSED	= 2
+	EVENT_ERROR_NO		= 0x0100,
+	EVENT_ERROR_TIMEOUT = 0x0200,
+	EVENT_ERROR_CLOSED	= 0x0400
 };
 
 class Cevent {
@@ -45,7 +45,7 @@ class CAcceptEventHandler : public Cevent {
 public:
 	CMemSharePtr<CSocket>		_client_socket;
 
-	CAcceptSocket*				_accept_socket = nullptr;
+	CMemSharePtr<CAcceptSocket>	_accept_socket = nullptr;
 	std::function<void(CMemSharePtr<CAcceptEventHandler>&, int error)>	_call_back;
 };
 #endif

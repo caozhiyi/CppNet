@@ -54,6 +54,9 @@
     <ClCompile Include="net\linux\LinuxFunc.cpp">
       <Filter>net\linux</Filter>
     </ClCompile>
+    <ClCompile Include="net\NetObject.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\Buffer.h">
@@ -118,6 +121,9 @@
     </ClInclude>
     <ClInclude Include="net\linux\LinuxFunc.h">
       <Filter>net\linux</Filter>
+    </ClInclude>
+    <ClInclude Include="net\NetObject.h">
+      <Filter>net</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

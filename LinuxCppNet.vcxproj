@@ -71,6 +71,7 @@
     <ClCompile Include="net\linux\LinuxFunc.cpp" />
     <ClCompile Include="net\linux\Socket.cpp" />
     <ClCompile Include="net\linux\SocketBase.cpp" />
+    <ClCompile Include="net\NetObject.cpp" />
     <ClCompile Include="net\OSInfo.cpp" />
     <ClCompile Include="net\Timer.cpp" />
     <ClCompile Include="test\CppNet.cpp" />
@@ -93,6 +94,7 @@
     <ClInclude Include="net\EventHandler.h" />
     <ClInclude Include="net\linux\CEpoll.h" />
     <ClInclude Include="net\linux\LinuxFunc.h" />
+    <ClInclude Include="net\NetObject.h" />
     <ClInclude Include="net\OSInfo.h" />
     <ClInclude Include="net\Socket.h" />
     <ClInclude Include="net\SocketBase.h" />

@@ -11,7 +11,7 @@ void DeallocSocket();
 #endif
 
 class CEventActions;
-class CMemaryPool;
+class CMemoryPool;
 class CSocketBase
 {
 public:
@@ -32,7 +32,7 @@ public:
 	char			_ip[__addr_str_len];
 
 	std::shared_ptr<CEventActions>	_event_actions;
-	std::shared_ptr<CMemaryPool>	_pool;
+	std::shared_ptr<CMemoryPool>	_pool;
 };
 
 #endif

@@ -5,7 +5,7 @@
 #include "MemaryPool.h"
 
 
-CLoopBuffer::CLoopBuffer(std::shared_ptr<CMemaryPool>& pool, int index) : 
+CLoopBuffer::CLoopBuffer(std::shared_ptr<CMemoryPool>& pool, int index) : 
 	_can_read(false), 
 	_next(nullptr),
 	_pool(pool),
@@ -18,7 +18,7 @@ CLoopBuffer::CLoopBuffer(std::shared_ptr<CMemaryPool>& pool, int index) :
 	
 }
 
-CLoopBuffer::CLoopBuffer(std::shared_ptr<CMemaryPool>& pool, int size, int index) : 
+CLoopBuffer::CLoopBuffer(std::shared_ptr<CMemoryPool>& pool, int size, int index) : 
 	_can_read(false), 
 	_next(nullptr), 
 	_pool(pool),
