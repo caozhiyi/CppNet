@@ -9,6 +9,7 @@
 #include "EventActions.h"
 #include "Socket.h"
 #include "Runnable.h"
+#include "LinuxFunc.h"
 
 CSocket::CSocket(std::shared_ptr<CEventActions>& event_actions) : CSocketBase(event_actions){
 	_read_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
@@ -100,24 +101,28 @@ void CSocket::SyncConnection(const std::string& ip, short port) {
 	}
 	strcpy(_ip, ip.c_str());
 	if (!_read_event) {
-		_write_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
+		_read_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
 	}
-	if (!_write_event->_data) {
-		_write_event->_data = _pool->PoolNew<epoll_event>();
-		((epoll_event*)_write_event->_data)->events = 0;
-	}
-
-	if (!_write_event->_buffer) {
-		_write_event->_buffer = MakeNewSharedPtr<CBuffer>(_pool.get(), _pool);
+	if (!_read_event->_data) {
+		_read_event->_data = _pool->PoolNew<epoll_event>();
+		((epoll_event*)_read_event->_data)->events = 0;
 	}
 
-	if (!_write_event->_client_socket){
-		_write_event->_client_socket = memshared_from_this();
+	if (!_read_event->_buffer) {
+		_read_event->_buffer = MakeNewSharedPtr<CBuffer>(_pool.get(), _pool);
 	}
+
+	if (!_read_event->_client_socket){
+		_read_event->_client_socket = memshared_from_this();
+	}
+
+	//craete socket
+	_sock = socket(PF_INET, SOCK_STREAM, 0);
+	SetSocketNoblocking(_sock);
 
 	if (_event_actions) {
-		_write_event->_event_flag_set |= EVENT_CONNECT;
-		_event_actions->AddConnection(_write_event, ip, port);
+		_read_event->_event_flag_set |= EVENT_CONNECT;
+		_event_actions->AddConnection(_read_event, ip, port);
 	}
 }
 
@@ -216,7 +221,7 @@ void CSocket::SetReadCallBack(const std::function<void(CMemSharePtr<CEventHandle
 }
 
 void CSocket::SetWriteCallBack(const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back) {
-	_read_event->_call_back = call_back;
+	_write_event->_call_back = call_back;
 }
 
 bool operator>(const CSocketBase& s1, const CSocketBase& s2) {
@@ -243,6 +248,7 @@ void CSocket::_Recv(CMemSharePtr<CEventHandler>& event) {
 	if (!socket_ptr) {
 		return;
 	}
+	LOG_ERROR("event->_event_flag_set : %d", event->_event_flag_set);
 	int err = -1;
 	if (event->_timer_out) {
 		err = EVENT_ERROR_TIMEOUT | event->_event_flag_set;
@@ -250,10 +256,20 @@ void CSocket::_Recv(CMemSharePtr<CEventHandler>& event) {
 		//reset timer flag
 		event->_event_flag_set &= ~EVENT_TIMER;
 
+	//get a connection event
+	} else if (event->_event_flag_set & EVENT_CONNECT) {
+		err = EVENT_ERROR_NO | event->_event_flag_set;
+		event->_event_flag_set &= ~EVENT_CONNECT;
+
+	} else if (event->_event_flag_set & EVENT_DISCONNECT) {
+		err = EVENT_ERROR_NO | event->_event_flag_set;
+		event->_event_flag_set &= ~EVENT_DISCONNECT;
+
 	} else {
 		err = EVENT_ERROR_NO | event->_event_flag_set;
 		if (event->_event_flag_set & EVENT_READ) {
 			event->_off_set = 0;
+			//read all data.
 			for (;;) {
 				char buf[65536] = { 0 };
 				int recv_len = 0;
@@ -262,7 +278,7 @@ void CSocket::_Recv(CMemSharePtr<CEventHandler>& event) {
 					if (errno == EWOULDBLOCK || errno == EAGAIN || errno == EINTR) {
 						break;
 
-					} else if (errno == EBADMSG) {
+					} else if (errno == EBADMSG || errno == ECONNRESET) {
 						err = EVENT_ERROR_CLOSED | event->_event_flag_set;
 						break;
 
@@ -301,7 +317,7 @@ void CSocket::_Send(CMemSharePtr<CEventHandler>& event) {
 		event->_event_flag_set &= ~EVENT_TIMER;
 
 	} else {
-		err = EVENT_ERROR_NO;
+		err = EVENT_ERROR_NO | event->_event_flag_set;
 		event->_off_set = 0;
 		if (event->_buffer && event->_buffer->GetCanReadSize()) {
 			char buf[65536] = { 0 };
@@ -322,7 +338,7 @@ void CSocket::_Send(CMemSharePtr<CEventHandler>& event) {
 			}
 			event->_off_set = res;
 		}
-
+		
 		if (event->_call_back) {
 			event->_call_back(event, err);
 		}

@@ -1,6 +1,5 @@
 #include <thread>
 #include <iostream>
-#include "IOCP.h"
 #include "Socket.h"
 #include "Buffer.h"
 #include "AcceptSocket.h"
@@ -50,7 +49,7 @@ int main() {
 	net.SetReadCallback(ReadFunc);
 	net.SetDisconnectionCallback(DisConnectionFunc);
 
-	auto sock = net.Connection(8921, "127.0.0.1");
+	auto sock = net.Connection(8921, "172.16.81.250");
 	CRunnable::Sleep(2000);
 	
 	sock->SyncDisconnection();

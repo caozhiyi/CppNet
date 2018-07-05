@@ -194,7 +194,7 @@ bool CIOCP::_PostRecv(CMemSharePtr<CEventHandler>& event) {
 	int res = WSARecv(socket_ptr->GetSocket(), &context->_wsa_buf, 1, &dwFlags, &dwBytes, lapped, nullptr);
 
 	if ((SOCKET_ERROR == res) && (WSA_IO_PENDING != WSAGetLastError())) {
-		LOG_FATAL("IOCP post recv event failed! error code: %d", WSAGetLastError());
+		LOG_WARN("IOCP post recv event failed! error code: %d", WSAGetLastError());
 		return false;
 	}
 	LOG_DEBUG("post a new event : %d", context->_event_flag_set);
@@ -237,7 +237,7 @@ bool CIOCP::_PostSend(CMemSharePtr<CEventHandler>& event) {
 	int res = WSASend(socket_ptr->GetSocket(), &context->_wsa_buf, 1, nullptr, 0, lapped, nullptr);
 
 	if ((SOCKET_ERROR == res) && (WSA_IO_PENDING != WSAGetLastError())) {
-		LOG_FATAL("IOCP post send event failed! error code: %d", WSAGetLastError());
+		LOG_WARN("IOCP post send event failed! error code: %d", WSAGetLastError());
 		return false;
 	}
 	LOG_DEBUG("post a new event : %d", context->_event_flag_set);

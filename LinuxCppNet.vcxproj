@@ -74,7 +74,7 @@
     <ClCompile Include="net\NetObject.cpp" />
     <ClCompile Include="net\OSInfo.cpp" />
     <ClCompile Include="net\Timer.cpp" />
-    <ClCompile Include="test\CppNet.cpp" />
+    <ClCompile Include="test\CppNet_client2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\Buffer.h" />

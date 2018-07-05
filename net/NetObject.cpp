@@ -105,7 +105,7 @@ bool CNetObject::ListenAndAccept(int port, std::string ip) {
 			return false;
 		}
 
-		if (!accept_socket->Listen(100)) {
+		if (!accept_socket->Listen(20)) {
 			return false;
 		}
 
@@ -189,9 +189,8 @@ void CNetObject::_AcceptFunction(CMemSharePtr<CAcceptEventHandler>& event, int e
 		if (_accept_call_back) {
 			_accept_call_back(socket_ptr, err);
 		}
-		static int num = 0;
-		num++;
-		LOG_ERROR("get client num : %d", num);
+
+		LOG_DEBUG("get client num : %d", int(_socket_map.size()));
 
 		std::unique_lock<std::mutex> lock(_mutex);
 		_socket_map[event->_client_socket->GetSocket()] = event->_client_socket;
@@ -202,21 +201,23 @@ void CNetObject::_ReadFunction(CMemSharePtr<CEventHandler>& event, int err) {
 	if (!event) {
 		return;
 	}
+	LOG_DEBUG("err: %d", err);
 	auto socket_ptr = event->_client_socket.Lock();
-	if (err & EVENT_READ && _read_call_back) {
+	if (err & EVENT_CONNECT && _connection_call_back) {
+		err &= ~EVENT_CONNECT;
+		_connection_call_back(socket_ptr, err);
+
+	} else if (err & EVENT_DISCONNECT && _disconnection_call_back) {
+		err &= ~EVENT_DISCONNECT;
+		_disconnection_call_back(socket_ptr, err);
+
+	} else if (err & EVENT_READ && _read_call_back) {
 		err &= ~EVENT_READ;
 		_read_call_back(socket_ptr, err);
 		if (err == EVENT_ERROR_CLOSED) {
 			std::unique_lock<std::mutex> lock(_mutex);
 			_socket_map.erase(socket_ptr->GetSocket());
 		}
-
-	} else if (err & EVENT_CONNECT && _connection_call_back) {
-		err &= ~EVENT_CONNECT;
-		_connection_call_back(socket_ptr, err);
-	} else if (err & EVENT_DISCONNECT && _disconnection_call_back) {
-		err &= ~EVENT_DISCONNECT;
-		_disconnection_call_back(socket_ptr, err);
 	}
 }
 

@@ -66,9 +66,6 @@ void CAcceptSocket::SyncAccept() {
 		_accept_event->_accept_socket = memshared_from_this();
 	}
 
-	auto socket = _accept_event->_accept_socket;
-	socket->GetSocket();
-
 	if (!_accept_event->_data) {
 		_accept_event->_data = _pool->PoolNew<epoll_event>();
 		((epoll_event*)_accept_event->_data)->events = 0;
@@ -91,9 +88,6 @@ void CAcceptSocket::SetReadCallBack(const std::function<void(CMemSharePtr<CEvent
 	}
 	if (!_accept_event->_client_socket->_read_event) {
 		_accept_event->_client_socket->_read_event = MakeNewSharedPtr<CEventHandler>(_accept_event->_client_socket->_pool.get());
-	}
-	if (!_accept_event->_client_socket) {
-		_accept_event->_client_socket = MakeNewSharedPtr<CSocket>(_accept_event->_client_socket->_pool.get(), _event_actions);
 	}
 
 	_accept_event->_client_socket->_read_event->_call_back = call_back;

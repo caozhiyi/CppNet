@@ -12,10 +12,10 @@ int SetSocketNoblocking(unsigned int sock) {
 }
 
 int SetReusePort(unsigned int sock) {
-	int old_option = fcntl(sock, F_GETFL);
-	int new_option = old_option | SO_REUSEPORT;
-	fcntl(sock, F_SETFL, new_option);
-	return old_option;
+	int opt = 1;
+	int ret = setsockopt(sock, SOL_SOCKET, SO_REUSEPORT,
+		&opt, static_cast<socklen_t>(sizeof(opt)));
+	return ret;
 }
 
 void SetCoreFileUnlimit() {

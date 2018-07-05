@@ -48,14 +48,14 @@
     <ClCompile Include="net\linux\SocketBase.cpp">
       <Filter>net\linux</Filter>
     </ClCompile>
-    <ClCompile Include="test\CppNet.cpp">
-      <Filter>test</Filter>
-    </ClCompile>
     <ClCompile Include="net\linux\LinuxFunc.cpp">
       <Filter>net\linux</Filter>
     </ClCompile>
     <ClCompile Include="net\NetObject.cpp">
       <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="test\CppNet_client2.cpp">
+      <Filter>test</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

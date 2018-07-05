@@ -1,11 +1,5 @@
 #include <thread>
 #include <iostream>
-#ifdef __linux__
-#include "CEpoll.h"
-#else
-#include "IOCP.h"
-#endif // __linux__
-
 #include "Socket.h"
 #include "Buffer.h"
 #include "AcceptSocket.h"
@@ -46,13 +40,13 @@ int main() {
 	CLog::Instance().Start();
 	
 	CNetObject net;
-	net.Init(1);
+	net.Init(4);
 
 	net.SetAcceptCallback(AcceptFunc);
 	net.SetWriteCallback(WriteFunc);
 	net.SetReadCallback(ReadFunc);
 
-	net.ListenAndAccept(8921, "127.0.0.1");
+	net.ListenAndAccept(8921, "0.0.0.0");
 
 	//net.MainLoop();
 	//net.Dealloc();

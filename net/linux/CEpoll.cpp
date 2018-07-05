@@ -34,7 +34,6 @@ bool CEpoll::Init() {
 		LOG_FATAL("pipe init failed! error : %d", errno);
 		return false;
 	}
-	LOG_FATAL("Init() ");
 	_pipe_content.events |= EPOLLIN;
 	_pipe_content.data.u32 = EXIT_EPOLL;
 	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_ADD, _pipe[0], &_pipe_content);
@@ -99,7 +98,7 @@ bool CEpoll::AddRecvEvent(CMemSharePtr<CEventHandler>& event) {
 		}
 
 		//reset one shot flag
-		res = _ReserOneShot(event, EPOLLOUT, socket_ptr->GetSocket());
+		res = _ReserOneShot(event, EPOLLIN, socket_ptr->GetSocket());
 		if (res) {
 			socket_ptr->SetInActions(true);
 		}
@@ -141,10 +140,9 @@ bool CEpoll::AddConnection(CMemSharePtr<CEventHandler>& event, const std::string
 		addr.sin_addr.s_addr = inet_addr(ip.c_str());
 
 		int res = connect(socket_ptr->GetSocket(), (sockaddr *)&addr, sizeof(addr));
-		if (errno == EINPROGRESS) {
-			res = _AddEvent(event, EPOLLOUT, socket_ptr->GetSocket());
-		}
-		if (res == 0) {
+		if (res == 0 || errno == EINPROGRESS) {
+			//res = _AddEvent(event, EPOLLOUT, socket_ptr->GetSocket());
+			socket_ptr->_Recv(socket_ptr->_read_event);
 			return true;
 		}
 		LOG_WARN("connect event failed! %d", errno);
@@ -159,6 +157,7 @@ bool CEpoll::AddDisconnection(CMemSharePtr<CEventHandler>& event) {
 	if (socket_ptr) {
 		if (DelEvent(event)) {
 			close(socket_ptr->GetSocket());
+			socket_ptr->_Recv(socket_ptr->_read_event);
 		}
 	}
 	return true;
@@ -192,7 +191,6 @@ void CEpoll::ProcessEvent() {
 		}
 
 		int res = epoll_wait(_epoll_handler, &*event_vec.begin(), (int)(event_vec.size()), wait_time);
-
 		if (res == -1) {
 			LOG_ERROR("epoll_wait faild! error :%d", errno);
 		}
@@ -312,21 +310,21 @@ void CEpoll::_DoTimeoutEvent(std::vector<TimerEvent>& timer_vec) {
 
 void CEpoll::_DoEvent(std::vector<epoll_event>& event_vec, int num) {
 	CMemWeakPtr<CSocket>* normal_sock = nullptr;
-	CAcceptSocket* accept_sock = nullptr;
-	void* event = nullptr;
+	CMemSharePtr<CAcceptSocket>* accept_sock = nullptr;
+	void* sock = nullptr;
 	for (int i = 0; i < num; i++) {
 		if (&_pipe_content == &event_vec[i] && event_vec[i].data.u32 == EXIT_EPOLL) {
 			_run = false;
 		}
-		event = event_vec[i].data.ptr;
-		if (!event) {
+		sock = event_vec[i].data.ptr;
+		if (!sock) {
 			LOG_WARN("the event is nullptr, index : %d", i);
 			continue;
 		}
-		if (((uintptr_t)event) & 1) {
-			event = (void*)(((uintptr_t)event) & (uintptr_t)~1);
-			accept_sock = (CAcceptSocket*)event;
-			accept_sock->_Accept(accept_sock->_accept_event);
+		if (((uintptr_t)sock) & 1) {
+			sock = (void*)(((uintptr_t)sock) & (uintptr_t)~1);
+			accept_sock = (CMemSharePtr<CAcceptSocket>*)sock;
+			(*accept_sock)->_Accept((*accept_sock)->_accept_event);
 
 		} else {
 			normal_sock = (CMemWeakPtr<CSocket>*)event_vec[i].data.ptr;

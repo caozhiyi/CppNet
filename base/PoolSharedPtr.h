@@ -6,12 +6,73 @@
 
 #include "MemaryPool.h"
 
+class CRefCount;
+template<class T>
+class CMemWeakPtr;
+template<class T>
+class CMemSharePtr;
+
+
 enum MemoryType {
 	TYPE_NEW = 0x00,
 	TYPE_MALLOC = 0x01,
 	TYPE_LARGE = 0x02,
 	TYPE_LARGE_WITH_SIZE = 0x03
 };
+
+template<class Ty>
+class CEnableSharedFromThis {
+public:
+	typedef Ty _EStype;
+	CMemSharePtr<Ty> memshared_from_this() {
+		return (_weak_ptr.Lock());
+	}
+
+protected:
+	constexpr CEnableSharedFromThis() noexcept {
+	}
+
+	CEnableSharedFromThis(const CEnableSharedFromThis&) noexcept {
+	}
+
+	CEnableSharedFromThis& operator=(const CEnableSharedFromThis&) noexcept {
+		return (*this);
+	}
+
+	~CEnableSharedFromThis() noexcept {
+	}
+
+private:
+	template<class T1, class T2>
+	friend void DoEnable(T1 *ptr, CEnableSharedFromThis<T2> *es, CRefCount *ref_ptr, CMemoryPool* pool, int size, MemoryType type);
+	CMemWeakPtr<Ty> _weak_ptr;
+};
+
+// reset internal weak pointer
+template<class T1, class T2>
+inline void DoEnable(T1 *ptr, CEnableSharedFromThis<T2> *es, CRefCount *ref_ptr, CMemoryPool* pool = nullptr, int size = 0, MemoryType type = TYPE_NEW) {
+	es->_weak_ptr.Resetw(ptr, ref_ptr, pool, size, type);
+}
+
+//template<typename T>
+//struct has_member_weak_ptr {
+//	template <typename _T>
+//	static auto check(_T)->typename std::decay<decltype(_T::_weak_ptr)>::type;
+//	static void check(...);
+//	using type = decltype(check(std::declval<T>()));
+//	enum { value = !std::is_void<type>::value };
+//};
+
+template<class Ty>
+inline void EnableShared(Ty *ptr, CRefCount *ref_ptr, CMemoryPool* pool = nullptr, int size = 0, MemoryType type = TYPE_NEW, typename Ty::_EStype * = 0) {
+	if (ptr) {
+		DoEnable(ptr, (CEnableSharedFromThis<typename Ty::_EStype>*)ptr, ref_ptr, pool, size, type);
+	}
+}
+
+inline void EnableShared(const volatile void *, const volatile void *, CMemoryPool* pool = nullptr, int size = 0, MemoryType type = TYPE_NEW) {
+
+}
 
 //reference count class
 class CRefCount {
@@ -67,9 +128,6 @@ private:
 	std::atomic_long _uses;
 	std::atomic_long _weaks;
 };
-
-template<class T>
-inline void EnableShared(T *ptr, CRefCount *ref_ptr, CMemoryPool* pool, int size = 0, MemoryType type = TYPE_NEW);
 
 // base class for CMemSharePtr and CMemWeakPtr
 template<typename T>
@@ -434,58 +492,6 @@ public:
 		return (this->Get() != 0);
 	}
 };
-
-template<class T>
-class CEnableSharedFromThis {
-public:
-	typedef T _EStype;
-	CMemSharePtr<T> memshared_from_this() {
-		return (_weak_ptr.Lock());
-	}
-
-protected:
-	constexpr CEnableSharedFromThis() noexcept {
-	}
-
-	CEnableSharedFromThis(const CEnableSharedFromThis&) noexcept {
-	}
-
-	CEnableSharedFromThis& operator=(const CEnableSharedFromThis&) noexcept {
-		return (*this);
-	}
-
-	~CEnableSharedFromThis() noexcept {
-	}
-
-private:
-	template<class T1, class T2>
-	friend void DoEnable(T1 *ptr, CEnableSharedFromThis<T2> *es, CRefCount *ref_ptr, CMemoryPool* pool, int size, MemoryType type);
-	CMemWeakPtr<T> _weak_ptr;
-};
-
-// reset internal weak pointer
-template<class T1, class T2>
-inline void DoEnable(T1 *ptr, CEnableSharedFromThis<T2> *es, CRefCount *ref_ptr, CMemoryPool* pool = nullptr, int size = 0, MemoryType type = TYPE_NEW) {
-	es->_weak_ptr.Resetw(ptr, ref_ptr, pool, size, type);
-}
-
-template<typename T>
-struct has_member_weak_ptr {
-	template <typename _T>
-	static auto check(_T)->typename std::decay<decltype(_T::_weak_ptr)>::type;
-	static void check(...);
-	using type = decltype(check(std::declval<T>()));
-	enum { value = !std::is_void<type>::value };
-};
-
-template<class T>
-inline void EnableShared(T *ptr, CRefCount *ref_ptr, CMemoryPool* pool, int size, MemoryType type) {
-	if (ptr) {
-		if (has_member_weak_ptr<T>::value > 0) {
-			DoEnable(ptr, (CEnableSharedFromThis<T>*)ptr, ref_ptr, pool, size, type);
-		}
-	}
-}
 
 template<typename T, typename... Args >
 CMemSharePtr<T> MakeNewSharedPtr(CMemoryPool* pool, Args&&... args) {
