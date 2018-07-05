@@ -54,6 +54,7 @@ inline void DoEnable(T1 *ptr, CEnableSharedFromThis<T2> *es, CRefCount *ref_ptr,
 	es->_weak_ptr.Resetw(ptr, ref_ptr, pool, size, type);
 }
 
+//not useful on gcc.
 //template<typename T>
 //struct has_member_weak_ptr {
 //	template <typename _T>
@@ -378,12 +379,12 @@ public:
 	virtual ~CBasePtr() {}
 
 protected:
-	T			*_ptr;
+	T			*_ptr;			//real data ptr
 	CRefCount	*_ref_count;
-	CMemoryPool	*_pool;
+	CMemoryPool	*_pool;			//base memory pool
 
-	int			_malloc_size;
-	MemoryType	_memory_type;
+	int			_malloc_size;	//if malloc large memory from pool. that use to free
+	MemoryType	_memory_type;	//malloc memory type from pool
 
 	std::mutex	_mutex;
 };
@@ -493,6 +494,7 @@ public:
 	}
 };
 
+//new object on pool
 template<typename T, typename... Args >
 CMemSharePtr<T> MakeNewSharedPtr(CMemoryPool* pool, Args&&... args) {
 	T* o = pool->PoolNew<T>(std::forward<Args>(args)...);
@@ -500,6 +502,7 @@ CMemSharePtr<T> MakeNewSharedPtr(CMemoryPool* pool, Args&&... args) {
 	return CMemSharePtr<T>(o, ref, pool, TYPE_NEW);
 }
 
+//malloc from pool
 template<typename T>
 CMemSharePtr<T> MakeMallocSharedPtr(CMemoryPool* pool, int size) {
 	T* o = (T*)pool->PoolMalloc<T>(size);
@@ -507,6 +510,7 @@ CMemSharePtr<T> MakeMallocSharedPtr(CMemoryPool* pool, int size) {
 	return CMemSharePtr<T>(o, ref, pool, TYPE_MALLOC, size);
 }
 
+//malloc large memory from pool
 template<typename T>
 CMemSharePtr<T> MakeLargeSharedPtr(CMemoryPool* pool) {
 	T* o = pool->PoolLargeMalloc<T>();

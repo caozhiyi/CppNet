@@ -20,7 +20,7 @@ public:
 		return _task_list_map[_channel].first->Size();
 	}
 
-	//线程消息投递
+	//post task
 	void Push(const T&& func) {
 		std::unique_lock<std::mutex> lock(_map_mutex);
 		_task_list_map[_channel].first->Push(func);
@@ -31,7 +31,7 @@ public:
 		_task_list_map[_channel].first->Push(func);
 	}
 
-	//线程主逻辑
+	//TO DO
 	virtual void Run() = 0;
 
 private:
@@ -47,8 +47,8 @@ private:
 	bool							_stop;
 	std::shared_ptr<std::thread>	_pthread;
 
-	static	std::mutex															_map_mutex;		//_runnable_map访问锁
-	static	std::map<int, std::pair<std::shared_ptr<CTaskQueue<T>>, int>>		_task_list_map;	//共享任务队列 channel TaskQueue TaskQueue的共享个数
+	static	std::mutex															_map_mutex;
+	static	std::map<int, std::pair<std::shared_ptr<CTaskQueue<T>>, int>>		_task_list_map;	//shared task queue. channel. TaskQueue. TaskQueue num.
 };
 
 template<typename T>

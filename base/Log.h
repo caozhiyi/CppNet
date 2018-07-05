@@ -30,6 +30,7 @@ public:
 	void SetLogLevel(LogLevel level);
 	LogLevel GetLogLevel();
 
+	//api for different level log
 	void LogDebug(const char* file, int line, const char* log...);
 	void LogInfo(const char* file, int line, const char* log...);
 	void LogWarn(const char* file, int line, const char* log...);
@@ -37,11 +38,13 @@ public:
 	void LogFatal(const char* file, int line, const char* log...);
 
 private:
+	//format log and push to task queue
 	void _PushFormatLog(const char* file, int line, const char* level, const char* log, va_list list);
+	//check date and create new log file
 	void _CheckDateFile();
 
 private:
-	CTimeTool		_time;
+	CTimeTool		_time;			//for now tile
 	std::string     _file_name;
 	std::fstream	_log_file;
 	int				_log_level;

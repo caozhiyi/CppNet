@@ -47,6 +47,7 @@ public:
 	friend std::ostream& operator<<(std::ostream &out, const CBuffer &obj);
 
 private:
+	//modify cloopbuffer index for compare
 	void _IncrefIndex(CLoopBuffer* start);
 	void _DecrefIndex(CLoopBuffer* start);
 

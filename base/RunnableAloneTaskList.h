@@ -17,7 +17,7 @@ public:
 		return _task_list.Size();
 	}
 
-	//线程消息投递
+	//post task
 	void Push(const T&& t) {
 		_task_list.Push(t);
 	}
@@ -25,7 +25,7 @@ public:
 		_task_list.Push(t);
 	}
 
-	//线程主逻辑
+	//TO DO
 	virtual void Run() = 0;
 
 protected:
@@ -37,6 +37,6 @@ protected:
 	CRunnableAloneTaskList& operator=(const CRunnableAloneTaskList&) = delete;
 
 private:
-	CTaskQueue<T>			_task_list;			//每个线程都有自己的任务队列
+	CTaskQueue<T>			_task_list;			//every thread have a task queue
 };
 #endif

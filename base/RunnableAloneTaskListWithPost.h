@@ -22,7 +22,7 @@ public:
 	virtual void Start();
 	virtual void Stop();
 
-	//线程消息投递
+	//post task
 	void Push(const Task&& func) {
 		_task_list.Push(func);
 	}
@@ -30,12 +30,12 @@ public:
 		_task_list.Push(func);
 	}
 
-	//线程主逻辑
+	//TO DO
 	virtual void Run();
 
 	std::thread::id GetId()const { return _id; }
 
-	//向指定线程投递任务
+	//post task to the thread
 	static	bool PostTask(const std::thread::id& thread_id, const Task& func);
 
 private:
@@ -47,11 +47,11 @@ private:
 	CRunnableAloneTaskListWithPost& operator=(const CRunnableAloneTaskListWithPost&) = delete;
 
 private:
-	CTaskQueue<Task>		_task_list;			//每个线程都有自己的任务队列
+	CTaskQueue<Task>		_task_list;	
 	std::thread::id			_id;
 
-	static	std::mutex													_map_mutex;		//_runnable_map访问锁
-	static	std::map<std::thread::id, CRunnableAloneTaskListWithPost*>	_runnable_map;	//记录线程对象，支持线程间消息投递
+	static	std::mutex													_map_mutex;	
+	static	std::map<std::thread::id, CRunnableAloneTaskListWithPost*>	_runnable_map;
 };
 
 std::mutex CRunnableAloneTaskListWithPost::_map_mutex;

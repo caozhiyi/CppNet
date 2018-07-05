@@ -103,7 +103,7 @@ void* CMemoryPool::ChunkAlloc(int size, int& nums, bool is_large) {
 	int need_bytes = size * nums;
 	int left_bytes = _pool_end - _pool_start;
 
-	//内存池够用
+	//pool is enough
 	if (left_bytes >= need_bytes) {
 		res = _pool_start;
 		_pool_start += need_bytes;
@@ -133,7 +133,7 @@ void* CMemoryPool::ChunkAlloc(int size, int& nums, bool is_large) {
 	}
 
 	_pool_start = (char*)malloc(bytes_to_get);
-	//内存分配失败
+	//malloc failed
 	if (0 == _pool_start) {
 		throw std::exception(std::logic_error("There memary is not enough!"));
 		cout << "There memary is not enough!" << endl;

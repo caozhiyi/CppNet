@@ -9,7 +9,7 @@ public:
 	CRunnable() : _stop(false) {}
 	virtual ~CRunnable() {}
 
-	//线程基本操作
+	//base option
 	virtual void Start() {
 		_stop = false;
 		if (!_pthread) {
@@ -25,7 +25,7 @@ public:
 		}
 	}
 
-	//线程主逻辑
+	//TO DO
 	virtual void Run() = 0;
 
 	bool GetStop() {
