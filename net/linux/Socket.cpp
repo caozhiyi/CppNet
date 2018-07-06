@@ -248,7 +248,6 @@ void CSocket::_Recv(CMemSharePtr<CEventHandler>& event) {
 	if (!socket_ptr) {
 		return;
 	}
-	LOG_ERROR("event->_event_flag_set : %d", event->_event_flag_set);
 	int err = -1;
 	if (event->_timer_out) {
 		err = EVENT_ERROR_TIMEOUT | event->_event_flag_set;
