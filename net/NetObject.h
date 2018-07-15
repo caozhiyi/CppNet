@@ -23,7 +23,6 @@ public:
 	//common
 	void Init(int thread_num);
 	void Dealloc();
-	void MainLoop();
 	void Join();
 
 	void SetReadCallback(const call_back& func);
@@ -44,7 +43,8 @@ private:
 	void _AcceptFunction(CMemSharePtr<CAcceptEventHandler>& event, int err);
 	void _ReadFunction(CMemSharePtr<CEventHandler>& event, int err);
 	void _WriteFunction(CMemSharePtr<CEventHandler>& event, int err);
-	std::shared_ptr<CEventActions>& RandomGetActions();
+	std::shared_ptr<CEventActions>& _RandomGetActions();
+
 private:
 	call_back	_read_call_back				= nullptr;
 	call_back	_write_call_back			= nullptr;

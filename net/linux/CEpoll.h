@@ -26,7 +26,8 @@ public:
 
 	virtual void ProcessEvent();
 
-	void WeakUp();
+	virtual void PostTask(std::function<void(void)>& task);
+	virtual void WakeUp();
 
 private:
 	bool _AddEvent(CMemSharePtr<CEventHandler>& event, int event_flag, unsigned int sock);
@@ -36,11 +37,16 @@ private:
 
 	void _DoTimeoutEvent(std::vector<TimerEvent>& timer_vec);
 	void _DoEvent(std::vector<epoll_event>& event_vec, int num);
+	void _DoTaskList();
 private:
-	int		_epoll_handler;
-	bool	_run;
-	unsigned int _pipe[2];
-	epoll_event _pipe_content;
+	std::atomic_bool	_run;
+
+	int				_epoll_handler;
+	unsigned int	_pipe[2];
+	epoll_event		_pipe_content;
+
+	std::mutex		_mutex;
+	std::vector<std::function<void(void)>> _task_list;
 };
 #endif
 #endif // __linux__

@@ -26,6 +26,9 @@ public:
 	virtual bool DelEvent(CMemSharePtr<CEventHandler>& event) = 0;
 	virtual void ProcessEvent() = 0;
 
+	virtual void PostTask(std::function<void(void)>&) = 0;
+	virtual void WakeUp() = 0;
+
 	virtual CTimer& Timer() { return _timer; }
 protected:
 	CTimer			_timer;

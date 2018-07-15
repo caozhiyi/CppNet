@@ -37,6 +37,72 @@ CLoopBuffer::~CLoopBuffer() {
 	}
 }
 
+int CLoopBuffer::ReadNotClear(char* res, int len) {
+	std::unique_lock<std::mutex> lock(_mutex);
+	if (!_buffer_start) {
+		return 0;
+	}
+	if (_read < _write) {
+		int size = _write - _read;
+		if (size <= len) {
+			memcpy(res, _read, size);
+			_write = _read = _buffer_start;
+			_can_read = false;
+			return size;
+
+		} else {
+			memcpy(res, _read, len);
+			return len;
+		}
+
+	} else if (_read > _write) {
+		int size = _write - _buffer_start + _buffer_end - _read;
+		if (size <= len) {
+			memcpy(res, _read, _buffer_end - _read);
+			memcpy(res + (_buffer_end - _read), _buffer_start, _write - _buffer_start);
+			_can_read = false;
+			return size;
+
+		} else {
+			if (_read + len <= _buffer_end) {
+				memcpy(res, _read, len);
+				return len;
+
+			}
+			else {
+				int left = len - (_buffer_end - _read);
+				memcpy(res, _read, len - left);
+				memcpy(res + (len - left), _buffer_start, left);
+				return len;
+			}
+		}
+
+	} else {
+		if (_can_read) {
+			int size = _total_size;
+			if (size <= len) {
+				memcpy(res, _read, _buffer_end - _read);
+				memcpy(res + (_buffer_end - _read), _buffer_start, _read - _buffer_start);
+				return size;
+
+			} else {
+				if (_read + len > _buffer_end) {
+					int left = len - (_buffer_end - _read);
+					memcpy(res, _read, len - left);
+					memcpy(res + len - left, _buffer_start, left);
+					return len;
+				} else {
+					memcpy(res, _read, len);
+					return len;
+				}
+			}
+
+		} else {
+			return 0;
+		}
+	}
+}
+
 int CLoopBuffer::Read(char* res, int len) {
 	std::unique_lock<std::mutex> lock(_mutex);
 	if (!_buffer_start) {
@@ -89,7 +155,6 @@ int CLoopBuffer::Read(char* res, int len) {
 				memcpy(res + (_buffer_end - _read), _buffer_start, _read - _buffer_start);
 				_read = _write = _buffer_start;
 				_can_read = false;
-				int lne = _buffer_end - _buffer_start;
 				return size;
 
 			} else {
@@ -196,6 +261,68 @@ void CLoopBuffer::Clear() {
 	_read = _buffer_start;
 	_write = _buffer_start;
 	_can_read = false;
+}
+
+int CLoopBuffer::Clear(int len) {
+	std::unique_lock<std::mutex> lock(_mutex);
+	if (!_buffer_start) {
+		return 0;
+	}
+	if (_read < _write) {
+		int size = _write - _read;
+		if (size <= len) {
+			_read += size;
+			_write = _read = _buffer_start;
+			_can_read = false;
+
+			return size;
+		} else {
+			_read += len;
+			return len;
+		}
+
+	} else if (_read > _write) {
+		int size = _write - _buffer_start + _buffer_end - _read;
+		if (size <= len) {
+			_read = _write = _buffer_start;
+			_can_read = false;
+			return size;
+
+		} else {
+			if (_read + len <= _buffer_end) {
+				_read += len;
+				return len;
+
+			} else {
+				int left = len - (_buffer_end - _read);
+				_read = _buffer_start + left;
+				return len;
+			}
+		}
+
+	} else {
+		if (_can_read) {
+			int size = _total_size;
+			if (size <= len) {
+				_read = _write = _buffer_start;
+				_can_read = false;
+				return size;
+
+			} else {
+				if (_read + len > _buffer_end) {
+					int left = len - (_buffer_end - _read);
+					_read = _buffer_start + left;
+					return len;
+				} else {
+					_read = _read + len;
+					return len;
+				}
+			}
+
+		} else {
+			return 0;
+		}
+	}
 }
 
 int CLoopBuffer::ReadUntil(char* res, int len) {

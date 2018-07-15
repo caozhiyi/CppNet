@@ -78,11 +78,19 @@ void CSocket::SyncWrite(char* src, int len) {
 	if (!_write_event->_buffer) {
 		_write_event->_buffer = MakeNewSharedPtr<CBuffer>(_pool.get(), _pool);
 	}
-	_write_event->_buffer->Write(src, len);
 
 	if (!_write_event->_client_socket) {
 		_write_event->_client_socket = _read_event->_client_socket;
 	}
+
+	//try send
+	_write_event->_buffer->Write(src, len);
+	_Send(_write_event);
+	//send complete!
+	if (_write_event->_buffer->GetCanReadSize() == 0) {
+		return;
+	}
+
 	if (_event_actions) {
 		_write_event->_event_flag_set |= EVENT_WRITE;
 		_event_actions->AddSendEvent(_write_event);
@@ -100,6 +108,7 @@ void CSocket::SyncConnection(const std::string& ip, short port) {
 		return;
 	}
 	strcpy(_ip, ip.c_str());
+	_port = port;
 	if (!_read_event) {
 		_read_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
 	}
@@ -118,7 +127,6 @@ void CSocket::SyncConnection(const std::string& ip, short port) {
 
 	//craete socket
 	_sock = socket(PF_INET, SOCK_STREAM, 0);
-	SetSocketNoblocking(_sock);
 
 	if (_event_actions) {
 		_read_event->_event_flag_set |= EVENT_CONNECT;
@@ -203,8 +211,13 @@ void CSocket::SyncWrite(unsigned int interval, char* src, int len) {
 	if (!_write_event->_buffer) {
 		_write_event->_buffer = MakeNewSharedPtr<CBuffer>(_pool.get(), _pool);
 	}
+	//try send
 	_write_event->_buffer->Write(src, len);
-
+	_Send(_write_event);
+	//send complete!
+	if (_write_event->_buffer->GetCanReadSize() == 0) {
+		return;
+	}
 	if (_event_actions) {
 		_write_event->_event_flag_set |= EVENT_WRITE;
 		_event_actions->AddSendEvent(_write_event);
@@ -214,6 +227,10 @@ void CSocket::SyncWrite(unsigned int interval, char* src, int len) {
 		_write_event->_event_flag_set |= EVENT_TIMER;
 		_event_actions->AddTimerEvent(interval, EVENT_WRITE, _write_event);
 	}
+}
+
+void CSocket::PostTask(std::function<void(void)>& func) {
+	_event_actions->PostTask(func);
 }
 
 void CSocket::SetReadCallBack(const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back) {
@@ -319,10 +336,19 @@ void CSocket::_Send(CMemSharePtr<CEventHandler>& event) {
 		err = EVENT_ERROR_NO | event->_event_flag_set;
 		event->_off_set = 0;
 		if (event->_buffer && event->_buffer->GetCanReadSize()) {
-			char buf[65536] = { 0 };
+			char buf[8912] = { 0 };
 			int send_len = 0;
-			send_len = event->_buffer->Read(buf, 65536);
+			send_len = event->_buffer->Read(buf, 8912);
 			int res = send(socket_ptr->GetSocket(), buf, send_len, 0);
+			if (res > 0) {
+				event->_buffer->Clear(res);
+				//can send complete
+				if (res < send_len) {
+					_write_event->_event_flag_set |= EVENT_WRITE;
+					_event_actions->AddSendEvent(_write_event);
+				}
+			}
+
 			if (res < 0) {
 				if (errno == EWOULDBLOCK || errno == EAGAIN || errno == EINTR) {
 					//wait next time to do

@@ -12,7 +12,7 @@ enum STATE_CODE {
 	WEAK_UP_IOCP = 0xAAAAFFFF,
 };
 
-CIOCP::CIOCP() : _is_inited(false) {
+CIOCP::CIOCP() : _is_inited(false), _run(true) {
 
 }
 
@@ -33,6 +33,7 @@ bool CIOCP::Init() {
 }
 
 bool CIOCP::Dealloc() {
+	_run = false;
 	PostQueuedCompletionStatus(_iocp_handler, 0, EXIT_IOCP, nullptr);
 	return true;
 }
@@ -137,7 +138,7 @@ void CIOCP::ProcessEvent() {
 	OVERLAPPED          *over_lapped = nullptr;
 	unsigned int		wait_time = 0;
 	std::vector<TimerEvent> timer_vec;
-	for (;;) {
+	while (_run) {
 		wait_time = _timer.TimeoutCheck(timer_vec);
 		//if there is no timer event. wait until recv something
 		if (wait_time == 0 && timer_vec.empty()) {
@@ -161,6 +162,7 @@ void CIOCP::ProcessEvent() {
 			if (!timer_vec.empty()) {
 				_DoTimeoutEvent(timer_vec);
 			}
+			_DoTaskList();
 
 		} else if (ERROR_NETNAME_DELETED == dw_err || NO_ERROR == dw_err || ERROR_IO_PENDING == dw_err) {
 			if (over_lapped) {
@@ -168,6 +170,7 @@ void CIOCP::ProcessEvent() {
 				LOG_DEBUG("Get a new event : %d", socket_context->_event_flag_set);
 				_DoEvent(socket_context, bytes_transfered);
 			}
+			_DoTaskList();
 
 		} else {
 			LOG_ERROR("IOCP GetQueuedCompletionStatus return error : %d", dw_err);
@@ -180,6 +183,18 @@ void CIOCP::ProcessEvent() {
 		}
 	}
 	_is_inited = false;
+}
+
+void CIOCP::PostTask(std::function<void(void)>& task) {
+	{
+		std::unique_lock<std::mutex> lock(_mutex);
+		_task_list.push_back(task);
+	}
+	WakeUp();
+}
+
+void CIOCP::WakeUp() {
+	PostQueuedCompletionStatus(_iocp_handler, 0, WEAK_UP_IOCP, nullptr);
 }
 
 bool CIOCP::_PostRecv(CMemSharePtr<CEventHandler>& event) {
@@ -341,6 +356,18 @@ void CIOCP::_DoEvent(EventOverlapped *socket_context, int bytes) {
 				}
 			}
 		}
+	}
+}
+
+void CIOCP::_DoTaskList() {
+	std::vector<std::function<void(void)>> func_vec;
+	{
+		std::unique_lock<std::mutex> lock(_mutex);
+		func_vec.swap(_task_list);
+	}
+
+	for (size_t i = 0; i < func_vec.size(); ++i) {
+		func_vec[i]();
 	}
 }
 #endif

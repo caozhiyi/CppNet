@@ -56,6 +56,8 @@ public:
 
 	virtual void ProcessEvent();
 
+	virtual void PostTask(std::function<void(void)>& task);
+	virtual void WakeUp();
 private:
 	bool _PostRecv(CMemSharePtr<CEventHandler>& event);
 	bool _PostAccept(CMemSharePtr<CAcceptEventHandler>& event);
@@ -65,9 +67,13 @@ private:
 
 	void _DoTimeoutEvent(std::vector<TimerEvent>& timer_vec);
 	void _DoEvent(EventOverlapped *socket_context, int bytes);
+	void _DoTaskList();
 private:
 	HANDLE	_iocp_handler;
 	bool	_is_inited;
+	std::mutex			_mutex;
+	std::atomic_bool	_run;
+	std::vector<std::function<void(void)>> _task_list;
 };
 
 #endif

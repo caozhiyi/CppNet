@@ -90,6 +90,7 @@ void CSocket::SyncConnection(const std::string& ip, short port, char* buf, int b
 		return;
 	}
 	strcpy(_ip, ip.c_str());
+	_port = port;
 	if (!_read_event) {
 		_read_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
 	}
@@ -208,6 +209,10 @@ void CSocket::SyncWrite(unsigned int interval, char* src, int len) {
 		_event_actions->AddTimerEvent(interval, EVENT_WRITE, _write_event);
 		_post_event_num++;
 	}
+}
+
+void CSocket::PostTask(std::function<void(void)>& func) {
+	_event_actions->PostTask(func);
 }
 
 void CSocket::SetReadCallBack(const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back) {

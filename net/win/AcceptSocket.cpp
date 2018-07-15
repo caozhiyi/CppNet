@@ -30,6 +30,7 @@ bool CAcceptSocket::Bind(short port, const std::string& ip) {
 		closesocket(_sock);
 		return false;
 	}
+	_port = port;
 	memcpy(_ip, ip.c_str(), ip.length());
 	return true;
 }
@@ -116,6 +117,7 @@ void CAcceptSocket::_Accept(CMemSharePtr<CAcceptEventHandler>& event) {
 		sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, (LPSOCKADDR*)&LocalAddr, &localLen, (LPSOCKADDR*)&client_addr, &remote_len);
 
 	memcpy(event->_client_socket->_ip, inet_ntoa(client_addr->sin_addr), __addr_str_len);
+	event->_client_socket->_port = client_addr->sin_port;
 	event->_client_socket->_read_event->_buffer->Write(context->_lapped_buffer, event->_client_socket->_read_event->_off_set);
 	//get client socket
 	event->_client_socket->_read_event->_client_socket = event->_client_socket;

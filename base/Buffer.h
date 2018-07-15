@@ -19,16 +19,21 @@ public:
 	CBuffer(std::shared_ptr<CMemoryPool>& pool);
 	~CBuffer();
 
+	//read to res buf not chenge the cursor
+	int ReadNotClear(char* res, int len);
 	int Read(char* res, int len);
 	int Write(char* str, int len);
 	void Clear();
+	//forward moving cursor
+	void Clear(int len);
 
 	//do not read when buffer less than len. return len when read otherwise return 0
 	int ReadUntil(char* res, int len);
 
 	//do not read when can't find specified character.
 	//return len when read otherwise return 0
-	//when find specified character but res'length is too short, return 0 and the second param return need length
+	//when find specified character but res'length is too short, 
+	//return 0 and the last param return need length
 	int ReadUntil(char* res, int len, const char* find, int find_len, int& need_len);
 
 	int GetFreeSize() const;

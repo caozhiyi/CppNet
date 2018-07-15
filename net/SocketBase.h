@@ -24,11 +24,13 @@ public:
 	bool IsInActions() { return _add_event_actions; }
 	void SetInActions(bool set) { _add_event_actions = set; }
 	const char* GetAddress() const { return _ip; }
+	short GetPort() const { return _port; }
 
 public:
 	bool			_add_event_actions;
 	unsigned int	_sock;
 	bool			_invalid;
+	short			_port;
 	char			_ip[__addr_str_len];
 
 	std::shared_ptr<CEventActions>	_event_actions;

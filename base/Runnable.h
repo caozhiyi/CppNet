@@ -2,6 +2,7 @@
 #define HEADER_RUNNABLE
 
 #include <thread>
+#include <atomic>
 
 class CRunnable
 {
@@ -41,7 +42,7 @@ protected:
 	CRunnable& operator=(const CRunnable&) = delete;
 
 protected:
-	bool							_stop;
+	std::atomic_bool				_stop;
 	std::shared_ptr<std::thread>	_pthread;
 };
 #endif

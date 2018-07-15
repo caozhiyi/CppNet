@@ -55,12 +55,6 @@ void CNetObject::Dealloc() {
 #endif // __linux__
 }
 
-void CNetObject::MainLoop() {
-	for (;;) {
-		CRunnable::Sleep(50000);
-	}
-}
-
 void CNetObject::Join() {
 	for (size_t i = 0; i < _thread_vec.size(); ++i) {
 		_thread_vec[i]->join();
@@ -135,7 +129,7 @@ CMemSharePtr<CSocket> CNetObject::Connection(int port, std::string ip, char* buf
 		return nullptr;
 	}
 
-	auto actions = RandomGetActions();
+	auto actions = _RandomGetActions();
 	CMemSharePtr<CSocket> sock = MakeNewSharedPtr<CSocket>(&_pool, actions);
 	sock->SetWriteCallBack(std::bind(&CNetObject::_WriteFunction, this, std::placeholders::_1, std::placeholders::_2));
 
@@ -144,12 +138,14 @@ CMemSharePtr<CSocket> CNetObject::Connection(int port, std::string ip, char* buf
 	sock->SyncConnection(ip, port, buf, buf_len);
 #else
 	auto func = [buf, buf_len, sock, this](CMemSharePtr<CEventHandler>& event, int err) {
-		if (err = EVENT_ERROR_NO) {
+		if (err & EVENT_ERROR_NO) {
 			sock->SyncWrite(buf, buf_len);
 		}
 		sock->SetReadCallBack(std::bind(&CNetObject::_ReadFunction, this, std::placeholders::_1, std::placeholders::_2));
+		_ReadFunction(event, err);
 	};
 	sock->SetReadCallBack(func);
+	sock->SyncConnection(ip, port);
 #endif
 	return sock;
 }
@@ -164,7 +160,7 @@ CMemSharePtr<CSocket> CNetObject::Connection(int port, std::string ip) {
 		return nullptr;
 	}
 
-	auto actions = RandomGetActions();
+	auto actions = _RandomGetActions();
 	CMemSharePtr<CSocket> sock = MakeNewSharedPtr<CSocket>(&_pool, actions);
 	sock->SetWriteCallBack(std::bind(&CNetObject::_WriteFunction, this, std::placeholders::_1, std::placeholders::_2));
 	sock->SetReadCallBack(std::bind(&CNetObject::_ReadFunction, this, std::placeholders::_1, std::placeholders::_2));
@@ -201,7 +197,6 @@ void CNetObject::_ReadFunction(CMemSharePtr<CEventHandler>& event, int err) {
 	if (!event) {
 		return;
 	}
-	LOG_DEBUG("err: %d", err);
 	auto socket_ptr = event->_client_socket.Lock();
 	if (err & EVENT_CONNECT && _connection_call_back) {
 		err &= ~EVENT_CONNECT;
@@ -228,6 +223,9 @@ void CNetObject::_WriteFunction(CMemSharePtr<CEventHandler>& event, int err) {
 	auto socket_ptr = event->_client_socket.Lock();
 	if (err & EVENT_WRITE && _write_call_back) {
 		err &= ~EVENT_WRITE;
+		if (event->_buffer->GetCanReadSize() == 0) {
+			err |= EVENT_ERROR_DONE;
+		}
 		_write_call_back(socket_ptr, err);
 		if (err == EVENT_ERROR_CLOSED) {
 			std::unique_lock<std::mutex> lock(_mutex);
@@ -236,7 +234,7 @@ void CNetObject::_WriteFunction(CMemSharePtr<CEventHandler>& event, int err) {
 	}
 }
 
-std::shared_ptr<CEventActions>& CNetObject::RandomGetActions() {
+std::shared_ptr<CEventActions>& CNetObject::_RandomGetActions() {
 	std::random_device rd;
 	std::mt19937 mt(rd());
 	int index = mt() % int(_actions_map.size());

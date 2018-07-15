@@ -10,9 +10,13 @@ public:
 	explicit CLoopBuffer(std::shared_ptr<CMemoryPool>& pool, int size, int index);
 	~CLoopBuffer();
 
+	//read to res buf not chenge the cursor
+	int ReadNotClear(char* res, int len);
 	int Read(char* res, int len);
 	int Write(char* str, int len);
 	void Clear();
+	//forward moving cursor
+	int Clear(int len);
 
 	//do not read when buffer less than len. return len when read otherwise return 0
 	int ReadUntil(char* res, int len);

@@ -22,6 +22,7 @@ public:
 	void SyncRead(unsigned int interval);
 	void SyncWrite(unsigned int interval, char* src, int len);
 
+	void PostTask(std::function<void(void)>& func);
 #ifndef __linux__
 	void SyncConnection(const std::string& ip, short port, char* buf, int buf_len);
 #else
