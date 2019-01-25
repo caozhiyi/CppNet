@@ -60,6 +60,16 @@ bool CEpoll::Dealloc() {
 	return true;
 }
 
+bool CEpoll::AddTimerEvent(const TimerEvent& event, unsigned int& timer_id) {
+    _timer.AddTimer(event._interval, event, timer_id);
+    LOG_DEBUG("add a timer event, %d", event.interval);
+    return true;
+}
+
+bool CEpoll::RemoveTimerEvent(unsigned int timer_id) {
+    return _timer.DelTimer(timer_id);
+}
+
 bool CEpoll::AddTimerEvent(unsigned int interval, int event_flag, CMemSharePtr<CEventHandler>& event) {
 	_timer.AddTimer(interval, event_flag, event);
 	LOG_DEBUG("add a timer event, %d", interval);
@@ -196,9 +206,11 @@ void CEpoll::ProcessEvent() {
 	while (_run) {
 		wait_time = _timer.TimeoutCheck(timer_vec);
 		//if there is no timer event. wait until recv something
-		if (wait_time == 0 && timer_vec.empty()) {
-			wait_time = -1;
-		}
+        if (wait_time == 0 && timer_vec.empty()) {
+            wait_time = INFINITE;
+        } else {
+            wait_time = wait_time > 0 ? wait_time : 1;
+        }
 
 		int res = epoll_wait(_epoll_handler, &*event_vec.begin(), (int)(event_vec.size()), wait_time);
 		if (res == -1) {
@@ -317,13 +329,20 @@ void CEpoll::_DoTimeoutEvent(std::vector<TimerEvent>& timer_vec) {
 				socket_ptr->_Recv(iter->_event);
 			}
 
-		}
-		else if (iter->_event_flag & EVENT_WRITE) {
+		} else if (iter->_event_flag & EVENT_WRITE) {
 			auto socket_ptr = iter->_event->_client_socket.Lock();
 			if (socket_ptr) {
 				socket_ptr->_Send(iter->_event);
 			}
-		}
+        } else if (iter->_event_flag & EVENT_TIMER) {
+            auto func = iter->_timer_call_back;
+            if (func) {
+                func(iter->_timer_param);
+            }
+            if (iter->_event_flag & EVENT_TIMER_ALWAYS) {
+                _timer.AddTimer(iter->_interval, *iter, iter->_timer_id);
+            }
+        }
 	}
 	timer_vec.clear();
 }

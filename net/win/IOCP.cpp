@@ -38,6 +38,15 @@ bool CIOCP::Dealloc() {
 	return true;
 }
 
+bool CIOCP::AddTimerEvent(const TimerEvent& event, unsigned int& timer_id) {
+    _timer.AddTimer(event._interval, event, timer_id);
+    return true;
+}
+
+bool CIOCP::RemoveTimerEvent(unsigned int timer_id) {
+    return _timer.DelTimer(timer_id);
+}
+
 bool CIOCP::AddTimerEvent(unsigned int interval, int event_flag, CMemSharePtr<CEventHandler>& event) {
 	_timer.AddTimer(interval, event_flag, event);
 	return true;
@@ -143,8 +152,9 @@ void CIOCP::ProcessEvent() {
 		//if there is no timer event. wait until recv something
 		if (wait_time == 0 && timer_vec.empty()) {
 			wait_time = INFINITE;
-		}
-
+        } else {
+            wait_time  = wait_time > 0 ? wait_time : 1;
+        }
 		int res = GetQueuedCompletionStatus(_iocp_handler, &bytes_transfered, PULONG_PTR(&socket_context),
 			&over_lapped, wait_time);
 
@@ -323,6 +333,14 @@ void CIOCP::_DoTimeoutEvent(std::vector<TimerEvent>& timer_vec) {
 			if (socket_ptr) {
 				socket_ptr->_Send(iter->_event);
 			}
+		} else if (iter->_event_flag & EVENT_TIMER) {
+            auto func = iter->_timer_call_back;
+            if (func) {
+                func(iter->_timer_param);
+            }
+            if (iter->_event_flag & EVENT_TIMER_ALWAYS) {
+                _timer.AddTimer(iter->_interval, *iter, iter->_timer_id);
+            }
 		}
 	}
 	timer_vec.clear();

@@ -5,6 +5,9 @@
 #include "AcceptSocket.h"
 #include "EventHandler.h"
 
+#include "Log.h"
+#include "NetObject.h"
+
 void WriteFunc(CMemSharePtr<CSocket>& sock, int error) {
 	std::cout << "WriteFunc" << std::endl;
 	std::cout << "Thread ID : " << std::this_thread::get_id() << std::endl;
@@ -32,15 +35,23 @@ void AcceptFunc(CMemSharePtr<CSocket>& sock, int error) {
 	sock->SyncRead();
 }
 
-#include "Log.h"
-#include "NetObject.h"
+int num = 0;
+unsigned int id = 0;
+void TestTimer(void* param) {
+    std::cout << "timer" << std::endl;
+    num++;
+    if (num > 5) {
+        ((CNetObject*)param)->RemoveTimer(id);
+    }
+}
+
 int main() {
 	CLog::Instance().SetLogLevel(LOG_WARN_LEVEL);
 	CLog::Instance().SetLogName("CppNet.txt");
 	CLog::Instance().Start();
 	
 	CNetObject net;
-	net.Init(4);
+	net.Init(1);
 
 	net.SetAcceptCallback(AcceptFunc);
 	net.SetWriteCallback(WriteFunc);
@@ -48,6 +59,7 @@ int main() {
 
 	net.ListenAndAccept(8921, "0.0.0.0");
 
+    id = net.SetTimer(2000, TestTimer, &net, true);
 	//net.MainLoop();
 	//net.Dealloc();
 	net.Join();

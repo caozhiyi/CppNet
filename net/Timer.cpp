@@ -1,5 +1,6 @@
 #include "Timer.h"
 #include "EventHandler.h"
+#include "Log.h"
 
 CTimer::CTimer() {
 
@@ -7,6 +8,19 @@ CTimer::CTimer() {
 
 CTimer::~CTimer() {
 
+}
+
+void CTimer::AddTimer(unsigned int interval, const TimerEvent& t, unsigned int& id) {
+    _time.Now();
+    unsigned int nowtime = _time.GetMsec();
+    unsigned int key = nowtime + interval;
+
+    std::unique_lock<std::mutex> lock(_mutex);
+    if (_timer_map.count(key)) {
+        key++;
+    }
+    _timer_map[key] = t;
+    id = key;
 }
 
 void CTimer::AddTimer(unsigned int interval, TimerEvent& t) {
@@ -87,34 +101,37 @@ unsigned int CTimer::TimeoutCheck(std::vector<TimerEvent>& res) {
 	unsigned int recent_timeout = 0;
 	std::unique_lock<std::mutex> lock(_mutex);
 	for (auto iter = _timer_map.begin(); iter != _timer_map.end();) {
-		if (iter->first < nowtime) {
-			iter->second._event->_timer_out = true;
+		if (iter->first <= nowtime) {
+            if (!(iter->second._event_flag & EVENT_TIMER)) {
+                iter->second._event->_timer_out = true;
+            }
 			res.push_back(iter->second);
 			iter = _timer_map.erase(iter);
-
-		} else {
+           
+        } else {
 			recent_timeout = iter->first - nowtime;
 			break;
 		}
 	}
-	
 	return recent_timeout;
 }
 
 unsigned int CTimer::TimeoutCheck(unsigned int nowtime, std::vector<TimerEvent>& res) {
 	unsigned int recent_timeout = 0;
 	std::unique_lock<std::mutex> lock(_mutex);
-	for (auto iter = _timer_map.begin(); iter != _timer_map.end();) {
-		if (iter->first < nowtime) {
-			iter->second._event->_timer_out = true;
-			res.push_back(iter->second);
-			iter = _timer_map.erase(iter);
+    for (auto iter = _timer_map.begin(); iter != _timer_map.end();) {
+        if (iter->first <= nowtime) {
+            if (!(iter->second._event_flag & EVENT_TIMER)) {
+                iter->second._event->_timer_out = true;
+            }
+            res.push_back(iter->second);
+            iter = _timer_map.erase(iter);
 
-		} else {
-			recent_timeout = iter->first - nowtime;
-			break;
-		}
-	}
+        } else {
+            recent_timeout = iter->first - nowtime;
+            break;
+        }
+    }
 	return recent_timeout;
 }
 

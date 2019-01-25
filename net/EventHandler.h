@@ -13,7 +13,9 @@ enum EVENT_FLAG {
 	EVENT_ACCEPT		= 0x0004,		//accept event
 	EVENT_TIMER			= 0x0008,		//timer event
 	EVENT_CONNECT		= 0x0010,		//connect event
-	EVENT_DISCONNECT	= 0x0020		//disconnect event
+	EVENT_DISCONNECT	= 0x0020,		//disconnect event
+
+    EVENT_TIMER_ALWAYS  = 0x0040,       //timer always check
 };
 
 enum EVENT_ERROR {

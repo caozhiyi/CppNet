@@ -13,6 +13,12 @@
 class CEventHandler;
 struct TimerEvent {
 	int							_event_flag;
+
+    unsigned int                _timer_id;
+    unsigned int                _interval;
+    void*                       _timer_param;
+    std::function<void(void*)>  _timer_call_back;   // only timer event
+
 	CMemSharePtr<CEventHandler> _event;
 	TimerEvent() : _event_flag(0) {}
 	TimerEvent(CMemSharePtr<CEventHandler>& event) : _event_flag(0), _event(event){}
@@ -25,6 +31,7 @@ public:
 	~CTimer();
 
 	//add a timer. return the timer id
+    void AddTimer(unsigned int interval, const TimerEvent& t, unsigned int& id);
 	void AddTimer(unsigned int interval, TimerEvent& t);
 	void AddTimer(unsigned int interval, unsigned int nowtime, TimerEvent& t);
 	void AddTimer(unsigned int interval, int event_flag, CMemSharePtr<CEventHandler>& event);
@@ -44,7 +51,7 @@ public:
 
 private:
 	std::mutex							_mutex;
-	CTimeTool								_time;
+	CTimeTool							_time;
 	std::map<unsigned int, TimerEvent>	_timer_map;
 };
 

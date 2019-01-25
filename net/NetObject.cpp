@@ -73,6 +73,31 @@ void CNetObject::SetDisconnectionCallback(const call_back& func) {
 	_disconnection_call_back = func;
 }
 
+unsigned int CNetObject::SetTimer(unsigned int interval, const timer_call_back& func, void* param, bool always) {
+    TimerEvent event;
+    event._event_flag = EVENT_TIMER;
+    if (always) {
+        event._event_flag |= EVENT_TIMER_ALWAYS;
+    }
+    event._interval = interval;
+    event._timer_param = param;
+    event._timer_call_back = func;
+    auto actions = _RandomGetActions();
+
+    unsigned int timer_id = 0;
+    actions->AddTimerEvent(event, timer_id);
+    actions->WakeUp();
+
+    _timer_id_map[timer_id] = event;
+    return timer_id;
+}
+
+void CNetObject::RemoveTimer(unsigned int timer_id) {
+    for each (auto iter in _actions_map) {
+        iter.second->RemoveTimerEvent(_timer_id_map[timer_id]._timer_id);
+    }
+}
+
 void CNetObject::SetAcceptCallback(const call_back& func) {
 	_accept_call_back = func;
 }

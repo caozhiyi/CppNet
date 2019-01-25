@@ -16,6 +16,8 @@ public:
 	virtual bool Init();
 	virtual bool Dealloc();
 
+    virtual bool AddTimerEvent(const TimerEvent& event, unsigned int& timer_id);
+    virtual bool RemoveTimerEvent(unsigned int timer_id);
 	virtual bool AddTimerEvent(unsigned int interval, int event_flag, CMemSharePtr<CEventHandler>& event);
 	virtual bool AddSendEvent(CMemSharePtr<CEventHandler>& event);
 	virtual bool AddRecvEvent(CMemSharePtr<CEventHandler>& event);
