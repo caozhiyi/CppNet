@@ -38,17 +38,16 @@ bool CIOCP::Dealloc() {
 	return true;
 }
 
-bool CIOCP::AddTimerEvent(const TimerEvent& event, unsigned int& timer_id) {
-    _timer.AddTimer(event._interval, event, timer_id);
-    return true;
+unsigned int CIOCP::AddTimerEvent(unsigned int interval, const std::function<void(void*)>& call_back, void* param, bool always) {
+    return _timer.AddTimer(interval, call_back, param, always);
 }
 
 bool CIOCP::RemoveTimerEvent(unsigned int timer_id) {
     return _timer.DelTimer(timer_id);
 }
 
-bool CIOCP::AddTimerEvent(unsigned int interval, int event_flag, CMemSharePtr<CEventHandler>& event) {
-	_timer.AddTimer(interval, event_flag, event);
+bool CIOCP::AddTimerEvent(unsigned int interval, CMemSharePtr<CEventHandler>& event) {
+	_timer.AddTimer(interval, event);
 	return true;
 }
 
@@ -146,7 +145,7 @@ void CIOCP::ProcessEvent() {
 	EventOverlapped		*socket_context = nullptr;
 	OVERLAPPED          *over_lapped = nullptr;
 	unsigned int		wait_time = 0;
-	std::vector<TimerEvent> timer_vec;
+	std::vector<CMemSharePtr<CTimerEvent>> timer_vec;
 	while (_run) {
 		wait_time = _timer.TimeoutCheck(timer_vec);
 		//if there is no timer event. wait until recv something
@@ -320,26 +319,28 @@ bool CIOCP::_PostDisconnection(CMemSharePtr<CEventHandler>& event) {
 	return true;
 }
 
-void CIOCP::_DoTimeoutEvent(std::vector<TimerEvent>& timer_vec) {
+void CIOCP::_DoTimeoutEvent(std::vector<CMemSharePtr<CTimerEvent>>& timer_vec) {
 	for (auto iter = timer_vec.begin(); iter != timer_vec.end(); ++iter) {
-		if (iter->_event_flag & EVENT_READ) {
-			auto socket_ptr = iter->_event->_client_socket.Lock();
+		if ((*iter)->_event_flag & EVENT_READ) {
+			CMemSharePtr<CEventHandler> event_ptr = (*iter)->_event.Lock();
+            CMemSharePtr<CSocket> socket_ptr = event_ptr->_client_socket.Lock();
 			if (socket_ptr) {
-				socket_ptr->_Recv(iter->_event);
+                event_ptr->_event_flag_set |= EVENT_TIMER;
+				socket_ptr->_Recv(event_ptr);
 			}
 
-		} else if (iter->_event_flag & EVENT_WRITE) {
-			auto socket_ptr = iter->_event->_client_socket.Lock();
+		} else if ((*iter)->_event_flag & EVENT_WRITE) {
+            CMemSharePtr<CEventHandler> event_ptr = (*iter)->_event.Lock();
+            CMemSharePtr<CSocket> socket_ptr = event_ptr->_client_socket.Lock();
 			if (socket_ptr) {
-				socket_ptr->_Send(iter->_event);
+                event_ptr->_event_flag_set |= EVENT_TIMER;
+				socket_ptr->_Send(event_ptr);
 			}
-		} else if (iter->_event_flag & EVENT_TIMER) {
-            auto func = iter->_timer_call_back;
+
+		} else if ((*iter)->_event_flag & EVENT_TIMER) {
+            auto func = (*iter)->_timer_call_back;
             if (func) {
-                func(iter->_timer_param);
-            }
-            if (iter->_event_flag & EVENT_TIMER_ALWAYS) {
-                _timer.AddTimer(iter->_interval, *iter, iter->_timer_id);
+                func((*iter)->_timer_param);
             }
 		}
 	}

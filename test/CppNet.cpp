@@ -40,7 +40,7 @@ unsigned int id = 0;
 void TestTimer(void* param) {
     std::cout << "timer" << std::endl;
     num++;
-    if (num > 5) {
+    if (num >= 5) {
         ((CNetObject*)param)->RemoveTimer(id);
     }
 }

@@ -46,9 +46,9 @@ public:
 	virtual bool Init();
 	virtual bool Dealloc();
 
-    virtual bool AddTimerEvent(const TimerEvent& event, unsigned int& timer_id);
+    virtual unsigned int AddTimerEvent(unsigned int interval, const std::function<void(void*)>& call_back, void* param, bool always = false);
+    virtual bool AddTimerEvent(unsigned int interval,  CMemSharePtr<CEventHandler>& event);
     virtual bool RemoveTimerEvent(unsigned int timer_id);
-	virtual bool AddTimerEvent(unsigned int interval, int event_flag, CMemSharePtr<CEventHandler>& event);
 	virtual bool AddSendEvent(CMemSharePtr<CEventHandler>& event);
 	virtual bool AddRecvEvent(CMemSharePtr<CEventHandler>& event);
 	virtual bool AddAcceptEvent(CMemSharePtr<CAcceptEventHandler>& event);
@@ -67,7 +67,7 @@ private:
 	bool _PostConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, char* buf, int buf_len);
 	bool _PostDisconnection(CMemSharePtr<CEventHandler>& event);
 
-	void _DoTimeoutEvent(std::vector<TimerEvent>& timer_vec);
+	void _DoTimeoutEvent(std::vector<CMemSharePtr<CTimerEvent>>& timer_vec);
 	void _DoEvent(EventOverlapped *socket_context, int bytes);
 	void _DoTaskList();
 private:

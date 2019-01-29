@@ -11,19 +11,7 @@
 #include "PoolSharedPtr.h"
 
 class CEventHandler;
-struct TimerEvent {
-	int							_event_flag;
-
-    unsigned int                _timer_id;
-    unsigned int                _interval;
-    void*                       _timer_param;
-    std::function<void(void*)>  _timer_call_back;   // only timer event
-
-	CMemSharePtr<CEventHandler> _event;
-	TimerEvent() : _event_flag(0) {}
-	TimerEvent(CMemSharePtr<CEventHandler>& event) : _event_flag(0), _event(event){}
-};
-
+class CTimerEvent;
 class CTimer
 {
 public:
@@ -31,28 +19,29 @@ public:
 	~CTimer();
 
 	//add a timer. return the timer id
-    void AddTimer(unsigned int interval, const TimerEvent& t, unsigned int& id);
-	void AddTimer(unsigned int interval, TimerEvent& t);
-	void AddTimer(unsigned int interval, unsigned int nowtime, TimerEvent& t);
-	void AddTimer(unsigned int interval, int event_flag, CMemSharePtr<CEventHandler>& event);
-	void AddTimer(unsigned int interval, int event_flag, unsigned int nowtime, CMemSharePtr<CEventHandler>& event);
+    unsigned int AddTimer(unsigned int interval, const std::function<void(void*)>& call_back, void* param, bool always = false);
+    unsigned int AddTimer(unsigned int interval, CMemSharePtr<CTimerEvent>& event);
+    unsigned int AddTimer(unsigned int interval, CMemSharePtr<CEventHandler>& event);
 
 	//delete a timer
 	bool DelTimer(unsigned int timerid);
-	bool DelTimer(CMemSharePtr<CEventHandler>& event);
 
 	//check timer whether or not to go out of time. if timeout.
 	//res return all timeout timer.
 	//return the recent timeout time. if there is no one, return 0
-	unsigned int TimeoutCheck(std::vector<TimerEvent>& res);
-	unsigned int TimeoutCheck(unsigned int nowtime, std::vector<TimerEvent>& res);
+	unsigned int TimeoutCheck(std::vector<CMemSharePtr<CTimerEvent>>& res);
+	unsigned int TimeoutCheck(unsigned int nowtime, std::vector<CMemSharePtr<CTimerEvent>>& res);
 
 	int GetTimerNum();
-
 private:
-	std::mutex							_mutex;
+    void _AddTimer(unsigned int interval, const CMemSharePtr<CTimerEvent>& t, unsigned int& id);
+    void _AddTimer(unsigned int interval, CMemSharePtr<CTimerEvent>& event);
+private:
+    std::shared_ptr<CMemoryPool>	    _pool;
+    std::recursive_mutex			    _mutex;
 	CTimeTool							_time;
-	std::map<unsigned int, TimerEvent>	_timer_map;
+	std::map<unsigned int, CMemSharePtr<CTimerEvent>>	_timer_map;
+    std::map<unsigned int, CMemWeakPtr<CTimerEvent>>	_fix_timer_id_map;
 };
 
 #endif

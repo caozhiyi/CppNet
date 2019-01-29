@@ -2,7 +2,7 @@
 #include "EventHandler.h"
 #include "Log.h"
 
-CTimer::CTimer() {
+CTimer::CTimer() : _pool(new CMemoryPool(1024, 20)) {
 
 }
 
@@ -10,119 +10,90 @@ CTimer::~CTimer() {
 
 }
 
-void CTimer::AddTimer(unsigned int interval, const TimerEvent& t, unsigned int& id) {
-    _time.Now();
-    unsigned int nowtime = _time.GetMsec();
-    unsigned int key = nowtime + interval;
-
-    std::unique_lock<std::mutex> lock(_mutex);
-    if (_timer_map.count(key)) {
-        key++;
+unsigned int CTimer::AddTimer(unsigned int interval, const std::function<void(void*)>& call_back, void* param, bool always) {
+    CMemSharePtr<CTimerEvent> timer_event = MakeNewSharedPtr<CTimerEvent>(_pool.get());
+    timer_event->_timer_call_back = call_back;
+    timer_event->_interval    = interval;
+    timer_event->_event_flag  |= EVENT_TIMER;
+    timer_event->_timer_param = param;
+    if (always) {
+        timer_event->_event_flag |= EVENT_TIMER_ALWAYS;
     }
-    _timer_map[key] = t;
-    id = key;
+    _AddTimer(interval, timer_event, timer_event->_timer_id);
+    _fix_timer_id_map[timer_event->_timer_id] = timer_event;
+    return timer_event->_timer_id;
 }
 
-void CTimer::AddTimer(unsigned int interval, TimerEvent& t) {
-	_time.Now();
-	unsigned int nowtime = _time.GetMsec();
-	unsigned int key = nowtime + interval;
-	t._event->_timer_id = key;
-
-	std::unique_lock<std::mutex> lock(_mutex);
-	if (_timer_map.count(key)) {
-		key++;
-	}
-	_timer_map[key] = t;
+unsigned int CTimer::AddTimer(unsigned int interval, CMemSharePtr<CTimerEvent>& event) {
+    event->_interval = interval;
+    event->_event_flag |= EVENT_TIMER;
+    _AddTimer(interval, event, event->_timer_id);
+    _fix_timer_id_map[event->_timer_id] = event;
+    return event->_timer_id;
 }
 
-void CTimer::AddTimer(unsigned int interval, unsigned int nowtime, TimerEvent& t) {
-	unsigned int key = nowtime + interval;
-	t._event->_timer_id = key;
-
-	std::unique_lock<std::mutex> lock(_mutex);
-	if (_timer_map.count(key)) {
-		key++;
-	}
-	_timer_map[key] = t;
-}
-
-void CTimer::AddTimer(unsigned int interval, int event_flag, CMemSharePtr<CEventHandler>& event) {
-	_time.Now();
-	unsigned int nowtime = _time.GetMsec();
-	unsigned int key = nowtime + interval;
-
-	std::unique_lock<std::mutex> lock(_mutex);
-	if (_timer_map.count(key)) {
-		key++;
-	}
-	_timer_map[key] = TimerEvent(event);
-	_timer_map[key]._event_flag = event_flag;
-	_timer_map[key]._event->_timer_id = key;
-}
-
-void CTimer::AddTimer(unsigned int interval, int event_flag, unsigned int nowtime, CMemSharePtr<CEventHandler>& event) {
-	unsigned int key = nowtime + interval;
-
-	std::unique_lock<std::mutex> lock(_mutex);
-	if (_timer_map.count(key)) {
-		key++;
-	}
-	_timer_map[key] = TimerEvent(event);
-	_timer_map[key]._event_flag = event_flag;
-	_timer_map[key]._event->_timer_id = key;
+unsigned int CTimer::AddTimer(unsigned int interval, CMemSharePtr<CEventHandler>& event) {
+    CMemSharePtr<CTimerEvent> timer_event = MakeNewSharedPtr<CTimerEvent>(_pool.get());
+    timer_event->_interval = interval;
+    timer_event->_event_flag |= EVENT_TIMER | event->_event_flag_set;
+    timer_event->_event = event;
+    _AddTimer(interval, timer_event, timer_event->_timer_id);
+    _fix_timer_id_map[timer_event->_timer_id] = timer_event;
+    return timer_event->_timer_id;
 }
 
 bool CTimer::DelTimer(unsigned int timerid) {
-	std::unique_lock<std::mutex> lock(_mutex);
-	auto iter = _timer_map.find(timerid);
-	if (iter != _timer_map.end()) {
-		iter->second._event->_timer_set = false;
-		_timer_map.erase(iter);
-		return true;
-	}
+    std::unique_lock<std::recursive_mutex> lock(_mutex);
+    auto iter = _fix_timer_id_map.find(timerid);
+    if (iter == _fix_timer_id_map.end()) {
+        return false;
+    }
+    auto timer_event_ptr = iter->second.Lock();
+    if (timer_event_ptr) {
+        auto timer_iter = _timer_map.find(timer_event_ptr->_timer_id);
+        if (timer_iter != _timer_map.end()) {
+            _timer_map.erase(timer_iter);
+            return true;
+        }
+    }
 	return false;
 }
 
-bool CTimer::DelTimer(CMemSharePtr<CEventHandler>& event) {
-	std::unique_lock<std::mutex> lock(_mutex);
-	auto iter = _timer_map.find(event->_timer_id);
-	if (iter != _timer_map.end()) {
-		iter->second._event->_timer_set = false;
-		_timer_map.erase(iter);
-		return true;
-	}
-	return false;
-}
-
-unsigned int CTimer::TimeoutCheck(std::vector<TimerEvent>& res) {
+unsigned int CTimer::TimeoutCheck(std::vector<CMemSharePtr<CTimerEvent>>& res) {
 	_time.Now();
 	unsigned int nowtime = _time.GetMsec();
 	unsigned int recent_timeout = 0;
-	std::unique_lock<std::mutex> lock(_mutex);
+    std::vector<CMemSharePtr<CTimerEvent>> always_timer;
+    std::unique_lock<std::recursive_mutex> lock(_mutex);
 	for (auto iter = _timer_map.begin(); iter != _timer_map.end();) {
 		if (iter->first <= nowtime) {
-            if (!(iter->second._event_flag & EVENT_TIMER)) {
-                iter->second._event->_timer_out = true;
+            if (iter->second->_event_flag & EVENT_TIMER_ALWAYS) {
+                always_timer.push_back(iter->second);
             }
 			res.push_back(iter->second);
 			iter = _timer_map.erase(iter);
-           
+
         } else {
 			recent_timeout = iter->first - nowtime;
 			break;
 		}
-	}
+    }
+    if (!always_timer.empty()) {
+        for (auto iter = always_timer.begin(); iter != always_timer.end(); ++iter) {
+            AddTimer((*iter)->_interval, (*iter));
+        }
+    }
 	return recent_timeout;
 }
 
-unsigned int CTimer::TimeoutCheck(unsigned int nowtime, std::vector<TimerEvent>& res) {
+unsigned int CTimer::TimeoutCheck(unsigned int nowtime, std::vector<CMemSharePtr<CTimerEvent>>& res) {
 	unsigned int recent_timeout = 0;
-	std::unique_lock<std::mutex> lock(_mutex);
+    std::vector<CMemSharePtr<CTimerEvent>> always_timer;
+    std::unique_lock<std::recursive_mutex> lock(_mutex);
     for (auto iter = _timer_map.begin(); iter != _timer_map.end();) {
         if (iter->first <= nowtime) {
-            if (!(iter->second._event_flag & EVENT_TIMER)) {
-                iter->second._event->_timer_out = true;
+            if (iter->second->_event_flag & EVENT_TIMER_ALWAYS) {
+                always_timer.push_back(iter->second);
             }
             res.push_back(iter->second);
             iter = _timer_map.erase(iter);
@@ -132,10 +103,34 @@ unsigned int CTimer::TimeoutCheck(unsigned int nowtime, std::vector<TimerEvent>&
             break;
         }
     }
+    if (!always_timer.empty()) {
+        for (auto iter = always_timer.begin(); iter != always_timer.end(); ++iter) {
+            AddTimer((*iter)->_interval, (*iter));
+        }
+    }
 	return recent_timeout;
 }
 
 int CTimer::GetTimerNum() {
-	std::unique_lock<std::mutex> lock(_mutex);
+    std::unique_lock<std::recursive_mutex> lock(_mutex);
 	return _timer_map.size();
+}
+
+void CTimer::_AddTimer(unsigned int interval, const CMemSharePtr<CTimerEvent>& t, unsigned int& id) {
+    _time.Now();
+    unsigned int nowtime = _time.GetMsec();
+    unsigned int key = nowtime + interval;
+
+    std::unique_lock<std::recursive_mutex> lock(_mutex);
+    if (_timer_map.count(key)) {
+        key++;
+    }
+    _timer_map[key] = t;
+    id = key;
+}
+
+void CTimer::_AddTimer(unsigned int interval, CMemSharePtr<CTimerEvent>& event) {
+    event->_interval = interval;
+    event->_event_flag |= EVENT_TIMER;
+    _AddTimer(interval, event, event->_timer_id);
 }

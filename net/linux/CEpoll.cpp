@@ -60,18 +60,16 @@ bool CEpoll::Dealloc() {
 	return true;
 }
 
-bool CEpoll::AddTimerEvent(const TimerEvent& event, unsigned int& timer_id) {
-    _timer.AddTimer(event._interval, event, timer_id);
-    LOG_DEBUG("add a timer event, %d", event.interval);
-    return true;
+unsigned int CEpoll::AddTimerEvent(unsigned int interval, const std::function<void(void*)>& call_back, void* param, bool always) {
+    return _timer.AddTimer(interval, call_back, param, always);
 }
 
 bool CEpoll::RemoveTimerEvent(unsigned int timer_id) {
     return _timer.DelTimer(timer_id);
 }
 
-bool CEpoll::AddTimerEvent(unsigned int interval, int event_flag, CMemSharePtr<CEventHandler>& event) {
-	_timer.AddTimer(interval, event_flag, event);
+bool CEpoll::AddTimerEvent(unsigned int interval, CMemSharePtr<CEventHandler>& event) {
+	_timer.AddTimer(interval, event);
 	LOG_DEBUG("add a timer event, %d", interval);
 	return true;
 }
@@ -200,7 +198,7 @@ bool CEpoll::DelEvent(CMemSharePtr<CEventHandler>& event) {
 
 void CEpoll::ProcessEvent() {
 	unsigned int		wait_time = 0;
-	std::vector<TimerEvent> timer_vec;
+    std::vector<CMemSharePtr<CTimerEvent>> timer_vec;;
 	std::vector<epoll_event> event_vec;
 	event_vec.resize(1000);
 	while (_run) {
@@ -321,30 +319,34 @@ bool CEpoll::_ReserOneShot(CMemSharePtr<CEventHandler>& event, int event_flag, u
 	return true;
 }
 
-void CEpoll::_DoTimeoutEvent(std::vector<TimerEvent>& timer_vec) {
-	for (auto iter = timer_vec.begin(); iter != timer_vec.end(); ++iter) {
-		if (iter->_event_flag & EVENT_READ) {
-			auto socket_ptr = iter->_event->_client_socket.Lock();
-			if (socket_ptr) {
-				socket_ptr->_Recv(iter->_event);
-			}
-
-		} else if (iter->_event_flag & EVENT_WRITE) {
-			auto socket_ptr = iter->_event->_client_socket.Lock();
-			if (socket_ptr) {
-				socket_ptr->_Send(iter->_event);
-			}
-        } else if (iter->_event_flag & EVENT_TIMER) {
-            auto func = iter->_timer_call_back;
-            if (func) {
-                func(iter->_timer_param);
+void CEpoll::_DoTimeoutEvent(std::vector<CMemSharePtr<CTimerEvent>>& timer_vec); {
+    for (auto iter = timer_vec.begin(); iter != timer_vec.end(); ++iter) {
+        if ((*iter)->_event_flag & EVENT_READ) {
+            CMemSharePtr<CEventHandler> event_ptr = (*iter)->_event.Lock();
+            CMemSharePtr<CSocket> socket_ptr = event_ptr->_client_socket.Lock();
+            if (socket_ptr) {
+                event_ptr->_event_flag_set |= EVENT_TIMER;
+                socket_ptr->_Recv(event_ptr);
             }
-            if (iter->_event_flag & EVENT_TIMER_ALWAYS) {
-                _timer.AddTimer(iter->_interval, *iter, iter->_timer_id);
+
+        }
+        else if ((*iter)->_event_flag & EVENT_WRITE) {
+            CMemSharePtr<CEventHandler> event_ptr = (*iter)->_event.Lock();
+            CMemSharePtr<CSocket> socket_ptr = event_ptr->_client_socket.Lock();
+            if (socket_ptr) {
+                event_ptr->_event_flag_set |= EVENT_TIMER;
+                socket_ptr->_Send(event_ptr);
+            }
+
+        }
+        else if ((*iter)->_event_flag & EVENT_TIMER) {
+            auto func = (*iter)->_timer_call_back;
+            if (func) {
+                func((*iter)->_timer_param);
             }
         }
-	}
-	timer_vec.clear();
+    }
+    timer_vec.clear();
 }
 
 void CEpoll::_DoEvent(std::vector<epoll_event>& event_vec, int num) {

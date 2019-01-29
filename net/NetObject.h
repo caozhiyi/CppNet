@@ -12,7 +12,6 @@
 #include "Timer.h"
 
 typedef std::function<void(CMemSharePtr<CSocket>&, int err)> call_back;
-typedef std::function<void(void*)>                           timer_call_back;
 
 class CEventActions;
 class CSocket;
@@ -30,7 +29,7 @@ public:
 	void SetReadCallback(const call_back& func);
 	void SetWriteCallback(const call_back& func);
 	void SetDisconnectionCallback(const call_back& func);
-    unsigned int SetTimer(unsigned int interval, const timer_call_back& func, void* param = nullptr, bool always = false);
+    unsigned int SetTimer(unsigned int interval, const std::function<void(void*)>& func, void* param = nullptr, bool always = false);
     void RemoveTimer(unsigned int timer_id);
 
 	//server
@@ -62,7 +61,7 @@ private:
 	std::map<unsigned int, CMemSharePtr<CAcceptSocket>>			_accept_socket;
 	std::map<unsigned int, CMemSharePtr<CSocket>>				_socket_map;
 	std::map<std::thread::id, std::shared_ptr<CEventActions>>	_actions_map;
-    std::map<unsigned int, TimerEvent>                           _timer_id_map;      //the timer id where change every times.so ...
+    std::map<unsigned int, std::weak_ptr<CEventActions>>        _timer_actions_map;
 };
 
 #endif

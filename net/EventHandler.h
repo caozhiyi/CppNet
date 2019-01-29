@@ -31,6 +31,15 @@ public:
 	int							_event_flag_set = 0;
 };
 
+struct CTimerEvent {
+    int							_event_flag;
+    unsigned int                _timer_id;
+    unsigned int                _interval;
+    void*                       _timer_param;
+    std::function<void(void*)>  _timer_call_back;   // only timer event
+    CMemWeakPtr<CEventHandler>  _event;
+};
+
 class CBuffer;
 class CEventHandler : public Cevent {
 public:
@@ -38,9 +47,6 @@ public:
 	CMemWeakPtr<CSocket>		_client_socket;
 	int							_off_set;				//read or write size
 
-	bool						_timer_out = false;
-	bool						_timer_set = false;		//is add in timer map?
-	unsigned int				_timer_id = 0;
 	std::function<void(CMemSharePtr<CEventHandler>&, int error)>	_call_back;
 };
 

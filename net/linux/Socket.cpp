@@ -187,7 +187,7 @@ void CSocket::SyncRead(unsigned int interval) {
 
 	if (_event_actions) {
 		_read_event->_event_flag_set |= EVENT_TIMER;
-		_event_actions->AddTimerEvent(interval, EVENT_READ, _read_event);
+		_event_actions->AddTimerEvent(interval, _read_event);
 	}
 }
 
@@ -225,7 +225,7 @@ void CSocket::SyncWrite(unsigned int interval, char* src, int len) {
 
 	if (_event_actions) {
 		_write_event->_event_flag_set |= EVENT_TIMER;
-		_event_actions->AddTimerEvent(interval, EVENT_WRITE, _write_event);
+		_event_actions->AddTimerEvent(interval, _write_event);
 	}
 }
 
@@ -266,9 +266,8 @@ void CSocket::_Recv(CMemSharePtr<CEventHandler>& event) {
 		return;
 	}
 	int err = -1;
-	if (event->_timer_out) {
+	if (event->_event_flag_set & EVENT_TIMER) {
 		err = EVENT_ERROR_TIMEOUT | event->_event_flag_set;
-		event->_timer_out = false;
 		//reset timer flag
 		event->_event_flag_set &= ~EVENT_TIMER;
 
@@ -327,9 +326,8 @@ void CSocket::_Send(CMemSharePtr<CEventHandler>& event) {
 	}
 
 	int err = -1;
-	if (event->_timer_out) {
+	if (event->_event_flag_set & EVENT_TIMER) {
 		err = EVENT_ERROR_TIMEOUT | event->_event_flag_set;
-		event->_timer_out = false;
 		event->_event_flag_set &= ~EVENT_TIMER;
 
 	} else {
