@@ -83,6 +83,7 @@ void CSocket::SyncWrite(char* src, int len) {
 		_write_event->_client_socket = _read_event->_client_socket;
 	}
 
+    _write_event->_event_flag_set |= EVENT_WRITE;
 	//try send
 	_write_event->_buffer->Write(src, len);
 	_Send(_write_event);
@@ -211,6 +212,8 @@ void CSocket::SyncWrite(unsigned int interval, char* src, int len) {
 	if (!_write_event->_buffer) {
 		_write_event->_buffer = MakeNewSharedPtr<CBuffer>(_pool.get(), _pool);
 	}
+
+    _write_event->_event_flag_set |= EVENT_WRITE;
 	//try send
 	_write_event->_buffer->Write(src, len);
 	_Send(_write_event);

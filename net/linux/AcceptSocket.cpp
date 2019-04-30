@@ -119,8 +119,14 @@ void CAcceptSocket::_Accept(CMemSharePtr<CAcceptEventHandler>& event) {
 		//set the socket noblocking
 		SetSocketNoblocking(sock);
 		event->_client_socket->_sock = sock;
-		memcpy(event->_client_socket->_ip, inet_ntoa(client_addr.sin_addr), __addr_str_len);
-		event->_client_socket->_port = client_addr.sin_port;
+        
+        sockaddr_in sock_addr;
+        int len = sizeof(sock_addr);
+    
+        getpeername(sock, (struct sockaddr*)&sock_addr, &len);
+
+		memcpy(event->_client_socket->_ip, inet_ntoa(sock_addr.sin_addr), __addr_str_len);
+		event->_client_socket->_port = ntohs(sock_addr.sin_port);
 		//get client socket
 		event->_client_socket->_read_event->_client_socket = event->_client_socket;
 		//call accept call back function

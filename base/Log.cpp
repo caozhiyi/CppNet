@@ -9,6 +9,8 @@ CLog::CLog() : _log_level(LOG_ERROR_LEVEL), _cur_date(0), _pool(__log_buf_size, 
 }
 
 CLog::~CLog() {
+    Stop();
+    Join();
 	_log_file.close();
 }
 
