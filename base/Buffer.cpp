@@ -4,6 +4,8 @@
 #include "LoopBuffer.h"
 #include "Log.h"
 
+using namespace base;
+
 CBuffer::CBuffer(std::shared_ptr<CMemoryPool>& pool) : 
 	_pool(pool), 
 	_buffer_num(0),
@@ -602,7 +604,7 @@ std::vector<CLoopBuffer*> CBuffer::GetReadBuffer() {
 	return res;
 }
 
-std::ostream& operator<< (std::ostream &out, const CBuffer &obj) {
+std::ostream& base::operator<< (std::ostream &out, const CBuffer &obj) {
 	if (!obj._buffer_start) {
 		return out;
 	}

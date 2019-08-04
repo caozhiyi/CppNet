@@ -4,6 +4,7 @@
 #include "LoopBuffer.h"
 #include "MemaryPool.h"
 
+using namespace base;
 
 CLoopBuffer::CLoopBuffer(std::shared_ptr<CMemoryPool>& pool, int index) : 
 	_can_read(false), 
@@ -473,31 +474,31 @@ const char* CLoopBuffer::_FindStrInMem(const char* buffer, const char* ch, int b
 	return nullptr;
 }
 
-bool operator<(const CLoopBuffer& buf1, const CLoopBuffer& buf2) {
+bool base::operator<(const base::CLoopBuffer& buf1, const base::CLoopBuffer& buf2) {
 	return buf1._index < buf2._index;
 }
 
-bool operator>(const CLoopBuffer& buf1, const CLoopBuffer& buf2) {
+bool base::operator>(const base::CLoopBuffer& buf1, const base::CLoopBuffer& buf2) {
 	return buf1._index > buf2._index;
 }
 
-bool operator<=(const CLoopBuffer& buf1, const CLoopBuffer& buf2) {
+bool base::operator<=(const base::CLoopBuffer& buf1, const base::CLoopBuffer& buf2) {
 	return buf1._index <= buf2._index;
 }
 
-bool operator>=(const CLoopBuffer& buf1, const CLoopBuffer& buf2) {
+bool base::operator>=(const base::CLoopBuffer& buf1, const base::CLoopBuffer& buf2) {
 	return buf1._index >= buf2._index;
 }
 
-bool operator==(const CLoopBuffer& buf1, const CLoopBuffer& buf2) {
+bool base::operator==(const base::CLoopBuffer& buf1, const base::CLoopBuffer& buf2) {
 	return buf1._index == buf2._index;
 }
 
-bool operator!=(const CLoopBuffer& buf1, const CLoopBuffer& buf2) {
+bool base::operator!=(const base::CLoopBuffer& buf1, const base::CLoopBuffer& buf2) {
 	return buf1._index != buf2._index;
 }
 
-std::ostream & operator<< (std::ostream &out, const CLoopBuffer &obj) {
+std::ostream& base::operator<< (std::ostream &out, const base::CLoopBuffer &obj) {
 	if (obj._read < obj._write) {
 		out.write(obj._read, obj._write - obj._read);
 	} else if (obj._read >= obj._write) {
