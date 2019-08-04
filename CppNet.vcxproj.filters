@@ -10,11 +10,11 @@
     <Filter Include="net\win">
       <UniqueIdentifier>{e68d38ab-7e33-4061-b30f-d8d452c83950}</UniqueIdentifier>
     </Filter>
-    <Filter Include="test">
-      <UniqueIdentifier>{da747bb7-8dad-4657-91c0-d2a6e6f4003f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="net\linux">
       <UniqueIdentifier>{3619e14b-ac00-4eac-8d85-aeb35c29e7d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{626d3ede-1715-4aaa-8e62-b6b629ea490b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -48,9 +48,6 @@
     <ClCompile Include="net\Timer.cpp">
       <Filter>net</Filter>
     </ClCompile>
-    <ClCompile Include="test\CppNet.cpp">
-      <Filter>test</Filter>
-    </ClCompile>
     <ClCompile Include="net\OSInfo.cpp">
       <Filter>net</Filter>
     </ClCompile>
@@ -66,11 +63,17 @@
     <ClCompile Include="net\linux\SocketBase.cpp">
       <Filter>net\linux</Filter>
     </ClCompile>
-    <ClCompile Include="net\NetObject.cpp">
-      <Filter>net</Filter>
-    </ClCompile>
     <ClCompile Include="net\linux\LinuxFunc.cpp">
       <Filter>net\linux</Filter>
+    </ClCompile>
+    <ClCompile Include="base\Config.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="net\CppNetImpl.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\CppNet.cpp">
+      <Filter>net</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -143,8 +146,20 @@
     <ClInclude Include="net\linux\LinuxFunc.h">
       <Filter>net\linux</Filter>
     </ClInclude>
-    <ClInclude Include="net\NetObject.h">
+    <ClInclude Include="base\Any.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\TSQueue.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\Config.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="net\CppNetImpl.h">
       <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CppNet.h">
+      <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

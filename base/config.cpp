@@ -2,7 +2,9 @@
 #include "Log.h"
 #include <fstream>
 
-bool CConfig::SetFilePath(const std::string& path) {
+using namespace base;
+
+void CConfig::SetFilePath(const std::string& path) {
 	_file = path;
 }
 
@@ -53,6 +55,7 @@ int CConfig::GetIntValue(const std::string& key) {
 		if (iter != _config_map.end()) {
 			return atoi(iter->second.c_str());
 		}
+        return -1;
 	
 	} catch (...) {
 		LOG_ERROR("get config int value failed.");
@@ -67,6 +70,7 @@ std::string CConfig::GetStringValue(const std::string& key) {
 		if (iter != _config_map.end()) {
 			return iter->second;
 		}
+        return "";
 
 	} catch (...) {
 		LOG_ERROR("get config string value failed.");
@@ -81,6 +85,7 @@ double CConfig::GetDoubleValue(const std::string& key) {
 		if (iter != _config_map.end()) {
 			return atof(iter->second.c_str());
 		}
+        return -1;
 
 	} catch (...) {
 		LOG_ERROR("get config double value failed.");
@@ -95,7 +100,7 @@ bool CConfig::GetBoolValue(const std::string& key) {
 		if (iter != _config_map.end()) {
 			return iter->second == "true" || iter->second == "1";
 		}
-
+        return false;
 	}
 	catch (...) {
 		LOG_ERROR("get config double value failed.");

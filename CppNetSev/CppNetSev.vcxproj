@@ -1,5 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -19,13 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{E98183C7-10C3-4B1A-B8FB-D60BB6217962}</ProjectGuid>
-    <RootNamespace>CppNet</RootNamespace>
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{6FE7E867-AD3A-4681-A0DA-2A5E0DB16887}</ProjectGuid>
+    <RootNamespace>CppNetSev</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
@@ -33,12 +34,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
@@ -46,7 +47,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -69,25 +70,30 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;_X86_</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)base;$(SolutionDir)include;$(SolutionDir)net;$(SolutionDir)net\win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;_AMD64_</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)base;$(SolutionDir)include;$(SolutionDir)net;$(SolutionDir)net\win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(SolutionDir)net;$(SolutionDir)base;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <HeapReserveSize>260046848</HeapReserveSize>
+      <AdditionalDependencies>CppNet.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(SolutionDir)net;$(SolutionDir)base;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>CppNet.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -97,6 +103,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -110,6 +117,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -117,55 +125,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="base\Buffer.cpp" />
-    <ClCompile Include="base\Config.cpp" />
-    <ClCompile Include="base\Log.cpp" />
-    <ClCompile Include="base\LoopBuffer.cpp" />
-    <ClCompile Include="base\MemaryPool.cpp" />
-    <ClCompile Include="base\TimeTool.cpp" />
-    <None Include="net\linux\AcceptSocket.cpp" />
-    <None Include="net\linux\CEpoll.cpp" />
-    <None Include="net\linux\LinuxFunc.cpp" />
-    <None Include="net\linux\Socket.cpp" />
-    <None Include="net\linux\SocketBase.cpp" />
-    <ClCompile Include="net\CppNet.cpp" />
-    <ClCompile Include="net\CppNetImpl.cpp" />
-    <ClCompile Include="net\OSInfo.cpp" />
-    <ClCompile Include="net\Timer.cpp" />
-    <ClCompile Include="net\win\AcceptSocket.cpp" />
-    <ClCompile Include="net\win\IOCP.cpp" />
-    <ClCompile Include="net\win\Socket.cpp" />
-    <ClCompile Include="net\win\SocketBase.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="base\Any.h" />
-    <ClInclude Include="base\Buffer.h" />
-    <ClInclude Include="base\Config.h" />
-    <ClInclude Include="base\Log.h" />
-    <ClInclude Include="base\LoopBuffer.h" />
-    <ClInclude Include="base\MemaryPool.h" />
-    <ClInclude Include="base\PoolSharedPtr.h" />
-    <ClInclude Include="base\Runnable.h" />
-    <ClInclude Include="base\RunnableAloneTaskList.h" />
-    <ClInclude Include="base\RunnableAloneTaskListWithPost.h" />
-    <ClInclude Include="base\RunnableShareTaskList.h" />
-    <ClInclude Include="base\Single.h" />
-    <ClInclude Include="base\TaskQueue.h" />
-    <ClInclude Include="base\TimeTool.h" />
-    <ClInclude Include="base\TSQueue.h" />
-    <ClInclude Include="include\CppNet.h" />
-    <ClInclude Include="net\AcceptSocket.h" />
-    <ClInclude Include="net\EventActions.h" />
-    <ClInclude Include="net\EventHandler.h" />
-    <ClInclude Include="net\linux\CEpoll.h" />
-    <ClInclude Include="net\linux\LinuxFunc.h" />
-    <ClInclude Include="net\CppNetImpl.h" />
-    <ClInclude Include="net\OSInfo.h" />
-    <ClInclude Include="net\Socket.h" />
-    <ClInclude Include="net\SocketBase.h" />
-    <ClInclude Include="net\Timer.h" />
-    <ClInclude Include="net\win\IOCP.h" />
-    <ClInclude Include="net\win\WinExpendFunc.h" />
+    <ClCompile Include="CppNetServer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
