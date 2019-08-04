@@ -3,11 +3,11 @@
 #include "SocketBase.h"
 #include "WinExpendFunc.h"
 #include "Log.h"
-
-LPFN_ACCEPTEX				__AcceptEx = nullptr;
-LPFN_CONNECTEX				__ConnectEx = nullptr;
-LPFN_GETACCEPTEXSOCKADDRS	__AcceptExScokAddrs = nullptr;
-LPFN_DISCONNECTEX			__DisconnectionEx;
+using namespace cppnet;
+LPFN_ACCEPTEX				cppnet::__AcceptEx          = nullptr;
+LPFN_CONNECTEX				cppnet::__ConnectEx         = nullptr;
+LPFN_GETACCEPTEXSOCKADDRS	cppnet::__AcceptExScokAddrs = nullptr;
+LPFN_DISCONNECTEX			cppnet::__DisconnectionEx   = nullptr;
 
 static void* _GetExFunctnion(unsigned int socket, const GUID& which) {
 	void* func = nullptr;
@@ -26,6 +26,7 @@ static bool _InitExFunctnion() {
 	__DisconnectionEx = (LPFN_DISCONNECTEX)_GetExFunctnion(socket, WSAID_DISCONNECTEX);
 	closesocket(socket);
 	if (!__AcceptExScokAddrs || !__ConnectEx || !__AcceptEx || !__DisconnectionEx) {
+        base::LOG_FATAL("get expand function failed!");
 		return false;
 	}
 	return true;
@@ -40,7 +41,7 @@ bool InitScoket() {
 	static WSADATA __wsa_data;
 	static bool __has_init = false;
 	if (!__has_init && WSAStartup(MAKEWORD(2, 2), &__wsa_data) != 0) {
-		LOG_FATAL("init win32 socket lib failed!");
+		base::LOG_FATAL("init win32 socket lib failed!");
 		return false;
 
 	} else {
@@ -53,7 +54,7 @@ bool InitScoket() {
 			_exfuncntion_init = true;
 
 		} else {
-			LOG_FATAL("init expend functions failed!");
+            base::LOG_FATAL("init expend functions failed!");
 			return false;
 		}
 	}
@@ -64,21 +65,21 @@ void DeallocSocket() {
 	WSACleanup();
 }
 
-CSocketBase::CSocketBase() : _add_event_actions(false), _invalid(false), _event_actions(nullptr), _pool(new CMemoryPool(1024, 20)) {
+CSocketBase::CSocketBase() : _add_event_actions(false), _invalid(false), _event_actions(nullptr), _pool(new base::CMemoryPool(1024, 20)) {
 	memset(_ip, 0, __addr_str_len);
 	_sock = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
 	SetReusePort(_sock);
 	if (_sock == INVALID_SOCKET) {
-		LOG_FATAL("init a new socket failed!");
+        base::LOG_FATAL("init a new socket failed!");
 	}
 }
 
-CSocketBase::CSocketBase(std::shared_ptr<CEventActions>& event_actions) : _add_event_actions(false), _invalid(false), _event_actions(event_actions), _pool(new CMemoryPool(1024, 20)) {
+CSocketBase::CSocketBase(std::shared_ptr<CEventActions>& event_actions) : _add_event_actions(false), _invalid(false), _event_actions(event_actions), _pool(new base::CMemoryPool(1024, 20)) {
 	memset(_ip, 0, __addr_str_len);
 	_sock = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
 	SetReusePort(_sock);
 	if (_sock == INVALID_SOCKET) {
-		LOG_FATAL("init a new socket failed!");
+        base::LOG_FATAL("init a new socket failed!");
 	}
 }
 

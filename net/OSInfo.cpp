@@ -4,7 +4,9 @@
 #include <unistd.h>
 #else 
 #include <sysinfoapi.h>
-#endif  
+#endif
+
+using namespace cppnet;
 
 int GetCpuNum() {
 	unsigned count = 1;

@@ -1,6 +1,6 @@
 #ifndef __linux__
-#ifndef HEADER_IOCP
-#define HEADER_IOCP
+#ifndef HEADER_NET_WIN_IOCP
+#define HEADER_NET_WIN_IOCP
 
 #include <winsock2.h>
 #include <MSWSock.h>
@@ -10,73 +10,76 @@
 #include "PoolSharedPtr.h"
 
 #define MAX_BUFFER_LEN        8192
-class Cevent;
-struct EventOverlapped {
-	OVERLAPPED	_overlapped;
-	WSABUF      _wsa_buf;   
-	int			_event_flag_set;
-	char        _lapped_buffer[MAX_BUFFER_LEN];
-	void*		_event;
 
-	EventOverlapped() {
-		_event_flag_set = 0;
-		memset(&_overlapped, 0, sizeof(_overlapped));
-		memset(_lapped_buffer, 0, MAX_BUFFER_LEN);
-		_wsa_buf.buf = _lapped_buffer;
-		_wsa_buf.len = MAX_BUFFER_LEN;
-	}
+namespace cppnet {
+    class Cevent;
+    struct EventOverlapped {
+        OVERLAPPED	_overlapped;
+        WSABUF      _wsa_buf;
+        int			_event_flag_set;
+        char        _lapped_buffer[MAX_BUFFER_LEN];
+        void*		_event;
 
-	~EventOverlapped() {
-		int i = 0;
-		i++;
-	}
+        EventOverlapped() {
+            _event_flag_set = 0;
+            memset(&_overlapped, 0, sizeof(_overlapped));
+            memset(_lapped_buffer, 0, MAX_BUFFER_LEN);
+            _wsa_buf.buf = _lapped_buffer;
+            _wsa_buf.len = MAX_BUFFER_LEN;
+        }
 
-	void Clear() {
-		_event_flag_set = 0;
-		memset(_lapped_buffer, 0, MAX_BUFFER_LEN);
-	}
-};
+        ~EventOverlapped() {
+            int i = 0;
+            i++;
+        }
 
-class CIOCP: public CEventActions
-{
-public:
-	CIOCP();
-	~CIOCP();
+        void Clear() {
+            _event_flag_set = 0;
+            memset(_lapped_buffer, 0, MAX_BUFFER_LEN);
+        }
+    };
 
-	virtual bool Init();
-	virtual bool Dealloc();
+    class CIOCP : public CEventActions
+    {
+    public:
+        CIOCP();
+        ~CIOCP();
 
-    virtual unsigned int AddTimerEvent(unsigned int interval, const std::function<void(void*)>& call_back, void* param, bool always = false);
-    virtual bool AddTimerEvent(unsigned int interval,  CMemSharePtr<CEventHandler>& event);
-    virtual bool RemoveTimerEvent(unsigned int timer_id);
-	virtual bool AddSendEvent(CMemSharePtr<CEventHandler>& event);
-	virtual bool AddRecvEvent(CMemSharePtr<CEventHandler>& event);
-	virtual bool AddAcceptEvent(CMemSharePtr<CAcceptEventHandler>& event);
-	virtual bool AddConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, char* buf, int buf_len);
-	virtual bool AddDisconnection(CMemSharePtr<CEventHandler>& event);
-	virtual bool DelEvent(CMemSharePtr<CEventHandler>& event);
+        virtual bool Init();
+        virtual bool Dealloc();
 
-	virtual void ProcessEvent();
+        virtual uint64_t AddTimerEvent(unsigned int interval, const std::function<void(void*)>& call_back, void* param, bool always = false);
+        virtual bool AddTimerEvent(unsigned int interval, base::CMemSharePtr<CEventHandler>& event);
+        virtual bool RemoveTimerEvent(uint64_t timer_id);
+        virtual bool AddSendEvent(base::CMemSharePtr<CEventHandler>& event);
+        virtual bool AddRecvEvent(base::CMemSharePtr<CEventHandler>& event);
+        virtual bool AddAcceptEvent(base::CMemSharePtr<CAcceptEventHandler>& event);
+        virtual bool AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, char* buf, int buf_len);
+        virtual bool AddDisconnection(base::CMemSharePtr<CEventHandler>& event);
+        virtual bool DelEvent(base::CMemSharePtr<CEventHandler>& event);
 
-	virtual void PostTask(std::function<void(void)>& task);
-	virtual void WakeUp();
-private:
-	bool _PostRecv(CMemSharePtr<CEventHandler>& event);
-	bool _PostAccept(CMemSharePtr<CAcceptEventHandler>& event);
-	bool _PostSend(CMemSharePtr<CEventHandler>& event);
-	bool _PostConnection(CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, char* buf, int buf_len);
-	bool _PostDisconnection(CMemSharePtr<CEventHandler>& event);
+        virtual void ProcessEvent();
 
-	void _DoTimeoutEvent(std::vector<CMemSharePtr<CTimerEvent>>& timer_vec);
-	void _DoEvent(EventOverlapped *socket_context, int bytes);
-	void _DoTaskList();
-private:
-	HANDLE	_iocp_handler;
-	bool	_is_inited;
-	std::mutex			_mutex;
-	std::atomic_bool	_run;
-	std::vector<std::function<void(void)>> _task_list;
-};
+        virtual void PostTask(std::function<void(void)>& task);
+        virtual void WakeUp();
 
+    private:
+        bool _PostRecv(base::CMemSharePtr<CEventHandler>& event);
+        bool _PostAccept(base::CMemSharePtr<CAcceptEventHandler>& event);
+        bool _PostSend(base::CMemSharePtr<CEventHandler>& event);
+        bool _PostConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, char* buf, int buf_len);
+        bool _PostDisconnection(base::CMemSharePtr<CEventHandler>& event);
+
+        void _DoTimeoutEvent(std::vector<base::CMemSharePtr<CTimerEvent>>& timer_vec);
+        void _DoEvent(EventOverlapped *socket_context, int bytes);
+        void _DoTaskList();
+    private:
+        HANDLE	_iocp_handler;
+        bool	_is_inited;
+        std::mutex			_mutex;
+        std::atomic_bool	_run;
+        std::vector<std::function<void(void)>> _task_list;
+    };
+}
 #endif
 #endif

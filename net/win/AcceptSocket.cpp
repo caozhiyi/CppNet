@@ -8,6 +8,8 @@
 #include "AcceptSocket.h"
 #include "Socket.h"
 
+using namespace cppnet;
+
 CAcceptSocket::CAcceptSocket(std::shared_ptr<CEventActions>& event_actions) : CSocketBase(event_actions){
 	
 }
@@ -25,7 +27,7 @@ bool CAcceptSocket::Bind(short port, const std::string& ip) {
 	int ret = bind(_sock, (sockaddr *)&addr, sizeof(sockaddr));
 
 	if (SOCKET_ERROR == ret) {
-		LOG_FATAL("win32 bind socket filed! errno : %d", GetLastError());
+        base::LOG_FATAL("win32 bind socket filed! errno : %d", GetLastError());
 		WSACleanup();
 		closesocket(_sock);
 		return false;
@@ -38,7 +40,7 @@ bool CAcceptSocket::Bind(short port, const std::string& ip) {
 bool CAcceptSocket::Listen(unsigned int listen_size) {
 	int ret = listen(_sock, listen_size);
 	if (SOCKET_ERROR == ret) {
-		LOG_FATAL("win32 listen socket filed! errno : %d", GetLastError());
+        base::LOG_FATAL("win32 listen socket filed! errno : %d", GetLastError());
 		WSACleanup();
 		closesocket(_sock);
 		return false;
@@ -50,7 +52,7 @@ bool CAcceptSocket::Listen(unsigned int listen_size) {
 
 void CAcceptSocket::SyncAccept() {
 	if (!_accept_event) {
-		_accept_event = MakeNewSharedPtr<CAcceptEventHandler>(_pool.get());
+		_accept_event = base::MakeNewSharedPtr<CAcceptEventHandler>(_pool.get());
 	}
 	if (!_accept_event->_data) {
 		_accept_event->_data = _pool->PoolNew<EventOverlapped>();
@@ -63,21 +65,21 @@ void CAcceptSocket::SyncAccept() {
 	auto sock = socket->GetSocket();
 
 	if (!_accept_event->_client_socket) {
-		_accept_event->_client_socket = MakeNewSharedPtr<CSocket>(_pool.get(), _event_actions);
+		_accept_event->_client_socket = base::MakeNewSharedPtr<CSocket>(_pool.get(), _event_actions);
 	}
 	if (!_accept_event->_client_socket->_read_event) {
-		_accept_event->_client_socket->_read_event = MakeNewSharedPtr<CEventHandler>(_accept_event->_client_socket->_pool.get());
+		_accept_event->_client_socket->_read_event = base::MakeNewSharedPtr<CEventHandler>(_accept_event->_client_socket->_pool.get());
 	}
 	if (!_accept_event->_client_socket->_read_event->_buffer) {
-		_accept_event->_client_socket->_read_event->_buffer = MakeNewSharedPtr<CBuffer>(_accept_event->_client_socket->_pool.get(), _accept_event->_client_socket->_pool);
+		_accept_event->_client_socket->_read_event->_buffer = base::MakeNewSharedPtr<base::CBuffer>(_accept_event->_client_socket->_pool.get(), _accept_event->_client_socket->_pool);
 	}
 
 	if (!_accept_event->_call_back) {
-		LOG_WARN("call back function is null");
+        base::LOG_WARN("call back function is null");
 		return;
 	}
 	if (!_accept_event->_client_socket->_read_event->_call_back) {
-		LOG_WARN("call back function is null");
+        base::LOG_WARN("call back function is null");
 		return;
 	}
 
@@ -87,25 +89,25 @@ void CAcceptSocket::SyncAccept() {
 	}
 }
 
-void CAcceptSocket::SetAcceptCallBack(const std::function<void(CMemSharePtr<CAcceptEventHandler>&, int error)>& call_back) {
+void CAcceptSocket::SetAcceptCallBack(const std::function<void(base::CMemSharePtr<CAcceptEventHandler>&, int error)>& call_back) {
 	if (!_accept_event) {
-		_accept_event = MakeNewSharedPtr<CAcceptEventHandler>(_pool.get());
+		_accept_event = base::MakeNewSharedPtr<CAcceptEventHandler>(_pool.get());
 	}
 	_accept_event->_call_back = call_back;
 }
 
-void CAcceptSocket::SetReadCallBack(const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back) {
+void CAcceptSocket::SetReadCallBack(const std::function<void(base::CMemSharePtr<CEventHandler>&, int error)>& call_back) {
 	if (!_accept_event->_client_socket) {
-		_accept_event->_client_socket = MakeNewSharedPtr<CSocket>(_pool.get(), _event_actions);
+		_accept_event->_client_socket = base::MakeNewSharedPtr<CSocket>(_pool.get(), _event_actions);
 	}
 	if (!_accept_event->_client_socket->_read_event) {
-		_accept_event->_client_socket->_read_event = MakeNewSharedPtr<CEventHandler>(_accept_event->_client_socket->_pool.get());
+		_accept_event->_client_socket->_read_event = base::MakeNewSharedPtr<CEventHandler>(_accept_event->_client_socket->_pool.get());
 	}
 
 	_accept_event->_client_socket->_read_event->_call_back = call_back;
 }
 
-void CAcceptSocket::_Accept(CMemSharePtr<CAcceptEventHandler>& event) {
+void CAcceptSocket::_Accept(base::CMemSharePtr<CAcceptEventHandler>& event) {
 	EventOverlapped* context = (EventOverlapped*)event->_data;
 
 	SOCKADDR_IN* client_addr = NULL;
@@ -132,14 +134,14 @@ void CAcceptSocket::_Accept(CMemSharePtr<CAcceptEventHandler>& event) {
 		event->_client_socket->_read_event->_call_back(event->_client_socket->_read_event, EVENT_ERROR_NO | EVENT_READ);
 	}
 
-	//post Accept
+	//post accept again
 	context->Clear();
-	event->_client_socket = MakeNewSharedPtr<CSocket>(_pool.get(), _event_actions);
+	event->_client_socket = base::MakeNewSharedPtr<CSocket>(_pool.get(), _event_actions);
 	if (!_accept_event->_client_socket->_read_event) {
-		_accept_event->_client_socket->_read_event = MakeNewSharedPtr<CEventHandler>(_accept_event->_client_socket->_pool.get());
+		_accept_event->_client_socket->_read_event = base::MakeNewSharedPtr<CEventHandler>(_accept_event->_client_socket->_pool.get());
 	}
 	if (!_accept_event->_client_socket->_read_event->_buffer) {
-		_accept_event->_client_socket->_read_event->_buffer = MakeNewSharedPtr<CBuffer>(_accept_event->_client_socket->_pool.get(), _accept_event->_client_socket->_pool);
+		_accept_event->_client_socket->_read_event->_buffer = base::MakeNewSharedPtr<base::CBuffer>(_accept_event->_client_socket->_pool.get(), _accept_event->_client_socket->_pool);
 	}
 	_accept_event->_event_flag_set |= EVENT_ACCEPT;
 	_event_actions->AddAcceptEvent(event);

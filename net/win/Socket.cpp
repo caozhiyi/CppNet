@@ -7,12 +7,21 @@
 #include "EventActions.h"
 #include "Socket.h"
 
-CSocket::CSocket(std::shared_ptr<CEventActions>& event_actions) : CSocketBase(event_actions), _post_event_num(0){
-	_read_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
-	_write_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
+using namespace cppnet;
+
+CSocket::CSocket(std::shared_ptr<CEventActions>& event_actions) : CSocketBase(event_actions), _post_event_num(0) {
+	_read_event = base::MakeNewSharedPtr<CEventHandler>(_pool.get());
+	_write_event = base::MakeNewSharedPtr<CEventHandler>(_pool.get());
+
+    _read_event->_data = _pool->PoolNew<EventOverlapped>();
+    _read_event->_buffer = base::MakeNewSharedPtr<base::CBuffer>(_pool.get(), _pool);
+
+    _write_event->_data = _pool->PoolNew<EventOverlapped>();
+    _write_event->_buffer = base::MakeNewSharedPtr<base::CBuffer>(_pool.get(), _pool);
 }
 
 CSocket::~CSocket() {
+    // remove from iocp
 	if (_read_event && _read_event->_data) {
 		EventOverlapped* temp = (EventOverlapped*)_read_event->_data;
 		_pool->PoolDelete<EventOverlapped>(temp);
@@ -27,20 +36,10 @@ CSocket::~CSocket() {
 
 void CSocket::SyncRead() {
 	if (!_read_event->_call_back) {
-		LOG_WARN("call back function is null");
+		base::LOG_ERROR("call back function is null");
 		return;
 	}
 
-	if (!_read_event) {
-		_read_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
-	}
-	if (!_read_event->_data) {
-		_read_event->_data = _pool->PoolNew<EventOverlapped>();
-	}
-	if (!_read_event->_buffer) {
-		_read_event->_buffer = MakeNewSharedPtr<CBuffer>(_pool.get(), _pool);
-	}
-	
 	if (_event_actions) {
 		_read_event->_event_flag_set = 0;
 		_read_event->_event_flag_set |= EVENT_READ;
@@ -52,26 +51,18 @@ void CSocket::SyncRead() {
 
 void CSocket::SyncWrite(char* src, int len) {
 	if (!_write_event->_call_back) {
-		LOG_WARN("call back function is null, src : %s, len : %d", src, len);
+        base::LOG_WARN("call back function is null, src : %s, len : %d", src, len);
 		return;
 	}
-	
-	if (!_write_event) {
-		_write_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
-	}
-	if (!_write_event->_data) {
-		_write_event->_data = _pool->PoolNew<EventOverlapped>();
-	}
-	if (!_write_event->_buffer) {
-		_write_event->_buffer = MakeNewSharedPtr<CBuffer>(_pool.get(), _pool);
-	}
+
 	_write_event->_buffer->Write(src, len);
 
 	if (!_write_event->_client_socket) {
 		_write_event->_client_socket = _read_event->_client_socket;
 	}
+
 	if (_event_actions) {
-		_read_event->_event_flag_set = 0;
+        _write_event->_event_flag_set = 0;
 		_write_event->_event_flag_set |= EVENT_WRITE;
 		if (_event_actions->AddSendEvent(_write_event)) {
 			_post_event_num++;
@@ -81,26 +72,18 @@ void CSocket::SyncWrite(char* src, int len) {
 
 void CSocket::SyncConnection(const std::string& ip, short port, char* buf, int buf_len) {
 	if (!_read_event->_call_back) {
-		LOG_WARN("call back function is null, ip : %s, port : %d", ip.c_str(), port);
+        base::LOG_WARN("call back function is null, ip : %s, port : %d", ip.c_str(), port);
 		return;
 	}
 
 	if (ip.length() > 16 || ip.empty()) {
-		LOG_ERROR("a wrong ip! ip : %s", ip.c_str());
+        base::LOG_ERROR("a wrong ip! ip : %s", ip.c_str());
 		return;
 	}
+
+    // set address info
 	strcpy(_ip, ip.c_str());
 	_port = port;
-	if (!_read_event) {
-		_read_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
-	}
-	if (!_read_event->_data) {
-		_read_event->_data = _pool->PoolNew<EventOverlapped>();
-	}
-	
-	if (!_read_event->_buffer) {
-		_read_event->_buffer = MakeNewSharedPtr<CBuffer>(_pool.get(), _pool);
-	}
 
 	if (!_read_event->_client_socket){
 		_read_event->_client_socket = memshared_from_this();
@@ -117,19 +100,8 @@ void CSocket::SyncConnection(const std::string& ip, short port, char* buf, int b
 
 void CSocket::SyncDisconnection() {
 	if (!_read_event->_call_back) {
-		LOG_WARN("call back function is null");
+        base::LOG_WARN("call back function is null");
 		return;
-	}
-
-	if (!_read_event) {
-		_read_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
-	}
-	if (!_read_event->_data) {
-		_read_event->_data = _pool->PoolNew<EventOverlapped>();
-	}
-	
-	if (!_read_event->_buffer) {
-		_read_event->_buffer = MakeNewSharedPtr<CBuffer>(_pool.get(), _pool);
 	}
 
 	if (!_read_event->_client_socket) {
@@ -146,28 +118,9 @@ void CSocket::SyncDisconnection() {
 }
 
 void CSocket::SyncRead(unsigned int interval) {
-	if (!_read_event->_call_back) {
-		LOG_WARN("call back function is null");
-		return;
-	}
 
-	if (!_read_event) {
-		_read_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
-	}
-	if (!_read_event->_data) {
-		_read_event->_data = _pool->PoolNew<EventOverlapped>();
-	}
+    SyncRead();
 
-	if (!_read_event->_buffer) {
-		_read_event->_buffer = MakeNewSharedPtr<CBuffer>(_pool.get(), _pool);
-	}
-	_read_event->_event_flag_set = 0;
-	if (_event_actions) {
-		_read_event->_event_flag_set |= EVENT_READ;
-		if (_event_actions->AddRecvEvent(_read_event)) {
-			_post_event_num++;
-		}
-	}
 	if (_event_actions) {
 		_read_event->_event_flag_set |= EVENT_TIMER;
 		_event_actions->AddTimerEvent(interval, _read_event);
@@ -176,33 +129,8 @@ void CSocket::SyncRead(unsigned int interval) {
 }
 
 void CSocket::SyncWrite(unsigned int interval, char* src, int len) {
-	if (!_write_event->_call_back) {
-		LOG_WARN("call back function is null");
-		return;
-	}
 
-	if (!_write_event) {
-		_write_event = MakeNewSharedPtr<CEventHandler>(_pool.get());
-	}
-	if (!_write_event->_data) {
-		_write_event->_data = _pool->PoolNew<EventOverlapped>();
-	}
-
-	if (!_write_event->_client_socket) {
-		_write_event->_client_socket = _read_event->_client_socket;
-	}
-	if (!_write_event->_buffer) {
-		_write_event->_buffer = MakeNewSharedPtr<CBuffer>(_pool.get(), _pool);
-	}
-	_write_event->_buffer->Write(src, len);
-
-	_write_event->_event_flag_set = 0;
-	if (_event_actions) {
-		_write_event->_event_flag_set |= EVENT_WRITE;
-		if (_event_actions->AddSendEvent(_write_event)) {
-			_post_event_num++;
-		}
-	}
+    SyncWrite(src, len);
 
 	if (_event_actions) {
 		_write_event->_event_flag_set |= EVENT_TIMER;
@@ -215,11 +143,11 @@ void CSocket::PostTask(std::function<void(void)>& func) {
 	_event_actions->PostTask(func);
 }
 
-void CSocket::SetReadCallBack(const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back) {
+void CSocket::SetReadCallBack(const std::function<void(base::CMemSharePtr<CEventHandler>&, int error)>& call_back) {
 	_read_event->_call_back = call_back;
 }
 
-void CSocket::SetWriteCallBack(const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back) {
+void CSocket::SetWriteCallBack(const std::function<void(base::CMemSharePtr<CEventHandler>&, int error)>& call_back) {
 	_write_event->_call_back = call_back;
 }
 
@@ -240,7 +168,7 @@ bool operator!=(const CSocketBase& s1, const CSocketBase& s2) {
 }
 
 
-void CSocket::_Recv(CMemSharePtr<CEventHandler>& event) {
+void CSocket::_Recv(base::CMemSharePtr<CEventHandler>& event) {
 	EventOverlapped* context = (EventOverlapped*)event->_data;
 
 	_post_event_num--;
@@ -272,7 +200,7 @@ void CSocket::_Recv(CMemSharePtr<CEventHandler>& event) {
 	}
 }
 
-void CSocket::_Send(CMemSharePtr<CEventHandler>& event) {
+void CSocket::_Send(base::CMemSharePtr<CEventHandler>& event) {
 	EventOverlapped* context = (EventOverlapped*)event->_data;
 
 	_post_event_num--;

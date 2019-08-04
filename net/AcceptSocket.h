@@ -1,5 +1,5 @@
-#ifndef HEADER_CACCEPTSOCKET
-#define HEADER_CACCEPTSOCKET
+#ifndef HEADER_NET_CACCEPTSOCKET
+#define HEADER_NET_CACCEPTSOCKET
 #include <string>
 #include <memory>
 #include <functional>
@@ -7,29 +7,30 @@
 #include "PoolSharedPtr.h"
 #include "SocketBase.h"
 
-class CEventHandler;
-class CAcceptEventHandler;
-class CMemoryPool;
+namespace cppnet {
+    class CEventHandler;
+    class CAcceptEventHandler;
+    class CMemoryPool;
 
-class CAcceptSocket : public CSocketBase, public CEnableSharedFromThis<CAcceptSocket> {
-public:
-	CAcceptSocket(std::shared_ptr<CEventActions>& event_actions);
-	~CAcceptSocket();
+    class CAcceptSocket : public CSocketBase, public base::CEnableSharedFromThis<CAcceptSocket> {
+    public:
+        CAcceptSocket(std::shared_ptr<CEventActions>& event_actions);
+        ~CAcceptSocket();
 
-	bool Bind(short port, const std::string& ip = "");
+        bool Bind(short port, const std::string& ip = "");
 
-	bool Listen(unsigned int listen_size);
+        bool Listen(unsigned int listen_size);
 
-	void SyncAccept();
+        void SyncAccept();
 
-	void SetReadCallBack(const std::function<void(CMemSharePtr<CEventHandler>&, int error)>& call_back);
-	void SetAcceptCallBack(const std::function<void(CMemSharePtr<CAcceptEventHandler>&, int error)>& call_back);
+        void SetReadCallBack(const std::function<void(base::CMemSharePtr<CEventHandler>&, int error)>& call_back);
+        void SetAcceptCallBack(const std::function<void(base::CMemSharePtr<CAcceptEventHandler>&, int error)>& call_back);
 
-public:
-	void _Accept(CMemSharePtr<CAcceptEventHandler>& event);
+    public:
+        void _Accept(base::CMemSharePtr<CAcceptEventHandler>& event);
 
-public:
-	CMemSharePtr<CAcceptEventHandler>		_accept_event;
-};
-
+    public:
+        base::CMemSharePtr<CAcceptEventHandler>		_accept_event;
+    };
+}
 #endif

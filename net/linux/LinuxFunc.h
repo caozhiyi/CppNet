@@ -1,13 +1,16 @@
 #ifdef __linux__
 
-#ifndef HEADER_LINUXFUNC
-#define HEADER_LINUXFUNC
+#ifndef HEADER_NET_LINUX_LINUXFUNC
+#define HEADER_NET_LINUX_LINUXFUNC
 
-int SetSocketNoblocking(unsigned int sock);
+namespace cppnet {
 
-int SetReusePort(unsigned int sock);
+    int SetSocketNoblocking(unsigned int sock);
 
-void SetCoreFileUnlimit();
+    int SetReusePort(unsigned int sock);
 
+    void SetCoreFileUnlimit();
+
+}
 #endif
 #endif // __linux__
