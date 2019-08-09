@@ -17,9 +17,9 @@ namespace cppnet {
         CAcceptSocket(std::shared_ptr<CEventActions>& event_actions);
         ~CAcceptSocket();
 
-        bool Bind(short port, const std::string& ip = "");
+        bool Bind(uint16_t port, const std::string& ip = "");
 
-        bool Listen(unsigned int listen_size);
+        bool Listen(uint16_t listen_size);
 
         void SyncAccept();
 

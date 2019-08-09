@@ -62,15 +62,15 @@ bool CEpoll::Dealloc() {
 	return true;
 }
 
-uint64_t CEpoll::AddTimerEvent(unsigned int interval, const std::function<void(void*)>& call_back, void* param, bool always) {
+uint64_t CEpoll::AddTimerEvent(uint32_t interval, const std::function<void(void*)>& call_back, void* param, bool always) {
     return _timer.AddTimer(interval, call_back, param, always);
 }
 
-bool CEpoll::RemoveTimerEvent(unsigned int timer_id) {
+bool CEpoll::RemoveTimerEvent(uint64_t timer_id) {
     return _timer.DelTimer(timer_id);
 }
 
-bool CEpoll::AddTimerEvent(unsigned int interval, base::CMemSharePtr<CEventHandler>& event) {
+bool CEpoll::AddTimerEvent(uint32_t interval, base::CMemSharePtr<CEventHandler>& event) {
 	_timer.AddTimer(interval, event);
     base::LOG_DEBUG("add a timer event, %d", interval);
 	return true;
@@ -124,7 +124,7 @@ bool CEpoll::AddRecvEvent(base::CMemSharePtr<CEventHandler>& event) {
 		return res;
 
 	}
-	LOG_WARN("read event is already distroyed!in %s", "AddRecvEvent");
+	base::LOG_WARN("read event is already distroyed!in AddRecvEvent");
 	return false;
 }
 
@@ -200,7 +200,7 @@ bool CEpoll::DelEvent(base::CMemSharePtr<CEventHandler>& event) {
 }
 
 void CEpoll::ProcessEvent() {
-	unsigned int		wait_time = 0;
+	uint32_t		wait_time = 0;
     std::vector<base::CMemSharePtr<CTimerEvent>> timer_vec;;
 	std::vector<epoll_event> event_vec;
 	event_vec.resize(1000);
@@ -256,7 +256,7 @@ void CEpoll::WakeUp() {
 	write(_pipe[1], "0", 1);
 }
 
-bool CEpoll::_AddEvent(base::CMemSharePtr<CEventHandler>& event, int event_flag, unsigned int sock) {
+bool CEpoll::_AddEvent(base::CMemSharePtr<CEventHandler>& event, int32_t event_flag, uint64_t sock) {
 	epoll_event* content = (epoll_event*)event->_data;
 	content->events |= event_flag | EPOLLET;
 	content->data.ptr = (void*)&event->_client_socket;
@@ -275,7 +275,7 @@ bool CEpoll::_AddEvent(base::CMemSharePtr<CEventHandler>& event, int event_flag,
 	return true;
 }
 
-bool CEpoll::_AddEvent(base::CMemSharePtr<CAcceptEventHandler>& event, int event_flag, unsigned int sock) {
+bool CEpoll::_AddEvent(base::CMemSharePtr<CAcceptEventHandler>& event, int32_t event_flag, uint64_t sock) {
 	epoll_event* content = (epoll_event*)event->_data;
 	content->events |= event_flag | EPOLLET;
 	content->data.ptr = (void*)&event->_accept_socket;
@@ -289,7 +289,7 @@ bool CEpoll::_AddEvent(base::CMemSharePtr<CAcceptEventHandler>& event, int event
 	return true;
 }
 
-bool CEpoll::_ModifyEvent(base::CMemSharePtr<CEventHandler>& event, int event_flag, unsigned int sock) {
+bool CEpoll::_ModifyEvent(base::CMemSharePtr<CEventHandler>& event, int32_t event_flag, uint64_t sock) {
 	epoll_event* content = (epoll_event*)event->_data;
 	content->events |= event_flag;
 	content->data.ptr = (void*)&event->_client_socket;
@@ -307,7 +307,7 @@ bool CEpoll::_ModifyEvent(base::CMemSharePtr<CEventHandler>& event, int event_fl
 	return true;
 }
 
-bool CEpoll::_ReserOneShot(base::CMemSharePtr<CEventHandler>& event, int event_flag, unsigned int sock) {
+bool CEpoll::_ReserOneShot(base::CMemSharePtr<CEventHandler>& event, int32_t event_flag, uint64_t sock) {
 	epoll_event* content = (epoll_event*)event->_data;
 	content->events |= EPOLLONESHOT;
 	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_MOD, sock, content);
@@ -328,7 +328,7 @@ void CEpoll::_DoTimeoutEvent(std::vector<base::CMemSharePtr<CTimerEvent>>& timer
     for (auto iter = timer_vec.begin(); iter != timer_vec.end(); ++iter) {
         if ((*iter)->_event_flag & EVENT_READ) {
             base::CMemSharePtr<CEventHandler> event_ptr = (*iter)->_event.Lock();
-            base::CMemSharePtr<CSocket> socket_ptr = event_ptr->_client_socket.Lock();
+            base::CMemSharePtr<CSocketImpl> socket_ptr = event_ptr->_client_socket.Lock();
             if (socket_ptr) {
                 event_ptr->_event_flag_set |= EVENT_TIMER;
                 socket_ptr->_Recv(event_ptr);
@@ -336,7 +336,7 @@ void CEpoll::_DoTimeoutEvent(std::vector<base::CMemSharePtr<CTimerEvent>>& timer
 
         } else if ((*iter)->_event_flag & EVENT_WRITE) {
             base::CMemSharePtr<CEventHandler> event_ptr = (*iter)->_event.Lock();
-            base::CMemSharePtr<CSocket> socket_ptr = event_ptr->_client_socket.Lock();
+            base::CMemSharePtr<CSocketImpl> socket_ptr = event_ptr->_client_socket.Lock();
             if (socket_ptr) {
                 event_ptr->_event_flag_set |= EVENT_TIMER;
                 socket_ptr->_Send(event_ptr);
@@ -353,7 +353,7 @@ void CEpoll::_DoTimeoutEvent(std::vector<base::CMemSharePtr<CTimerEvent>>& timer
 }
 
 void CEpoll::_DoEvent(std::vector<epoll_event>& event_vec, int num) {
-    base::CMemWeakPtr<CSocket>* normal_sock = nullptr;
+    base::CMemWeakPtr<CSocketImpl>* normal_sock = nullptr;
     base::CMemSharePtr<CAcceptSocket>* accept_sock = nullptr;
 	void* sock = nullptr;
 	for (int i = 0; i < num; i++) {
@@ -366,7 +366,7 @@ void CEpoll::_DoEvent(std::vector<epoll_event>& event_vec, int num) {
 			continue;
 		}
 		if (!sock) {
-			LOG_WARN("the event is nullptr, index : %d", i);
+			base::LOG_WARN("the event is nullptr, index : %d", i);
             _run = false;
 			continue;
 		}
@@ -376,7 +376,7 @@ void CEpoll::_DoEvent(std::vector<epoll_event>& event_vec, int num) {
 			(*accept_sock)->_Accept((*accept_sock)->_accept_event);
 
 		} else {
-			normal_sock = (CMemWeakPtr<CSocket>*)event_vec[i].data.ptr;
+			normal_sock = (base::CMemWeakPtr<CSocketImpl>*)event_vec[i].data.ptr;
 			if (!normal_sock) {
 				continue;
 			}

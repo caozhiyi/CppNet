@@ -18,9 +18,12 @@ namespace cppnet {
         virtual bool Init();
         virtual bool Dealloc();
 
-        virtual uint64_t AddTimerEvent(unsigned int interval, const std::function<void(void*)>& call_back, void* param, bool always = false);
-        virtual bool AddTimerEvent(unsigned int interval, base::CMemSharePtr<CEventHandler>& event);
-        virtual bool RemoveTimerEvent(unsigned int timer_id);
+        // timer event
+        virtual uint64_t AddTimerEvent(uint32_t interval, const timer_call_back& call_back, void* param, bool always = false);
+        virtual bool AddTimerEvent(uint32_t interval, base::CMemSharePtr<CEventHandler>& event);
+        virtual bool RemoveTimerEvent(uint64_t timer_id);
+
+        // net io event
         virtual bool AddSendEvent(base::CMemSharePtr<CEventHandler>& event);
         virtual bool AddRecvEvent(base::CMemSharePtr<CEventHandler>& event);
         virtual bool AddAcceptEvent(base::CMemSharePtr<CAcceptEventHandler>& event);
@@ -28,26 +31,27 @@ namespace cppnet {
         virtual bool AddDisconnection(base::CMemSharePtr<CEventHandler>& event);
         virtual bool DelEvent(base::CMemSharePtr<CEventHandler>& event);
 
+        // net io process
         virtual void ProcessEvent();
 
         virtual void PostTask(std::function<void(void)>& task);
         virtual void WakeUp();
 
     private:
-        bool _AddEvent(base::CMemSharePtr<CEventHandler>& event, int event_flag, unsigned int sock);
-        bool _AddEvent(base::CMemSharePtr<CAcceptEventHandler>& event, int event_flag, unsigned int sock);
-        bool _ModifyEvent(base::CMemSharePtr<CEventHandler>& event, int event_flag, unsigned int sock);
-        bool _ReserOneShot(base::CMemSharePtr<CEventHandler>& event, int event_flag, unsigned int sock);
+        bool _AddEvent(base::CMemSharePtr<CEventHandler>& event, int32_t event_flag, uint64_t sock);
+        bool _AddEvent(base::CMemSharePtr<CAcceptEventHandler>& event, int32_t event_flag, uint64_t sock);
+        bool _ModifyEvent(base::CMemSharePtr<CEventHandler>& event, int32_t event_flag, uint64_t sock);
+        bool _ReserOneShot(base::CMemSharePtr<CEventHandler>& event, int32_t event_flag, uint64_t sock);
 
         void _DoTimeoutEvent(std::vector<base::CMemSharePtr<CTimerEvent>>& timer_vec);
-        void _DoEvent(std::vector<epoll_event>& event_vec, int num);
+        void _DoEvent(std::vector<epoll_event>& event_vec, int32_t num);
         void _DoTaskList();
     private:
         std::atomic_bool	_run;
 
-        int				_epoll_handler;
-        unsigned int	_pipe[2];
-        epoll_event		_pipe_content;
+        uint32_t		    _epoll_handler;
+        uint32_t      	    _pipe[2];
+        epoll_event		    _pipe_content;
 
         std::mutex		_mutex;
         std::vector<std::function<void(void)>> _task_list;

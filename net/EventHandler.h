@@ -5,9 +5,10 @@
 #include <atomic>
 #include "PoolSharedPtr.h"
 #include "AcceptSocket.h"
-#include "Socket.h"
+#include "SocketImpl.h"
+#include "CppDefine.h"
 
-#define INVALID_TIMER -1
+#define INVALID_TIMER   -1
 
 namespace cppnet {
     enum EVENT_FLAG {
@@ -19,13 +20,6 @@ namespace cppnet {
         EVENT_DISCONNECT    = 0x0020,		//disconnect event
 
         EVENT_TIMER_ALWAYS  = 0x0040,       //timer always check
-    };
-
-    enum EVENT_ERROR {
-        EVENT_ERROR_NO      = 0x0100,
-        EVENT_ERROR_TIMEOUT = 0x0200,
-        EVENT_ERROR_CLOSED  = 0x0400,
-        EVENT_ERROR_DONE    = 0x0800,
     };
 
     class Cevent {
@@ -47,7 +41,7 @@ namespace cppnet {
     class CEventHandler : public Cevent {
     public:
         base::CMemSharePtr<base::CBuffer>	_buffer;
-        base::CMemWeakPtr<CSocket>		    _client_socket;
+        base::CMemWeakPtr<CSocketImpl>		_client_socket;
         int							        _off_set;				//read or write size
 
         std::function<void(base::CMemSharePtr<CEventHandler>&, int error)>	_call_back;
@@ -55,7 +49,7 @@ namespace cppnet {
 
     class CAcceptEventHandler : public Cevent {
     public:
-        base::CMemSharePtr<CSocket>		_client_socket;
+        base::CMemSharePtr<CSocketImpl>		_client_socket;
 
         base::CMemSharePtr<CAcceptSocket>	_accept_socket = nullptr;
         std::function<void(base::CMemSharePtr<CAcceptEventHandler>&, int error)>	_call_back;

@@ -34,7 +34,7 @@ bool CAcceptSocket::Bind(short port, const std::string& ip) {
 	int ret = bind(_sock, (sockaddr *)&addr, sizeof(sockaddr));
 
 	if (-1 == ret) {
-		LOG_FATAL("linux bind socket filed! error code:%d", errno);
+		base::LOG_FATAL("linux bind socket filed! error code:%d", errno);
 		close(_sock);
 		return false;
 	}
@@ -43,10 +43,10 @@ bool CAcceptSocket::Bind(short port, const std::string& ip) {
 	return true;
 }
 
-bool CAcceptSocket::Listen(unsigned int listen_size) {
+bool CAcceptSocket::Listen(uint16_t listen_size) {
 	int ret = listen(_sock, listen_size);
 	if (-1 == ret) {
-		LOG_FATAL("linux listen socket filed! error code:%d", errno);
+		base::LOG_FATAL("linux listen socket filed! error code:%d", errno);
 		close(_sock);
 		return false;
 	}
@@ -57,7 +57,7 @@ bool CAcceptSocket::Listen(unsigned int listen_size) {
 
 void CAcceptSocket::SyncAccept() {
 	if (!_accept_event->_call_back) {
-		LOG_WARN("call back function is null");
+		base::LOG_WARN("call back function is null");
 		return;
 	}
 
@@ -75,7 +75,7 @@ void CAcceptSocket::SyncAccept() {
 	}
 
 	if (!_accept_event->_client_socket) {
-		_accept_event->_client_socket = base::MakeNewSharedPtr<CSocket>(_pool.get(), _event_actions);
+		_accept_event->_client_socket = base::MakeNewSharedPtr<CSocketImpl>(_pool.get(), _event_actions);
 	}
 	
 	//add event to epoll
@@ -87,7 +87,7 @@ void CAcceptSocket::SyncAccept() {
 
 void CAcceptSocket::SetReadCallBack(const std::function<void(base::CMemSharePtr<CEventHandler>&, int error)>& call_back) {
 	if (!_accept_event->_client_socket) {
-		_accept_event->_client_socket = base::MakeNewSharedPtr<CSocket>(_pool.get(), _event_actions);
+		_accept_event->_client_socket = base::MakeNewSharedPtr<CSocketImpl>(_pool.get(), _event_actions);
 	}
 	if (!_accept_event->_client_socket->_read_event) {
 		_accept_event->_client_socket->_read_event = base::MakeNewSharedPtr<CEventHandler>(_accept_event->_client_socket->_pool.get());
@@ -115,7 +115,7 @@ void CAcceptSocket::_Accept(base::CMemSharePtr<CAcceptEventHandler>& event) {
 			if (errno == EWOULDBLOCK || errno == EAGAIN) {
 				break;
 			}
-			LOG_FATAL("accept socket filed! error code:%d", errno);
+			base::LOG_FATAL("accept socket filed! error code:%d", errno);
 			break;
 		}
 		//set the socket noblocking
@@ -136,7 +136,7 @@ void CAcceptSocket::_Accept(base::CMemSharePtr<CAcceptEventHandler>& event) {
 			event->_call_back(event, EVENT_ERROR_NO | EVENT_ACCEPT);
 		}
 		event->_event_flag_set = 0;
-		event->_client_socket = base::MakeNewSharedPtr<CSocket>(_pool.get(), _event_actions);
+		event->_client_socket = base::MakeNewSharedPtr<CSocketImpl>(_pool.get(), _event_actions);
 		if (!_accept_event->_client_socket->_read_event) {
 			_accept_event->_client_socket->_read_event = base::MakeNewSharedPtr<CEventHandler>(_accept_event->_client_socket->_pool.get());
 		}

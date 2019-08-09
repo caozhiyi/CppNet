@@ -7,31 +7,32 @@
 #include "Buffer.h"
 #include "Log.h"
 #include "EventActions.h"
-#include "Socket.h"
+#include "SocketImpl.h"
 #include "Runnable.h"
 #include "LinuxFunc.h"
+#include "CppNetImpl.h"
 
 using namespace cppnet;
 
-CSocket::CSocket(std::shared_ptr<CEventActions>& event_actions) : CSocketBase(event_actions){
+CSocketImpl::CSocketImpl(std::shared_ptr<CEventActions>& event_actions) : CSocketBase(event_actions){
 	_read_event = base::MakeNewSharedPtr<CEventHandler>(_pool.get());
 	_write_event = base::MakeNewSharedPtr<CEventHandler>(_pool.get());
 
     _read_event->_data = _pool->PoolNew<epoll_event>();
     ((epoll_event*)_read_event->_data)->events = 0;
-    _read_event->_buffer = base::MakeNewSharedPtr<CBuffer>(_pool.get(), _pool);
+    _read_event->_buffer = base::MakeNewSharedPtr<base::CBuffer>(_pool.get(), _pool);
 
     _write_event->_data = _pool->PoolNew<epoll_event>();
     ((epoll_event*)_write_event->_data)->events = 0;
-    _write_event->_buffer = base::MakeNewSharedPtr<CBuffer>(_pool.get(), _pool);
+    _write_event->_buffer = base::MakeNewSharedPtr<base::CBuffer>(_pool.get(), _pool);
 }
 
-CSocket::~CSocket() {
+CSocketImpl::~CSocketImpl() {
     base::LOG_DEBUG("delete from epoll, socket : %d, TheadId : %d", _sock, std::this_thread::get_id());
 	//delete from epoll
 	if (_event_actions) {
 		if (_event_actions->DelEvent(_read_event)) {
-			CRunnable::Sleep(100);
+			base::CRunnable::Sleep(100);
 			close(_sock);
 		}
 	}
@@ -49,7 +50,7 @@ CSocket::~CSocket() {
 	}
 }
 
-void CSocket::SyncRead() {
+void CSocketImpl::SyncRead() {
 	if (!_read_event->_call_back) {
         base::LOG_WARN("call back function is null");
 		return;
@@ -61,7 +62,7 @@ void CSocket::SyncRead() {
 	}
 }
 
-void CSocket::SyncWrite(char* src, int len) {
+void CSocketImpl::SyncWrite(char* src, int len) {
 	if (!_write_event->_call_back) {
         base::LOG_WARN("call back function is null");
 		return;
@@ -88,7 +89,7 @@ void CSocket::SyncWrite(char* src, int len) {
 	}
 }
 
-void CSocket::SyncConnection(const std::string& ip, short port) {
+void CSocketImpl::SyncConnection(const std::string& ip, short port) {
 	if (!_write_event->_call_back) {
         base::LOG_WARN("call back function is null");
 		return;
@@ -114,7 +115,7 @@ void CSocket::SyncConnection(const std::string& ip, short port) {
 	}
 }
 
-void CSocket::SyncDisconnection() {
+void CSocketImpl::SyncDisconnection() {
 	if (!_read_event->_call_back) {
 		base::LOG_WARN("call back function is null");
 		return;
@@ -130,7 +131,7 @@ void CSocket::SyncDisconnection() {
 	}
 }
 
-void CSocket::SyncRead(unsigned int interval) {
+void CSocketImpl::SyncRead(uint32_t interval) {
 
     SyncRead();
 
@@ -140,7 +141,7 @@ void CSocket::SyncRead(unsigned int interval) {
 	}
 }
 
-void CSocket::SyncWrite(unsigned int interval, char* src, int len) {
+void CSocketImpl::SyncWrite(uint32_t interval, char* src, uint32_t len) {
 	
     SyncWrite(src, len);
 
@@ -150,35 +151,35 @@ void CSocket::SyncWrite(unsigned int interval, char* src, int len) {
 	}
 }
 
-void CSocket::PostTask(std::function<void(void)>& func) {
+void CSocketImpl::PostTask(std::function<void(void)>& func) {
 	_event_actions->PostTask(func);
 }
 
-void CSocket::SetReadCallBack(const std::function<void(base::CMemSharePtr<CEventHandler>&, int error)>& call_back) {
+void CSocketImpl::SetReadCallBack(const std::function<void(base::CMemSharePtr<CEventHandler>&, int error)>& call_back) {
 	_read_event->_call_back = call_back;
 }
 
-void CSocket::SetWriteCallBack(const std::function<void(base::CMemSharePtr<CEventHandler>&, int error)>& call_back) {
+void CSocketImpl::SetWriteCallBack(const std::function<void(base::CMemSharePtr<CEventHandler>&, int error)>& call_back) {
 	_write_event->_call_back = call_back;
 }
 
-bool operator>(const CSocketBase& s1, const CSocketBase& s2) {
+bool cppnet::operator>(const CSocketBase& s1, const CSocketBase& s2) {
 	return s1._sock > s2._sock;
 }
 
-bool operator<(const CSocketBase& s1, const CSocketBase& s2) {
+bool cppnet::operator<(const CSocketBase& s1, const CSocketBase& s2) {
 	return s1._sock < s2._sock;
 }
 
-bool operator==(const CSocketBase& s1, const CSocketBase& s2) {
+bool cppnet::operator==(const CSocketBase& s1, const CSocketBase& s2) {
 	return s1._sock == s2._sock;
 }
 
-bool operator!=(const CSocketBase& s1, const CSocketBase& s2) {
+bool cppnet::operator!=(const CSocketBase& s1, const CSocketBase& s2) {
 	return s1._sock != s2._sock;
 }
 
-void CSocket::_Recv(base::CMemSharePtr<CEventHandler>& event) {
+void CSocketImpl::_Recv(base::CMemSharePtr<CEventHandler>& event) {
 	if (!event->_client_socket) {
         base::LOG_WARN("the event with out socket");
 		return;
@@ -234,12 +235,12 @@ void CSocket::_Recv(base::CMemSharePtr<CEventHandler>& event) {
 			}
 		}
 	}
-	if (event->_call_back) {
-		event->_call_back(event, err);
+	if (CCppNetImpl::Instance()._read_call_back) {
+		CCppNetImpl::Instance()._read_call_back(memshared_from_this(), event->_buffer, event->_off_set, err);
 	}
 }
 
-void CSocket::_Send(base::CMemSharePtr<CEventHandler>& event) {
+void CSocketImpl::_Send(base::CMemSharePtr<CEventHandler>& event) {
 	if (!event->_client_socket) {
         base::LOG_WARN("the event with out socket");
 		return;

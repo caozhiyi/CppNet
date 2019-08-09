@@ -1,5 +1,5 @@
-#ifndef HEADER_NET_CSOCKET
-#define HEADER_NET_CSOCKET
+#ifndef HEADER_NET_CSOCKETIMPL
+#define HEADER_NET_CSOCKETIMPL
 
 #include <string>
 #include <memory>
@@ -7,31 +7,32 @@
 
 #include "PoolSharedPtr.h"
 #include "SocketBase.h"
+#include "Socket.h"
 
 namespace cppnet {
     class CEventHandler;
-    class CSocket : public CSocketBase, public base::CEnableSharedFromThis<CSocket> {
+    class CSocketImpl : public CSocketBase, public base::CEnableSharedFromThis<CSocketImpl> {
     public:
-        CSocket(std::shared_ptr<CEventActions>& event_actions);
-        ~CSocket();
+        CSocketImpl(std::shared_ptr<CEventActions>& event_actions);
+        ~CSocketImpl();
 
         // post sync read event.
         void SyncRead();
         // post sync write event.
-        void SyncWrite(char* src, int len);
+        void SyncWrite(char* src, uint32_t len);
 
         // post sync read event with time out
-        void SyncRead(unsigned int interval);
+        void SyncRead(uint32_t interval);
         // post sync write event with time out
-        void SyncWrite(unsigned int interval, char* src, int len);
+        void SyncWrite(uint32_t interval, char* src, uint32_t len);
 
         // post a sync task to io thread
         void PostTask(std::function<void(void)>& func);
 #ifndef __linux__
         // sync connection. 
-        void SyncConnection(const std::string& ip, short port, char* buf, int buf_len);
+        void SyncConnection(const std::string& ip, uint16_t port, char* buf, uint32_t buf_len);
 #else
-        void SyncConnection(const std::string& ip, short port);
+        void SyncConnection(const std::string& ip, uint16_t port);
 #endif
         void SyncDisconnection();
 
@@ -53,9 +54,13 @@ namespace cppnet {
         base::CMemSharePtr<CEventHandler>		_write_event;
 #ifndef __linux__
         //iocp use it save post event num;
-        unsigned int					        _post_event_num;
+        uint32_t					        _post_event_num;
 #endif
     };
+    bool operator>(const CSocketBase& s1, const CSocketBase& s2);
+    bool operator<(const CSocketBase& s1, const CSocketBase& s2);
+    bool operator==(const CSocketBase& s1, const CSocketBase& s2);
+    bool operator!=(const CSocketBase& s1, const CSocketBase& s2);
 }
 
 #endif

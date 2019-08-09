@@ -12,7 +12,7 @@ CTimer::~CTimer() {
 
 }
 
-uint64_t CTimer::AddTimer(unsigned int interval, const std::function<void(void*)>& call_back, void* param, bool always) {
+uint64_t CTimer::AddTimer(uint32_t interval, const std::function<void(void*)>& call_back, void* param, bool always) {
     base::CMemSharePtr<CTimerEvent> timer_event = base::MakeNewSharedPtr<CTimerEvent>(_pool.get());
     timer_event->_timer_call_back = call_back;
     timer_event->_interval        = interval;
@@ -30,7 +30,7 @@ uint64_t CTimer::AddTimer(unsigned int interval, const std::function<void(void*)
     return timer_event->_timer_id;
 }
 
-uint64_t CTimer::AddTimer(unsigned int interval, base::CMemSharePtr<CTimerEvent>& event) {
+uint64_t CTimer::AddTimer(uint32_t interval, base::CMemSharePtr<CTimerEvent>& event) {
     event->_interval = interval;
     event->_event_flag |= EVENT_TIMER;
 
@@ -41,7 +41,7 @@ uint64_t CTimer::AddTimer(unsigned int interval, base::CMemSharePtr<CTimerEvent>
     return event->_timer_id;
 }
 
-uint64_t CTimer::AddTimer(unsigned int interval, base::CMemSharePtr<CEventHandler>& event) {
+uint64_t CTimer::AddTimer(uint32_t interval, base::CMemSharePtr<CEventHandler>& event) {
     base::CMemSharePtr<CTimerEvent> timer_event = base::MakeNewSharedPtr<CTimerEvent>(_pool.get());
     timer_event->_interval   = interval;
     timer_event->_event_flag |= EVENT_TIMER | event->_event_flag_set;
@@ -73,12 +73,12 @@ bool CTimer::DelTimer(uint64_t timerid) {
 	return false;
 }
 
-unsigned int CTimer::TimeoutCheck(std::vector<base::CMemSharePtr<CTimerEvent>>& res) {
+uint32_t CTimer::TimeoutCheck(std::vector<base::CMemSharePtr<CTimerEvent>>& res) {
 	_time.Now();
 	return TimeoutCheck(_time.GetMsec(), res);
 }
 
-unsigned int CTimer::TimeoutCheck(uint64_t nowtime, std::vector<base::CMemSharePtr<CTimerEvent>>& res) {
+uint32_t CTimer::TimeoutCheck(uint64_t nowtime, std::vector<base::CMemSharePtr<CTimerEvent>>& res) {
     uint64_t recent_timeout = 0;
     std::vector<base::CMemSharePtr<CTimerEvent>> always_timer;
     std::unique_lock<std::recursive_mutex> lock(_mutex);
@@ -111,7 +111,7 @@ int CTimer::GetTimerNum() {
 	return _timer_map.size();
 }
 
-void CTimer::_AddTimer(unsigned int interval, const base::CMemSharePtr<CTimerEvent>& t, uint64_t& id) {
+void CTimer::_AddTimer(uint32_t interval, const base::CMemSharePtr<CTimerEvent>& t, uint64_t& id) {
     _time.Now();
     uint64_t nowtime = _time.GetMsec();
     uint64_t key = nowtime + interval;
@@ -124,7 +124,7 @@ void CTimer::_AddTimer(unsigned int interval, const base::CMemSharePtr<CTimerEve
     id = key;
 }
 
-void CTimer::_AddTimer(unsigned int interval, base::CMemSharePtr<CTimerEvent>& event) {
+void CTimer::_AddTimer(uint32_t interval, base::CMemSharePtr<CTimerEvent>& event) {
     event->_interval = interval;
     event->_event_flag |= EVENT_TIMER;
     _AddTimer(interval, event, event->_timer_id);

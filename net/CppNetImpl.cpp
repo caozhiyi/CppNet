@@ -5,6 +5,7 @@
 #include "OSInfo.h"
 #include "Log.h"
 #include "Runnable.h"
+#include "SocketImpl.h"
 #ifdef __linux__
 #include "CEpoll.h"
 #include "LinuxFunc.h"
@@ -66,15 +67,15 @@ void CCppNetImpl::Join() {
     _actions_map.clear();
 }
 
-void CCppNetImpl::SetReadCallback(const call_back& func) {
+void CCppNetImpl::SetReadCallback(const read_call_back& func) {
 	_read_call_back = func;
 }
 
-void CCppNetImpl::SetWriteCallback(const call_back& func) {
+void CCppNetImpl::SetWriteCallback(const write_call_back& func) {
 	_write_call_back = func;
 }
 
-void CCppNetImpl::SetDisconnectionCallback(const call_back& func) {
+void CCppNetImpl::SetDisconnectionCallback(const connection_call_back& func) {
 	_disconnection_call_back = func;
 }
 
@@ -101,7 +102,7 @@ void CCppNetImpl::RemoveTimer(uint64_t timer_id) {
     }
 }
 
-void CCppNetImpl::SetAcceptCallback(const call_back& func) {
+void CCppNetImpl::SetAcceptCallback(const connection_call_back& func) {
 	_accept_call_back = func;
 }
 
@@ -143,53 +144,44 @@ bool CCppNetImpl::ListenAndAccept(int port, std::string ip) {
 	return true;
 }
 
-void CCppNetImpl::SetConnectionCallback(const call_back& func) {
+void CCppNetImpl::SetConnectionCallback(const connection_call_back& func) {
 	_connection_call_back = func;
 }
 
-base::CMemSharePtr<CSocket> CCppNetImpl::Connection(int port, std::string ip, char* buf, int buf_len) {
+#ifndef __linux__
+bool CCppNetImpl::Connection(int port, std::string ip, char* buf, int buf_len) {
 	if (!_connection_call_back) {
-        base::LOG_WARN("connection call back function is null!, port : %d, ip : %s ", port, ip.c_str());
-		return nullptr;
+        base::LOG_ERROR("connection call back function is null!, port : %d, ip : %s ", port, ip.c_str());
+		return false;
 	}
 	if (!_write_call_back) {
-        base::LOG_WARN("read call back function is null!, port : %d, ip : %s ", port, ip.c_str());
-		return nullptr;
+        base::LOG_ERROR("read call back function is null!, port : %d, ip : %s ", port, ip.c_str());
+		return false;
 	}
 
 	auto actions = _RandomGetActions();
-    base::CMemSharePtr<CSocket> sock = base::MakeNewSharedPtr<CSocket>(&_pool, actions);
+    base::CMemSharePtr<CSocketImpl> sock = base::MakeNewSharedPtr<CSocketImpl>(&_pool, actions);
 	sock->SetWriteCallBack(std::bind(&CCppNetImpl::_WriteFunction, this, std::placeholders::_1, std::placeholders::_2));
 
-#ifndef __linux__
 	sock->SetReadCallBack(std::bind(&CCppNetImpl::_ReadFunction, this, std::placeholders::_1, std::placeholders::_2));
 	sock->SyncConnection(ip, port, buf, buf_len);
-#else
-	auto func = [buf, buf_len, sock, this](CMemSharePtr<CEventHandler>& event, int err) {
-		if (err & EVENT_ERROR_NO) {
-			sock->SyncWrite(buf, buf_len);
-		}
-		sock->SetReadCallBack(std::bind(&CCppNetImpl::_ReadFunction, this, std::placeholders::_1, std::placeholders::_2));
-		_ReadFunction(event, err);
-	};
-	sock->SetReadCallBack(func);
-	sock->SyncConnection(ip, port);
-#endif
-	return sock;
-}
 
-base::CMemSharePtr<CSocket> CCppNetImpl::Connection(int port, std::string ip) {
+	return true;
+}
+#endif
+
+bool CCppNetImpl::Connection(int port, std::string ip) {
 	if (!_connection_call_back) {
-        base::LOG_WARN("connection call back function is null!, port : %d, ip : %s ", port, ip.c_str());
-		return nullptr;
+        base::LOG_ERROR("connection call back function is null!, port : %d, ip : %s ", port, ip.c_str());
+		return false;
 	}
 	if (!_write_call_back) {
-        base::LOG_WARN("read call back function is null!, port : %d, ip : %s ", port, ip.c_str());
-		return nullptr;
+        base::LOG_ERROR("read call back function is null!, port : %d, ip : %s ", port, ip.c_str());
+		return false;
 	}
 
 	auto actions = _RandomGetActions();
-    base::CMemSharePtr<CSocket> sock = base::MakeNewSharedPtr<CSocket>(&_pool, actions);
+    base::CMemSharePtr<CSocketImpl> sock = base::MakeNewSharedPtr<CSocketImpl>(&_pool, actions);
 	sock->SetWriteCallBack(std::bind(&CCppNetImpl::_WriteFunction, this, std::placeholders::_1, std::placeholders::_2));
 	sock->SetReadCallBack(std::bind(&CCppNetImpl::_ReadFunction, this, std::placeholders::_1, std::placeholders::_2));
 
@@ -198,7 +190,16 @@ base::CMemSharePtr<CSocket> CCppNetImpl::Connection(int port, std::string ip) {
 #else
 	sock->SyncConnection(ip, port);
 #endif
-	return sock;
+	return true;
+}
+
+base::CMemSharePtr<CSocketImpl> CCppNetImpl::GetSocket(const Handle& handle) {
+	std::unique_lock<std::mutex> lock(_mutex);
+	auto iter = _socket_map.find(handle);
+	if (iter != _socket_map.end()) {
+		return iter->second;
+	}
+	return nullptr;
 }
 
 void CCppNetImpl::_AcceptFunction(base::CMemSharePtr<CAcceptEventHandler>& event, int err) {
@@ -207,18 +208,21 @@ void CCppNetImpl::_AcceptFunction(base::CMemSharePtr<CAcceptEventHandler>& event
 		return;
 	}
 	
+	Handle handle = event->_client_socket->GetSocket();
 	auto socket_ptr = event->_client_socket;
 	if (err & EVENT_ERROR_NO) {
+		{
+			// add socket to map
+			std::unique_lock<std::mutex> lock(_mutex);
+			_socket_map[handle] = event->_client_socket;
+		}
 		socket_ptr->SetReadCallBack(std::bind(&CCppNetImpl::_ReadFunction, this, std::placeholders::_1, std::placeholders::_2));
 		socket_ptr->SetWriteCallBack(std::bind(&CCppNetImpl::_WriteFunction, this, std::placeholders::_1, std::placeholders::_2));
 		if (_accept_call_back) {
-			_accept_call_back(socket_ptr, err);
+			_accept_call_back(handle, err);
 		}
 
         base::LOG_DEBUG("get client num : %d", int(_socket_map.size()));
-
-		std::unique_lock<std::mutex> lock(_mutex);
-		_socket_map[event->_client_socket->GetSocket()] = event->_client_socket;
 	}
 }
 
@@ -228,17 +232,18 @@ void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, int er
 		return;
 	}
 	auto socket_ptr = event->_client_socket.Lock();
+	Handle handle = socket_ptr->GetSocket();
 	if (err & EVENT_CONNECT && _connection_call_back) {
 		err &= ~EVENT_CONNECT;
-		_connection_call_back(socket_ptr, err);
+		_connection_call_back(handle, err);
 
 	} else if (err & EVENT_DISCONNECT && _disconnection_call_back) {
 		err &= ~EVENT_DISCONNECT;
-		_disconnection_call_back(socket_ptr, err);
+		_disconnection_call_back(handle, err);
 
 	} else if (err & EVENT_READ && _read_call_back) {
 		err &= ~EVENT_READ;
-		_read_call_back(socket_ptr, err);
+		_read_call_back(handle, socket_ptr->_read_event->_buffer.Get(), socket_ptr->_read_event->_off_set, err);
 		if (err == EVENT_ERROR_CLOSED) {
 			std::unique_lock<std::mutex> lock(_mutex);
 			_socket_map.erase(socket_ptr->GetSocket());
@@ -253,12 +258,13 @@ void CCppNetImpl::_WriteFunction(base::CMemSharePtr<CEventHandler>& event, int e
 	}
 
 	auto socket_ptr = event->_client_socket.Lock();
+	Handle handle = socket_ptr->GetSocket();
 	if (err & EVENT_WRITE && _write_call_back) {
 		err &= ~EVENT_WRITE;
 		if (event->_buffer->GetCanReadSize() == 0) {
 			err |= EVENT_ERROR_DONE;
 		}
-		_write_call_back(socket_ptr, err);
+		_write_call_back(handle, socket_ptr->_read_event->_off_set, err);
 		if (err & EVENT_ERROR_CLOSED) {
 			std::unique_lock<std::mutex> lock(_mutex);
 			_socket_map.erase(socket_ptr->GetSocket());

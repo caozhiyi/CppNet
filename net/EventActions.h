@@ -1,7 +1,10 @@
 #ifndef HEADER_NET_EVENTACTIONS
 #define HEADER_NET_EVENTACTIONS
+
 #include <string>
+
 #include "Timer.h"
+#include "CppDefine.h"
 
 namespace cppnet {
     class CEventHandler;
@@ -17,9 +20,12 @@ namespace cppnet {
         virtual bool Init() = 0;
         virtual bool Dealloc() = 0;
 
-        virtual uint64_t AddTimerEvent(unsigned int interval, const std::function<void(void*)>& call_back, void* param, bool always = false) = 0;
-        virtual bool AddTimerEvent(unsigned int interval, base::CMemSharePtr<CEventHandler>& event) = 0;
+        // timer event
+        virtual uint64_t AddTimerEvent(uint32_t interval, const timer_call_back& call_back, void* param, bool always = false) = 0;
+        virtual bool AddTimerEvent(uint32_t interval, base::CMemSharePtr<CEventHandler>& event) = 0;
         virtual bool RemoveTimerEvent(uint64_t timer_id) = 0;
+
+        // net io event
         virtual bool AddSendEvent(base::CMemSharePtr<CEventHandler>& event) = 0;
         virtual bool AddRecvEvent(base::CMemSharePtr<CEventHandler>& event) = 0;
         virtual bool AddAcceptEvent(base::CMemSharePtr<CAcceptEventHandler>& event) = 0;
@@ -30,16 +36,17 @@ namespace cppnet {
 #endif
         virtual bool AddDisconnection(base::CMemSharePtr<CEventHandler>& event) = 0;
         virtual bool DelEvent(base::CMemSharePtr<CEventHandler>& event) = 0;
-        virtual void ProcessEvent() = 0;
 
+        // io thread process
+        virtual void ProcessEvent() = 0;
+        // post a task to net io thread
         virtual void PostTask(std::function<void(void)>&) = 0;
+        // weak up net io thread
         virtual void WakeUp() = 0;
 
         virtual CTimer& Timer() { return _timer; }
     protected:
         CTimer			_timer;
-        int				_need_init;
-        std::string		_name;
     };
 }
 
