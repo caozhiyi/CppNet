@@ -44,7 +44,7 @@ int CLoopBuffer::ReadNotClear(char* res, int len) {
 		return 0;
 	}
 	if (_read < _write) {
-		int size = _write - _read;
+		auto size = _write - _read;
 		if (size <= len) {
 			memcpy(res, _read, size);
 			_write = _read = _buffer_start;
@@ -57,7 +57,7 @@ int CLoopBuffer::ReadNotClear(char* res, int len) {
 		}
 
 	} else if (_read > _write) {
-		int size = _write - _buffer_start + _buffer_end - _read;
+        auto size = _write - _buffer_start + _buffer_end - _read;
 		if (size <= len) {
 			memcpy(res, _read, _buffer_end - _read);
 			memcpy(res + (_buffer_end - _read), _buffer_start, _write - _buffer_start);
@@ -71,7 +71,7 @@ int CLoopBuffer::ReadNotClear(char* res, int len) {
 
 			}
 			else {
-				int left = len - (_buffer_end - _read);
+                auto left = len - (_buffer_end - _read);
 				memcpy(res, _read, len - left);
 				memcpy(res + (len - left), _buffer_start, left);
 				return len;
@@ -88,7 +88,7 @@ int CLoopBuffer::ReadNotClear(char* res, int len) {
 
 			} else {
 				if (_read + len > _buffer_end) {
-					int left = len - (_buffer_end - _read);
+                    auto left = len - (_buffer_end - _read);
 					memcpy(res, _read, len - left);
 					memcpy(res + len - left, _buffer_start, left);
 					return len;
@@ -110,7 +110,7 @@ int CLoopBuffer::Read(char* res, int len) {
 		return 0;
 	}
 	if (_read < _write) {
-		int size = _write - _read;
+        auto size = _write - _read;
 		if (size <= len) {
 			memcpy(res, _read, size);
 			_read += size;
@@ -125,7 +125,7 @@ int CLoopBuffer::Read(char* res, int len) {
 		}
 
 	} else if (_read > _write) {
-		int size = _write - _buffer_start + _buffer_end - _read;
+        auto size = _write - _buffer_start + _buffer_end - _read;
 		if (size <= len) {
 			memcpy(res, _read, _buffer_end - _read);
 			memcpy(res + (_buffer_end - _read), _buffer_start, _write - _buffer_start);
@@ -140,7 +140,7 @@ int CLoopBuffer::Read(char* res, int len) {
 				return len;
 
 			} else {
-				int left = len - (_buffer_end - _read);
+                auto left = len - (_buffer_end - _read);
 				memcpy(res, _read, len - left);
 				memcpy(res + (len - left), _buffer_start, left);
 				_read = _buffer_start + left;
@@ -160,7 +160,7 @@ int CLoopBuffer::Read(char* res, int len) {
 
 			} else {
 				if (_read + len > _buffer_end) {
-					int left = len - (_buffer_end - _read);
+                    auto left = len - (_buffer_end - _read);
 					memcpy(res, _read, len - left);
 					memcpy(res + len - left, _buffer_start, left);
 					_read = _buffer_start + left;
@@ -178,7 +178,7 @@ int CLoopBuffer::Read(char* res, int len) {
 	}
 }
 
-int CLoopBuffer::Write(char* str, int len) {
+int CLoopBuffer::Write(const char* str, int len) {
 	std::unique_lock<std::mutex> lock(_mutex);
 	if (_read < _write) {
 		if (_write + len <= _buffer_end) {
@@ -187,7 +187,7 @@ int CLoopBuffer::Write(char* str, int len) {
 			return len;
 		
 		} else {
-			int left = len - (_buffer_end - _write);
+            auto left = len - (_buffer_end - _write);
 			memcpy(_write, str, len - left);
 			if (_buffer_start + left <= _read) {
 				memcpy(_buffer_start, str + len - left, left);
@@ -198,7 +198,7 @@ int CLoopBuffer::Write(char* str, int len) {
 				return len;
 
 			} else {
-				int can_save = _read - _buffer_start;
+                auto can_save = _read - _buffer_start;
 				if (can_save) {
 					memcpy(_buffer_start, str + len - left, can_save);
 				}
@@ -209,7 +209,7 @@ int CLoopBuffer::Write(char* str, int len) {
 		}
 	
 	} else if (_read > _write) {
-		int size = _read - _write;
+        auto size = _read - _write;
 		if (len <= size) {
 			memcpy(_write, str, len);
 			_write += len;
@@ -270,7 +270,7 @@ int CLoopBuffer::Clear(int len) {
 		return 0;
 	}
 	if (_read < _write) {
-		int size = _write - _read;
+        auto size = _write - _read;
 		if (size <= len) {
 			_read += size;
 			_write = _read = _buffer_start;
@@ -283,7 +283,7 @@ int CLoopBuffer::Clear(int len) {
 		}
 
 	} else if (_read > _write) {
-		int size = _write - _buffer_start + _buffer_end - _read;
+        auto size = _write - _buffer_start + _buffer_end - _read;
 		if (size <= len) {
 			_read = _write = _buffer_start;
 			_can_read = false;
@@ -295,7 +295,7 @@ int CLoopBuffer::Clear(int len) {
 				return len;
 
 			} else {
-				int left = len - (_buffer_end - _read);
+                auto left = len - (_buffer_end - _read);
 				_read = _buffer_start + left;
 				return len;
 			}
@@ -311,7 +311,7 @@ int CLoopBuffer::Clear(int len) {
 
 			} else {
 				if (_read + len > _buffer_end) {
-					int left = len - (_buffer_end - _read);
+                    auto left = len - (_buffer_end - _read);
 					_read = _buffer_start + left;
 					return len;
 				} else {
@@ -352,10 +352,10 @@ int CLoopBuffer::ReadUntil(char* res, int len, const char* find, int find_len, i
 
 int CLoopBuffer::GetFreeSize() const {
 	if (_write > _read) {
-		return (_buffer_end - _write) + (_read - _buffer_start);
+		return (int)((_buffer_end - _write) + (_read - _buffer_start));
 	
 	} else if (_write < _read) {
-		return (_read - _write);
+		return (int)((_read - _write));
 
 	} else {
 		if (_can_read) {
@@ -369,10 +369,10 @@ int CLoopBuffer::GetFreeSize() const {
 
 int CLoopBuffer::GetCanReadSize() const {
 	if (_write > _read) {
-		return (_write - _read);
+		return (int)(_write - _read);
 
 	} else if (_write < _read) {
-		return (_buffer_end - _read) + (_write - _buffer_start);
+		return (int)((_buffer_end - _read) + (_write - _buffer_start));
 
 	} else {
 		if (_can_read) {
@@ -400,7 +400,7 @@ int CLoopBuffer::FindStr(const char* s, int s_len) const {
 	if (_write > _read) {
 		const char* find = _FindStrInMem(_read, s, _write - _read, s_len);
 		if (find) {
-			return find - _read + s_len;
+			return (int)(find - _read + s_len);
 		}
 		return 0;
 		

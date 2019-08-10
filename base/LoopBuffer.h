@@ -17,7 +17,7 @@ namespace base {
     	//read to res buf not chenge the cursor
     	int ReadNotClear(char* res, int len);
     	int Read(char* res, int len);
-    	int Write(char* str, int len);
+    	int Write(const char* str, int len);
     	void Clear();
     	//forward moving cursor
     	int Clear(int len);

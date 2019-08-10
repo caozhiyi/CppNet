@@ -148,7 +148,7 @@ int CBuffer::Read(char* res, int len) {
 	return size;
 }
 
-int CBuffer::Write(char* str, int len) {
+int CBuffer::Write(const char* str, int len) {
 	int size = 0, current_write_bytes = 0;
 	int left = len;
 
