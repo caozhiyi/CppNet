@@ -1,7 +1,11 @@
 language: cpp
 
 compiler:
-  - g++
-  
- os:
-- linux
+- clang
+- gcc
+
+env:
+- PURPOSE=compile
+
+install:
+- make
