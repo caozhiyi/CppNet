@@ -1,7 +1,19 @@
 language: cpp
+sudo: required
+dist: trusty
 
 compiler:
 - gcc
 
-install:
-- make
+os:
+- linux
+
+script:
+- ./build.sh
+
+branches:
+  only:
+  - master
+
+notifications:
+  email: false
