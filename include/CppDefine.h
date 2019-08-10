@@ -34,6 +34,8 @@ namespace cppnet {
         EVENT_ERROR_CLOSED            = 0x0400,
         EVENT_ERROR_DONE              = 0x0800,
         EVENT_ERROR_INVALID_HANDLE    = 0x0001,
+        EVENT_ERROR_FAILED            = 0x0002,
+        EVENT_ERROR_CONNECT_BREAK     = 0x0003,
     };
 }
 

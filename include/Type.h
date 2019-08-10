@@ -1,5 +1,5 @@
-#ifndef HEADER_COMMON_COMMONTYPE
-#define HEADER_COMMON_COMMONTYPE
+#ifndef HEADER_INCLUDE_TYPE
+#define HEADER_INCLUDE_TYPE
 
 namespace cppnet {
 

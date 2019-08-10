@@ -2,6 +2,7 @@
 #define HEADER_INCLUDE_CPPNET
 
 #include "CppDefine.h"
+#include "Socket.h"
 
 namespace cppnet {
 
@@ -23,11 +24,11 @@ namespace cppnet {
 
     //server
     void SetAcceptCallback(const connection_call_back& func);
-    bool ListenAndAccept(int16_t port, std::string ip);
+    bool ListenAndAccept(int16_t port, std::string ip, uint32_t listen_num);
 
     //client
     void SetConnectionCallback(const connection_call_back& func);
-    Handle Connection(int16_t port, std::string ip, char* buf, int32_t buf_len);
+    Handle Connection(int16_t port, std::string ip, const char* buf, int32_t buf_len);
     Handle Connection(int16_t port, std::string ip);
 }
 
