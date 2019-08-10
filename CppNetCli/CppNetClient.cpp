@@ -57,9 +57,5 @@ int main() {
     Connection(8921, "192.168.233.128");
 #endif // !__linux__
 
-    
-
-	//net.MainLoop();
-	//net.Dealloc();
     cppnet::Join();
 }
