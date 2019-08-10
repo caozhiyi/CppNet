@@ -53,8 +53,8 @@ void cppnet::SetAcceptCallback(const connection_call_back& func) {
     cppnet::CCppNetImpl::Instance().SetAcceptCallback(func);
 }
 
-bool cppnet::ListenAndAccept(int16_t port, std::string ip) {
-    return cppnet::CCppNetImpl::Instance().ListenAndAccept(port, ip);
+bool cppnet::ListenAndAccept(int16_t port, std::string ip, uint32_t listen_num) {
+    return cppnet::CCppNetImpl::Instance().ListenAndAccept(port, ip, listen_num);
 }
 
 //client
@@ -62,7 +62,7 @@ void cppnet::SetConnectionCallback(const connection_call_back& func) {
     cppnet::CCppNetImpl::Instance().SetConnectionCallback(func);
 }
 
-cppnet::Handle cppnet::Connection(int16_t port, std::string ip, char* buf, int32_t buf_len) {
+cppnet::Handle cppnet::Connection(int16_t port, std::string ip, const char* buf, int32_t buf_len) {
     return cppnet::CCppNetImpl::Instance().Connection(port, ip, buf, buf_len);
 }
 

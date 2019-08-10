@@ -23,24 +23,26 @@ CCppNetImpl::~CCppNetImpl() {
 
 }
 
-void CCppNetImpl::Init(int thread_num) {
+void CCppNetImpl::Init(uint32_t thread_num) {
 #ifndef __linux__
 	InitScoket();
 #else
 	SetCoreFileUnlimit();
 #endif // __linux__
 
-	int cpus = GetCpuNum();
+	uint32_t cpus = GetCpuNum();
 	if (thread_num == 0 || thread_num > cpus * 2) {
 		thread_num = cpus;
 	}
-	for (int i = 0; i < thread_num; i++) {
+	for (size_t i = 0; i < thread_num; i++) {
 #ifdef __linux__
 		std::shared_ptr<CEventActions> event_actions(new CEpoll);
 #else
+        // only one iocp
 		static std::shared_ptr<CEventActions> event_actions(new CIOCP);
 		//std::shared_ptr<CEventActions> event_actions(new CIOCP);
 #endif
+        // start net io thread
 		event_actions->Init();
 		std::shared_ptr<std::thread> thd(new std::thread(std::bind(&CEventActions::ProcessEvent, event_actions)));
 		_actions_map[thd->get_id()] = event_actions;
@@ -79,7 +81,7 @@ void CCppNetImpl::SetDisconnectionCallback(const connection_call_back& func) {
 	_disconnection_call_back = func;
 }
 
-uint64_t CCppNetImpl::SetTimer(unsigned int interval, const std::function<void(void*)>& func, void* param, bool always) {
+uint64_t CCppNetImpl::SetTimer(uint32_t interval, const std::function<void(void*)>& func, void* param, bool always) {
 
     auto actions = _RandomGetActions();
 
@@ -106,7 +108,7 @@ void CCppNetImpl::SetAcceptCallback(const connection_call_back& func) {
 	_accept_call_back = func;
 }
 
-bool CCppNetImpl::ListenAndAccept(int port, std::string ip) {
+bool CCppNetImpl::ListenAndAccept(uint16_t port, std::string ip, uint32_t listen_num) {
 	if (!_accept_call_back) {
         base::LOG_ERROR("accept call back function is null!, port : %d, ip : %s ", port, ip.c_str());
 		return false;
@@ -128,13 +130,10 @@ bool CCppNetImpl::ListenAndAccept(int port, std::string ip) {
 			return false;
 		}
 
-		if (!accept_socket->Listen(20)) {
+		if (!accept_socket->Listen(listen_num)) {
 			return false;
 		}
 
-		accept_socket->SetAcceptCallBack(std::bind(&CCppNetImpl::_AcceptFunction, this, std::placeholders::_1, std::placeholders::_2));
-		accept_socket->SetReadCallBack(std::bind(&CCppNetImpl::_ReadFunction, this, std::placeholders::_1, std::placeholders::_2));
-		
 		accept_socket->SyncAccept();
 		_accept_socket[accept_socket->GetSocket()] = accept_socket;
 #ifndef __linux__
@@ -149,48 +148,47 @@ void CCppNetImpl::SetConnectionCallback(const connection_call_back& func) {
 }
 
 #ifndef __linux__
-bool CCppNetImpl::Connection(int port, std::string ip, char* buf, int buf_len) {
+Handle CCppNetImpl::Connection(uint16_t port, std::string ip, const char* buf, uint32_t buf_len) {
 	if (!_connection_call_back) {
         base::LOG_ERROR("connection call back function is null!, port : %d, ip : %s ", port, ip.c_str());
-		return false;
+		return 0;
 	}
 	if (!_write_call_back) {
         base::LOG_ERROR("read call back function is null!, port : %d, ip : %s ", port, ip.c_str());
-		return false;
+		return 0;
 	}
 
 	auto actions = _RandomGetActions();
     base::CMemSharePtr<CSocketImpl> sock = base::MakeNewSharedPtr<CSocketImpl>(&_pool, actions);
-	sock->SetWriteCallBack(std::bind(&CCppNetImpl::_WriteFunction, this, std::placeholders::_1, std::placeholders::_2));
-
-	sock->SetReadCallBack(std::bind(&CCppNetImpl::_ReadFunction, this, std::placeholders::_1, std::placeholders::_2));
 	sock->SyncConnection(ip, port, buf, buf_len);
 
-	return true;
+    std::unique_lock<std::mutex> lock(_mutex);
+    _socket_map[sock->GetSocket()] = sock;
+	return sock->GetSocket();
 }
 #endif
 
-bool CCppNetImpl::Connection(int port, std::string ip) {
+Handle CCppNetImpl::Connection(uint16_t port, std::string ip) {
 	if (!_connection_call_back) {
         base::LOG_ERROR("connection call back function is null!, port : %d, ip : %s ", port, ip.c_str());
-		return false;
+		return 0;
 	}
 	if (!_write_call_back) {
         base::LOG_ERROR("read call back function is null!, port : %d, ip : %s ", port, ip.c_str());
-		return false;
+		return 0;
 	}
 
 	auto actions = _RandomGetActions();
     base::CMemSharePtr<CSocketImpl> sock = base::MakeNewSharedPtr<CSocketImpl>(&_pool, actions);
-	sock->SetWriteCallBack(std::bind(&CCppNetImpl::_WriteFunction, this, std::placeholders::_1, std::placeholders::_2));
-	sock->SetReadCallBack(std::bind(&CCppNetImpl::_ReadFunction, this, std::placeholders::_1, std::placeholders::_2));
 
 #ifndef __linux__
 	sock->SyncConnection(ip, port, "", 0);
 #else
 	sock->SyncConnection(ip, port);
 #endif
-	return true;
+    std::unique_lock<std::mutex> lock(_mutex);
+    _socket_map[sock->GetSocket()] = sock;
+    return sock->GetSocket();
 }
 
 base::CMemSharePtr<CSocketImpl> CCppNetImpl::GetSocket(const Handle& handle) {
@@ -202,7 +200,21 @@ base::CMemSharePtr<CSocketImpl> CCppNetImpl::GetSocket(const Handle& handle) {
 	return nullptr;
 }
 
-void CCppNetImpl::_AcceptFunction(base::CMemSharePtr<CAcceptEventHandler>& event, int err) {
+bool CCppNetImpl::RemoveSocket(const Handle& handle) {
+    std::unique_lock<std::mutex> lock(_mutex);
+    auto iter = _socket_map.find(handle);
+    if (iter != _socket_map.end()) {
+        _socket_map.erase(iter);
+        return true;
+    }
+    return false;
+}
+
+uint32_t CCppNetImpl::GetThreadNum() {
+    return (uint32_t)_thread_vec.size();
+}
+
+void CCppNetImpl::_AcceptFunction(base::CMemSharePtr<CAcceptEventHandler>& event, uint32_t err) {
 	if (!event) {
         base::LOG_WARN("event is null while accept.");
 		return;
@@ -216,8 +228,6 @@ void CCppNetImpl::_AcceptFunction(base::CMemSharePtr<CAcceptEventHandler>& event
 			std::unique_lock<std::mutex> lock(_mutex);
 			_socket_map[handle] = event->_client_socket;
 		}
-		socket_ptr->SetReadCallBack(std::bind(&CCppNetImpl::_ReadFunction, this, std::placeholders::_1, std::placeholders::_2));
-		socket_ptr->SetWriteCallBack(std::bind(&CCppNetImpl::_WriteFunction, this, std::placeholders::_1, std::placeholders::_2));
 		if (_accept_call_back) {
 			_accept_call_back(handle, err);
 		}
@@ -226,7 +236,7 @@ void CCppNetImpl::_AcceptFunction(base::CMemSharePtr<CAcceptEventHandler>& event
 	}
 }
 
-void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, int err) {
+void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32_t err) {
 	if (!event) {
         base::LOG_WARN("event is null while read.");
 		return;
@@ -251,7 +261,7 @@ void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, int er
 	}
 }
 
-void CCppNetImpl::_WriteFunction(base::CMemSharePtr<CEventHandler>& event, int err) {
+void CCppNetImpl::_WriteFunction(base::CMemSharePtr<CEventHandler>& event, uint32_t err) {
 	if (!event) {
         base::LOG_WARN("event is null while write.");
 		return;

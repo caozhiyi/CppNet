@@ -23,9 +23,6 @@ namespace cppnet {
 
         void SyncAccept();
 
-        void SetReadCallBack(const std::function<void(base::CMemSharePtr<CEventHandler>&, int error)>& call_back);
-        void SetAcceptCallBack(const std::function<void(base::CMemSharePtr<CAcceptEventHandler>&, int error)>& call_back);
-
     public:
         void _Accept(base::CMemSharePtr<CAcceptEventHandler>& event);
 

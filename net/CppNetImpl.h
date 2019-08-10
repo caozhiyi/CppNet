@@ -24,7 +24,7 @@ namespace cppnet {
         CCppNetImpl();
         ~CCppNetImpl();
         // common
-        void Init(int thread_num);
+        void Init(uint32_t thread_num = 0);
         void Dealloc();
         void Join();
 
@@ -34,31 +34,35 @@ namespace cppnet {
         void SetDisconnectionCallback(const connection_call_back& func);
 
         // about timer
-        uint64_t SetTimer(unsigned int interval, const std::function<void(void*)>& func, void* param = nullptr, bool always = false);
+        uint64_t SetTimer(uint32_t interval, const std::function<void(void*)>& func, void* param = nullptr, bool always = false);
         void RemoveTimer(uint64_t timer_id);
 
         //server
         void SetAcceptCallback(const connection_call_back& func);
-        bool ListenAndAccept(int port, std::string ip);
+        bool ListenAndAccept(uint16_t port, std::string ip, uint32_t listen_num);
 
         //client
         void SetConnectionCallback(const connection_call_back& func);
 #ifndef __linux__
-        bool Connection(int port, std::string ip, char* buf, int buf_len);
+        Handle Connection(uint16_t port, std::string ip, const char* buf, uint32_t buf_len);
 #endif
-        bool Connection(int port, std::string ip);
+        Handle Connection(uint16_t port, std::string ip);
 
         // get socket
         base::CMemSharePtr<CSocketImpl> GetSocket(const Handle& handle);
+        bool RemoveSocket(const Handle& handle);
+        // get thread number
+        uint32_t GetThreadNum();
 
     private:
-        void _AcceptFunction(base::CMemSharePtr<CAcceptEventHandler>& event, int err);
-        void _ReadFunction(base::CMemSharePtr<CEventHandler>& event, int err);
-        void _WriteFunction(base::CMemSharePtr<CEventHandler>& event, int err);
+        void _AcceptFunction(base::CMemSharePtr<CAcceptEventHandler>& event, uint32_t err);
+        void _ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32_t err);
+        void _WriteFunction(base::CMemSharePtr<CEventHandler>& event, uint32_t err);
         std::shared_ptr<CEventActions>& _RandomGetActions();
 
     private:
         friend class CSocketImpl;
+        friend class CAcceptSocket;
         read_call_back	        _read_call_back          = nullptr;
         write_call_back	        _write_call_back         = nullptr;
         connection_call_back	_connection_call_back    = nullptr;

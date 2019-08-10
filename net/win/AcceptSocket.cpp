@@ -6,19 +6,20 @@
 #include "IOCP.h"
 #include "EventActions.h"
 #include "AcceptSocket.h"
-#include "Socket.h"
+#include "CppNetImpl.h"
 
 using namespace cppnet;
 
 CAcceptSocket::CAcceptSocket(std::shared_ptr<CEventActions>& event_actions) : CSocketBase(event_actions){
-	
+    _accept_event = base::MakeNewSharedPtr<CAcceptEventHandler>(_pool.get());
+    _accept_event->_data = _pool->PoolNew<EventOverlapped>();
 }
 
 CAcceptSocket::~CAcceptSocket() {
 	
 }
 
-bool CAcceptSocket::Bind(short port, const std::string& ip) {
+bool CAcceptSocket::Bind(uint16_t port, const std::string& ip) {
 	SOCKADDR_IN addr;
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(port);
@@ -37,7 +38,7 @@ bool CAcceptSocket::Bind(short port, const std::string& ip) {
 	return true;
 }
 
-bool CAcceptSocket::Listen(unsigned int listen_size) {
+bool CAcceptSocket::Listen(uint16_t listen_size) {
 	int ret = listen(_sock, listen_size);
 	if (SOCKET_ERROR == ret) {
         base::LOG_FATAL("win32 listen socket filed! errno : %d", GetLastError());
@@ -45,66 +46,23 @@ bool CAcceptSocket::Listen(unsigned int listen_size) {
 		closesocket(_sock);
 		return false;
 	}
-	_invalid = true;
 
 	return true;
 }
 
 void CAcceptSocket::SyncAccept() {
-	if (!_accept_event) {
-		_accept_event = base::MakeNewSharedPtr<CAcceptEventHandler>(_pool.get());
-	}
-	if (!_accept_event->_data) {
-		_accept_event->_data = _pool->PoolNew<EventOverlapped>();
-	}
-	if (!_accept_event->_accept_socket) {
-		_accept_event->_accept_socket = memshared_from_this();
-	}
-
-	auto socket = _accept_event->_accept_socket;
-	auto sock = socket->GetSocket();
+    if (!_accept_event->_accept_socket) {
+        _accept_event->_accept_socket = memshared_from_this();
+    }
 
 	if (!_accept_event->_client_socket) {
-		_accept_event->_client_socket = base::MakeNewSharedPtr<CSocket>(_pool.get(), _event_actions);
-	}
-	if (!_accept_event->_client_socket->_read_event) {
-		_accept_event->_client_socket->_read_event = base::MakeNewSharedPtr<CEventHandler>(_accept_event->_client_socket->_pool.get());
-	}
-	if (!_accept_event->_client_socket->_read_event->_buffer) {
-		_accept_event->_client_socket->_read_event->_buffer = base::MakeNewSharedPtr<base::CBuffer>(_accept_event->_client_socket->_pool.get(), _accept_event->_client_socket->_pool);
-	}
-
-	if (!_accept_event->_call_back) {
-        base::LOG_WARN("call back function is null");
-		return;
-	}
-	if (!_accept_event->_client_socket->_read_event->_call_back) {
-        base::LOG_WARN("call back function is null");
-		return;
+		_accept_event->_client_socket = base::MakeNewSharedPtr<CSocketImpl>(_pool.get(), _event_actions);
 	}
 
 	if (_event_actions) {
 		_accept_event->_event_flag_set |= EVENT_ACCEPT;
 		_event_actions->AddAcceptEvent(_accept_event);
 	}
-}
-
-void CAcceptSocket::SetAcceptCallBack(const std::function<void(base::CMemSharePtr<CAcceptEventHandler>&, int error)>& call_back) {
-	if (!_accept_event) {
-		_accept_event = base::MakeNewSharedPtr<CAcceptEventHandler>(_pool.get());
-	}
-	_accept_event->_call_back = call_back;
-}
-
-void CAcceptSocket::SetReadCallBack(const std::function<void(base::CMemSharePtr<CEventHandler>&, int error)>& call_back) {
-	if (!_accept_event->_client_socket) {
-		_accept_event->_client_socket = base::MakeNewSharedPtr<CSocket>(_pool.get(), _event_actions);
-	}
-	if (!_accept_event->_client_socket->_read_event) {
-		_accept_event->_client_socket->_read_event = base::MakeNewSharedPtr<CEventHandler>(_accept_event->_client_socket->_pool.get());
-	}
-
-	_accept_event->_client_socket->_read_event->_call_back = call_back;
 }
 
 void CAcceptSocket::_Accept(base::CMemSharePtr<CAcceptEventHandler>& event) {
@@ -115,6 +73,7 @@ void CAcceptSocket::_Accept(base::CMemSharePtr<CAcceptEventHandler>& event) {
 	SOCKADDR_IN* LocalAddr = NULL;
 	int localLen = sizeof(SOCKADDR_IN);
 
+    // accept a socket and  read msg
 	__AcceptExScokAddrs(context->_lapped_buffer, context->_wsa_buf.len - ((sizeof(SOCKADDR_IN) + 16) * 2),
 		sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, (LPSOCKADDR*)&LocalAddr, &localLen, (LPSOCKADDR*)&client_addr, &remote_len);
 
@@ -125,25 +84,14 @@ void CAcceptSocket::_Accept(base::CMemSharePtr<CAcceptEventHandler>& event) {
 	event->_client_socket->_read_event->_client_socket = event->_client_socket;
 
 	//call accept call back function
-	if (event->_call_back) {
-		event->_call_back(event, EVENT_ERROR_NO | event->_event_flag_set);
-	}
+    CCppNetImpl::Instance()._AcceptFunction(event, EVENT_ERROR_NO | event->_event_flag_set);
 
 	//call read call back function
-	if (event->_client_socket->_read_event->_call_back) {
-		event->_client_socket->_read_event->_call_back(event->_client_socket->_read_event, EVENT_ERROR_NO | EVENT_READ);
-	}
+    CCppNetImpl::Instance()._ReadFunction(event->_client_socket->_read_event, EVENT_ERROR_NO | EVENT_READ);
 
 	//post accept again
 	context->Clear();
-	event->_client_socket = base::MakeNewSharedPtr<CSocket>(_pool.get(), _event_actions);
-	if (!_accept_event->_client_socket->_read_event) {
-		_accept_event->_client_socket->_read_event = base::MakeNewSharedPtr<CEventHandler>(_accept_event->_client_socket->_pool.get());
-	}
-	if (!_accept_event->_client_socket->_read_event->_buffer) {
-		_accept_event->_client_socket->_read_event->_buffer = base::MakeNewSharedPtr<base::CBuffer>(_accept_event->_client_socket->_pool.get(), _accept_event->_client_socket->_pool);
-	}
-	_accept_event->_event_flag_set |= EVENT_ACCEPT;
-	_event_actions->AddAcceptEvent(event);
+	event->_client_socket = base::MakeNewSharedPtr<CSocketImpl>(_pool.get(), _event_actions);
+    SyncAccept();
 }
 #endif

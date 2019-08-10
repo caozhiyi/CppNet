@@ -48,34 +48,41 @@ namespace cppnet {
         virtual bool Init();
         virtual bool Dealloc();
 
+        // timer event
         virtual uint64_t AddTimerEvent(unsigned int interval, const std::function<void(void*)>& call_back, void* param, bool always = false);
         virtual bool AddTimerEvent(unsigned int interval, base::CMemSharePtr<CEventHandler>& event);
         virtual bool RemoveTimerEvent(uint64_t timer_id);
+
+        // net io event
         virtual bool AddSendEvent(base::CMemSharePtr<CEventHandler>& event);
         virtual bool AddRecvEvent(base::CMemSharePtr<CEventHandler>& event);
         virtual bool AddAcceptEvent(base::CMemSharePtr<CAcceptEventHandler>& event);
-        virtual bool AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, char* buf, int buf_len);
+        virtual bool AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, const char* buf, int buf_len);
         virtual bool AddDisconnection(base::CMemSharePtr<CEventHandler>& event);
         virtual bool DelEvent(base::CMemSharePtr<CEventHandler>& event);
 
+        // io thread process
         virtual void ProcessEvent();
-
+        // post a task to net io thread
         virtual void PostTask(std::function<void(void)>& task);
+        // weak up net io thread
         virtual void WakeUp();
 
     private:
         bool _PostRecv(base::CMemSharePtr<CEventHandler>& event);
         bool _PostAccept(base::CMemSharePtr<CAcceptEventHandler>& event);
         bool _PostSend(base::CMemSharePtr<CEventHandler>& event);
-        bool _PostConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, char* buf, int buf_len);
+        bool _PostConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, const char* buf, int buf_len);
         bool _PostDisconnection(base::CMemSharePtr<CEventHandler>& event);
 
         void _DoTimeoutEvent(std::vector<base::CMemSharePtr<CTimerEvent>>& timer_vec);
         void _DoEvent(EventOverlapped *socket_context, int bytes);
         void _DoTaskList();
+
+        bool _AddToActions(base::CMemSharePtr<CSocketImpl>& socket);
     private:
-        HANDLE	_iocp_handler;
-        bool	_is_inited;
+        HANDLE	            _iocp_handler;
+        bool	            _is_inited;
         std::mutex			_mutex;
         std::atomic_bool	_run;
         std::vector<std::function<void(void)>> _task_list;

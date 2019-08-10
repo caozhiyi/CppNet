@@ -106,7 +106,7 @@ uint32_t CTimer::TimeoutCheck(uint64_t nowtime, std::vector<base::CMemSharePtr<C
 	return recent_timeout;
 }
 
-int CTimer::GetTimerNum() {
+uint32_t CTimer::GetTimerNum() {
     std::unique_lock<std::recursive_mutex> lock(_mutex);
 	return _timer_map.size();
 }

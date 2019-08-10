@@ -11,7 +11,7 @@ namespace cppnet {
     extern LPFN_CONNECTEX				__ConnectEx;
     extern LPFN_GETACCEPTEXSOCKADDRS	__AcceptExScokAddrs;
     extern LPFN_DISCONNECTEX			__DisconnectionEx;
-    extern void SetReusePort(unsigned int sock);
+    extern void SetReusePort(const uint64_t& sock);
 }
 
 #endif

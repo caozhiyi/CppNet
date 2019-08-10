@@ -16,7 +16,6 @@ namespace cppnet {
         CEventActions() {}
         virtual ~CEventActions() {}
 
-        //param is net io thread num, default cpu number
         virtual bool Init() = 0;
         virtual bool Dealloc() = 0;
 
@@ -30,7 +29,7 @@ namespace cppnet {
         virtual bool AddRecvEvent(base::CMemSharePtr<CEventHandler>& event) = 0;
         virtual bool AddAcceptEvent(base::CMemSharePtr<CAcceptEventHandler>& event) = 0;
 #ifndef __linux__
-        virtual bool AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, char* buf, int buf_len) = 0;
+        virtual bool AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, const char* buf, int buf_len) = 0;
 #else
         virtual bool AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port) = 0;
 #endif

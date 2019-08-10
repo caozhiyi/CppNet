@@ -6,6 +6,7 @@
 #include "Buffer.h"
 #include "WinExpendFunc.h"
 #include "Timer.h"
+#include "CppNetImpl.h"
 
 using namespace cppnet;
 
@@ -23,9 +24,9 @@ CIOCP::~CIOCP() {
 }
 
 bool CIOCP::Init() {
-	int _threads_num = GetCpuNum();
+	uint32_t threads_num = CCppNetImpl::Instance().GetThreadNum();
 	//tell iocp the must thread num
-	_iocp_handler = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, _threads_num);
+	_iocp_handler = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, threads_num);
 	if (_iocp_handler == INVALID_HANDLE_VALUE) {
         base::LOG_FATAL("IOCP create io completion port failed!");
 		return false;
@@ -55,35 +56,21 @@ bool CIOCP::AddTimerEvent(unsigned int interval, base::CMemSharePtr<CEventHandle
 
 bool CIOCP::AddSendEvent(base::CMemSharePtr<CEventHandler>& event) {
 	auto socket_ptr = event->_client_socket.Lock();
-	if (socket_ptr) {
-		if (!socket_ptr->IsInActions()) {
-			if (CreateIoCompletionPort((HANDLE)(socket_ptr->GetSocket()), _iocp_handler, 0, 0) == NULL) {
-                base::LOG_ERROR("IOCP bind socket to io completion port failed!");
-				return false;
-			}
-		}
+	if (socket_ptr && _AddToActions(socket_ptr)) {
 		((EventOverlapped*)event->_data)->_event = &event;
-		socket_ptr->SetInActions(true);
 		return _PostSend(event);
 	}
-    base::LOG_WARN("write event is already destroyed!");
+    base::LOG_WARN("socket is already destroyed!");
 	return false;
 }
 
 bool CIOCP::AddRecvEvent(base::CMemSharePtr<CEventHandler>& event) {
 	auto socket_ptr = event->_client_socket.Lock();
-	if (socket_ptr) {
-		if (!socket_ptr->IsInActions()) {
-			if (CreateIoCompletionPort((HANDLE)(socket_ptr->GetSocket()), _iocp_handler, 0, 0) == NULL) {
-                base::LOG_ERROR("IOCP bind socket to io completion port failed!");
-				return false;
-			}
-		}
+	if (socket_ptr && _AddToActions(socket_ptr)) {
 		((EventOverlapped*)event->_data)->_event = &event;
-		socket_ptr->SetInActions(true);
 		return _PostRecv(event);
 	}
-    base::LOG_WARN("read event is already destroyed!");
+    base::LOG_WARN("socket is already destroyed!");
 	return false;
 }
 
@@ -99,37 +86,23 @@ bool CIOCP::AddAcceptEvent(base::CMemSharePtr<CAcceptEventHandler>& event) {
 	return _PostAccept(event);
 }
 
-bool CIOCP::AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, char* buf, int buf_len) {
+bool CIOCP::AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, const char* buf, int buf_len) {
 	auto socket_ptr = event->_client_socket.Lock();
-	if (socket_ptr) {
-		if (!socket_ptr->IsInActions()) {
-			if (CreateIoCompletionPort((HANDLE)(socket_ptr->GetSocket()), _iocp_handler, 0, 0) == NULL) {
-                base::LOG_ERROR("IOCP bind socket to io completion port failed!");
-				return false;
-			}
-		}
+	if (socket_ptr && _AddToActions(socket_ptr)) {
 		((EventOverlapped*)event->_data)->_event = &event;
-		socket_ptr->SetInActions(true);
 		return _PostConnection(event, ip, port, buf, buf_len);
 	}
-    base::LOG_WARN("read event is already destroyed!");
+    base::LOG_WARN("socket is already destroyed!");
 	return false;
 }
 
 bool CIOCP::AddDisconnection(base::CMemSharePtr<CEventHandler>& event) {
 	auto socket_ptr = event->_client_socket.Lock();
-	if (socket_ptr) {
-		if (!socket_ptr->IsInActions()) {
-			if (CreateIoCompletionPort((HANDLE)(socket_ptr->GetSocket()), _iocp_handler, 0, 0) == NULL) {
-                base::LOG_ERROR("IOCP bind socket to io completion port failed!");
-				return false;
-			}
-		}
+	if (socket_ptr && _AddToActions(socket_ptr)) {
 		((EventOverlapped*)event->_data)->_event = &event;
-		socket_ptr->SetInActions(true);
 		return _PostDisconnection(event);
 	}
-    base::LOG_WARN("read event is already destroyed!");
+    base::LOG_WARN("socket is already destroyed!");
 	return false;
 }
 
@@ -144,24 +117,27 @@ bool CIOCP::DelEvent(base::CMemSharePtr<CEventHandler>& event) {
 
 void CIOCP::ProcessEvent() {
 	DWORD				bytes_transfered = 0;
-	EventOverlapped		*socket_context = nullptr;
-	OVERLAPPED          *over_lapped = nullptr;
-	unsigned int		wait_time = 0;
+	EventOverlapped		*socket_context  = nullptr;
+	OVERLAPPED          *over_lapped     = nullptr;
+	unsigned int		wait_time        = 0;
 	std::vector<base::CMemSharePtr<CTimerEvent>> timer_vec;
 	while (_run) {
 		wait_time = _timer.TimeoutCheck(timer_vec);
 		//if there is no timer event. wait until recv something
 		if (wait_time == 0 && timer_vec.empty()) {
 			wait_time = INFINITE;
+
         } else {
             wait_time  = wait_time > 0 ? wait_time : 1;
         }
+
 		int res = GetQueuedCompletionStatus(_iocp_handler, &bytes_transfered, PULONG_PTR(&socket_context),
 			&over_lapped, wait_time);
 
 		DWORD dw_err = 0;
 		if (res) {
 			dw_err = NO_ERROR;
+            // exit
 			if ((PULONG_PTR)socket_context == (PULONG_PTR)EXIT_IOCP){
 				break;
 			}
@@ -277,7 +253,7 @@ bool CIOCP::_PostSend(base::CMemSharePtr<CEventHandler>& event) {
 	return true;
 }
 
-bool CIOCP::_PostConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, char* buf, int buf_len) {
+bool CIOCP::_PostConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, const char* buf, int buf_len) {
 	EventOverlapped* context = (EventOverlapped*)event->_data;
 
 	DWORD dwFlags = 0;
@@ -301,7 +277,7 @@ bool CIOCP::_PostConnection(base::CMemSharePtr<CEventHandler>& event, const std:
         base::LOG_FATAL("bind local host failed! error code: %d", WSAGetLastError());
 	}
 
-	int res = __ConnectEx(socket_ptr->GetSocket(), (sockaddr*)&addr, sizeof(addr), buf, buf_len, nullptr, lapped);
+	int res = __ConnectEx(socket_ptr->GetSocket(), (sockaddr*)&addr, sizeof(addr), (PVOID)buf, buf_len, nullptr, lapped);
 
 	if ((SOCKET_ERROR == res) && (WSA_IO_PENDING != WSAGetLastError())) {
         base::LOG_FATAL("IOCP post connect event failed! error code: %d", WSAGetLastError());
@@ -334,7 +310,7 @@ void CIOCP::_DoTimeoutEvent(std::vector<base::CMemSharePtr<CTimerEvent>>& timer_
 	for (auto iter = timer_vec.begin(); iter != timer_vec.end(); ++iter) {
 		if ((*iter)->_event_flag & EVENT_READ) {
             base::CMemSharePtr<CEventHandler> event_ptr = (*iter)->_event.Lock();
-            base::CMemSharePtr<CSocket> socket_ptr = event_ptr->_client_socket.Lock();
+            base::CMemSharePtr<CSocketImpl> socket_ptr = event_ptr->_client_socket.Lock();
 			if (socket_ptr) {
                 event_ptr->_event_flag_set |= EVENT_TIMER;
 				socket_ptr->_Recv(event_ptr);
@@ -342,7 +318,7 @@ void CIOCP::_DoTimeoutEvent(std::vector<base::CMemSharePtr<CTimerEvent>>& timer_
 
 		} else if ((*iter)->_event_flag & EVENT_WRITE) {
             base::CMemSharePtr<CEventHandler> event_ptr = (*iter)->_event.Lock();
-            base::CMemSharePtr<CSocket> socket_ptr = event_ptr->_client_socket.Lock();
+            base::CMemSharePtr<CSocketImpl> socket_ptr = event_ptr->_client_socket.Lock();
 			if (socket_ptr) {
                 event_ptr->_event_flag_set |= EVENT_TIMER;
 				socket_ptr->_Send(event_ptr);
@@ -401,4 +377,16 @@ void CIOCP::_DoTaskList() {
 		func_vec[i]();
 	}
 }
+
+bool CIOCP::_AddToActions(base::CMemSharePtr<CSocketImpl>& socket) {
+    if (!socket->IsInActions()) {
+        if (CreateIoCompletionPort((HANDLE)(socket->GetSocket()), _iocp_handler, 0, 0) == NULL) {
+            base::LOG_ERROR("IOCP bind socket to io completion port failed!");
+            return false;
+        }
+        socket->SetInActions(true);
+    }
+    return true;
+}
+
 #endif

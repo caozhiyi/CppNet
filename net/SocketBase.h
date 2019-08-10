@@ -24,7 +24,7 @@ namespace cppnet {
         virtual  ~CSocketBase();
 
         void SetEventActions(std::shared_ptr<CEventActions>	&actions) { _event_actions = actions; }
-        unsigned int GetSocket() { return _sock; }
+        uint64_t GetSocket() { return _sock; }
         bool IsInActions() { return _add_event_actions; }
         void SetInActions(bool set) { _add_event_actions = set; }
         const char* GetAddress() const { return _ip; }
@@ -32,8 +32,7 @@ namespace cppnet {
 
     public:
         bool			_add_event_actions;
-        unsigned int	_sock;
-        bool			_invalid;
+        uint64_t    	_sock;
         short			_port;
         char			_ip[__addr_str_len];
 

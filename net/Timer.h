@@ -35,7 +35,7 @@ namespace cppnet {
         uint32_t TimeoutCheck(uint64_t nowtime, std::vector<base::CMemSharePtr<CTimerEvent>>& res);
 
         // return number of event in timer
-        int GetTimerNum();
+        uint32_t GetTimerNum();
     private:
         // add timer event to event actions
         void _AddTimer(uint32_t interval, const base::CMemSharePtr<CTimerEvent>& t, uint64_t& id);
