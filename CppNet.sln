@@ -6,6 +6,11 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CppNet", "CppNet.vcxproj", "{E98183C7-10C3-4B1A-B8FB-D60BB6217962}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CppNetSev", "CppNetSev\CppNetSev.vcxproj", "{6FE7E867-AD3A-4681-A0DA-2A5E0DB16887}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E98183C7-10C3-4B1A-B8FB-D60BB6217962} = {E98183C7-10C3-4B1A-B8FB-D60BB6217962}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CppNetCli", "CppNetCli\CppNetCli.vcxproj", "{8C4CE7D6-9C74-4FEC-BEFC-EC99EA8A0D0A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +36,14 @@ Global
 		{6FE7E867-AD3A-4681-A0DA-2A5E0DB16887}.Release|x64.Build.0 = Release|x64
 		{6FE7E867-AD3A-4681-A0DA-2A5E0DB16887}.Release|x86.ActiveCfg = Release|Win32
 		{6FE7E867-AD3A-4681-A0DA-2A5E0DB16887}.Release|x86.Build.0 = Release|Win32
+		{8C4CE7D6-9C74-4FEC-BEFC-EC99EA8A0D0A}.Debug|x64.ActiveCfg = Debug|x64
+		{8C4CE7D6-9C74-4FEC-BEFC-EC99EA8A0D0A}.Debug|x64.Build.0 = Debug|x64
+		{8C4CE7D6-9C74-4FEC-BEFC-EC99EA8A0D0A}.Debug|x86.ActiveCfg = Debug|Win32
+		{8C4CE7D6-9C74-4FEC-BEFC-EC99EA8A0D0A}.Debug|x86.Build.0 = Debug|Win32
+		{8C4CE7D6-9C74-4FEC-BEFC-EC99EA8A0D0A}.Release|x64.ActiveCfg = Release|x64
+		{8C4CE7D6-9C74-4FEC-BEFC-EC99EA8A0D0A}.Release|x64.Build.0 = Release|x64
+		{8C4CE7D6-9C74-4FEC-BEFC-EC99EA8A0D0A}.Release|x86.ActiveCfg = Release|Win32
+		{8C4CE7D6-9C74-4FEC-BEFC-EC99EA8A0D0A}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

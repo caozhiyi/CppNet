@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include "CppNet.h"
+#include "Runnable.h"
 using namespace cppnet;
 
 int index = 0;
@@ -21,29 +22,38 @@ void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t 
     data->Clear();
 	std::cout << "Thread ID : " << std::this_thread::get_id() << std::endl;
 	std::cout << "Read size : " << len << std::endl << std::endl;
-	
+    base::CRunnable::Sleep(1000);
 	if (error != EVENT_ERROR_CLOSED) {
         auto msg = GetMsg();
-        SyncWrite(handle, msg.c_str(), msg.length());
+		SyncWrite(handle, msg.c_str(), msg.length());
 	}
     SyncRead(handle);
 }
 
 void ConnectFunc(const Handle& handle, uint32_t err) {
-	std::cout << "[AcceptFunc]" << std::endl;
-	SyncRead(handle);
+	std::cout << "[ConnectFunc]" << std::endl;
+    auto msg = GetMsg();
+    SyncWrite(handle, msg.c_str(), msg.length());
+    SyncRead(handle);
+}
+
+void DisConnectionFunc(const Handle& handle, uint32_t err) {
+    std::cout << "[DisConnectionFunc]" << std::endl;
 }
 
 int main() {
 
 	cppnet::Init(1, true);
 
-    cppnet::SetAcceptCallback(ConnectFunc);
+    cppnet::SetConnectionCallback(ConnectFunc);
     cppnet::SetWriteCallback(WriteFunc);
     cppnet::SetReadCallback(ReadFunc);
-    cppnet::SetDisconnectionCallback(ConnectFunc);
+    cppnet::SetDisconnectionCallback(DisConnectionFunc);
 
-    cppnet::ListenAndAccept(8921, "0.0.0.0", 20);
+    auto msg = GetMsg();
+    Connection(8921, "192.168.1.4", msg.c_str(), msg.length());
 
+	//net.MainLoop();
+	//net.Dealloc();
     cppnet::Join();
 }
