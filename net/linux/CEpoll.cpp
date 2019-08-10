@@ -39,7 +39,7 @@ bool CEpoll::Init() {
         base::LOG_FATAL("epoll init failed! error : %d", errno);
 		return false;
 	}
-	if (pipe(_pipe) == -1) {
+	if (pipe((int*)_pipe) == -1) {
         base::LOG_FATAL("pipe init failed! error : %d", errno);
 		return false;
 	}
@@ -279,7 +279,7 @@ bool CEpoll::_AddEvent(base::CMemSharePtr<CAcceptEventHandler>& event, int32_t e
 	epoll_event* content = (epoll_event*)event->_data;
 	content->events |= event_flag | EPOLLET;
 	content->data.ptr = (void*)&event->_accept_socket;
-	content->data.ptr = ((uintptr_t)content->data.ptr) | 1;
+	content->data.ptr = (void*)(((uintptr_t)content->data.ptr) | 1);
 	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_ADD, sock, content);
 	if (res == -1) {
         base::LOG_ERROR("add event to epoll faild! error :%d, sock: %d", errno, sock);

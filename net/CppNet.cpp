@@ -8,7 +8,7 @@
 
 void cppnet::Init(int32_t thread_num, bool log) {
     if (log) {
-        base::CLog::Instance().SetLogLevel(base::LOG_WARN_LEVEL);
+        base::CLog::Instance().SetLogLevel(base::LOG_DEBUG_LEVEL);
         base::CLog::Instance().SetLogName("CppNet.txt");
         base::CLog::Instance().Start();
     }
@@ -62,9 +62,11 @@ void cppnet::SetConnectionCallback(const connection_call_back& func) {
     cppnet::CCppNetImpl::Instance().SetConnectionCallback(func);
 }
 
+#ifndef __linux__
 cppnet::Handle cppnet::Connection(int16_t port, std::string ip, const char* buf, int32_t buf_len) {
     return cppnet::CCppNetImpl::Instance().Connection(port, ip, buf, buf_len);
 }
+#endif
 
 cppnet::Handle cppnet::Connection(int16_t port, std::string ip) {
     return cppnet::CCppNetImpl::Instance().Connection(port, ip);

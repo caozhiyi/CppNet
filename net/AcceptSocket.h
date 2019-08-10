@@ -8,9 +8,7 @@
 #include "SocketBase.h"
 
 namespace cppnet {
-    class CEventHandler;
     class CAcceptEventHandler;
-    class CMemoryPool;
 
     class CAcceptSocket : public CSocketBase, public base::CEnableSharedFromThis<CAcceptSocket> {
     public:

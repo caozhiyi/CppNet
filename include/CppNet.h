@@ -28,7 +28,9 @@ namespace cppnet {
 
     //client
     void SetConnectionCallback(const connection_call_back& func);
+#ifndef __linux__
     Handle Connection(int16_t port, std::string ip, const char* buf, int32_t buf_len);
+#endif
     Handle Connection(int16_t port, std::string ip);
 }
 

@@ -51,7 +51,13 @@ int main() {
     cppnet::SetDisconnectionCallback(DisConnectionFunc);
 
     auto msg = GetMsg();
+#ifndef __linux__
     Connection(8921, "192.168.1.4", msg.c_str(), msg.length());
+#else
+    Connection(8921, "192.168.233.128");
+#endif // !__linux__
+
+    
 
 	//net.MainLoop();
 	//net.Dealloc();

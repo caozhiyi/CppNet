@@ -51,23 +51,13 @@ CSocketImpl::~CSocketImpl() {
 }
 
 void CSocketImpl::SyncRead() {
-	if (!_read_event->_call_back) {
-        base::LOG_WARN("call back function is null");
-		return;
-	}
-
 	if (_event_actions) {
 		_read_event->_event_flag_set |= EVENT_READ;
 		_event_actions->AddRecvEvent(_read_event);
 	}
 }
 
-void CSocketImpl::SyncWrite(const char* src, int len) {
-	if (!_write_event->_call_back) {
-        base::LOG_WARN("call back function is null");
-		return;
-	}
-
+void CSocketImpl::SyncWrite(const char* src, uint32_t len) {
 	if (!_write_event->_client_socket) {
 		_write_event->_client_socket = _read_event->_client_socket;
 	}
@@ -89,12 +79,7 @@ void CSocketImpl::SyncWrite(const char* src, int len) {
 	}
 }
 
-void CSocketImpl::SyncConnection(const std::string& ip, short port) {
-	if (!_write_event->_call_back) {
-        base::LOG_WARN("call back function is null");
-		return;
-	}
-
+void CSocketImpl::SyncConnection(const std::string& ip, uint16_t port) {
 	if (ip.length() > 16) {
         base::LOG_ERROR("a wrong ip! %s", ip.c_str());
 		return;
@@ -106,9 +91,6 @@ void CSocketImpl::SyncConnection(const std::string& ip, short port) {
 		_read_event->_client_socket = memshared_from_this();
 	}
 
-	//create socket
-	_sock = socket(PF_INET, SOCK_STREAM, 0);
-
 	if (_event_actions) {
 		_read_event->_event_flag_set |= EVENT_CONNECT;
 		_event_actions->AddConnection(_read_event, ip, port);
@@ -116,11 +98,6 @@ void CSocketImpl::SyncConnection(const std::string& ip, short port) {
 }
 
 void CSocketImpl::SyncDisconnection() {
-	if (!_read_event->_call_back) {
-		base::LOG_WARN("call back function is null");
-		return;
-	}
-
 	if (!_read_event->_client_socket) {
 		_read_event->_client_socket = memshared_from_this();
 	}
@@ -153,14 +130,6 @@ void CSocketImpl::SyncWrite(uint32_t interval, const char* src, uint32_t len) {
 
 void CSocketImpl::PostTask(std::function<void(void)>& func) {
 	_event_actions->PostTask(func);
-}
-
-void CSocketImpl::SetReadCallBack(const std::function<void(base::CMemSharePtr<CEventHandler>&, int error)>& call_back) {
-	_read_event->_call_back = call_back;
-}
-
-void CSocketImpl::SetWriteCallBack(const std::function<void(base::CMemSharePtr<CEventHandler>&, int error)>& call_back) {
-	_write_event->_call_back = call_back;
 }
 
 bool cppnet::operator>(const CSocketBase& s1, const CSocketBase& s2) {
