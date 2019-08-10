@@ -1,30 +1,38 @@
-SRCS = $(wildcard ./base/*.cpp ./net/*.cpp ./net/linux/*.cpp ./test/*.cpp)
+SRCS = $(wildcard ./base/*.cpp ./net/*.cpp ./net/linux/*.cpp)
 
-OBJS = $(SRCS:.cpp = .o)
+OBJS = $(patsubst %.cpp, %.o, $(SRCS))
+
+SER = CppNetSev/CppNetServer.cpp
+CLI = CppNetCli/CppNetClient.cpp
 
 CC = g++
 
-INCLUDES = -I. \
-           -I./base \
-           -I./net \
+INCLUDES = -I.           \
+           -I./base      \
+           -I./net       \
            -I./net/linux \
-           -I./test \
+           -I./include   \
 
-LIBS = -L../lib
+CCFLAGS = -lpthread -fPIC -m64 -g -std=c++11 -lstdc++
 
-CCFLAGS = -lpthread -fPIC -m64 -std=c++11 -lstdc++ -fpermissive
+TARGET = libcppnet.a
+SERBIN = cppnetser
+CLIBIN = cppnetcli
 
-OUTPUT = CppNet.out
+all:$(TARGET) $(SERBIN) $(CLIBIN)
 
-all:$(OUTPUT)
+$(SERBIN):$(SER)
+	$(CC) $(SER) -o $@  $(TARGET)  $(CCFLAGS) $(INCLUDES)
 
-$(OUTPUT) : $(OBJS)
-	$(CC) $^ -o $@ $(INCLUDES) $(LIBS) $(CCFLAGS)
+$(CLIBIN):$(CLI)
+	$(CC) $(CLI) -o $@  $(TARGET)  $(CCFLAGS) $(INCLUDES)
 
-%.o : %.c
-	$(CC) -c $< $(CCFLAGS)
+$(TARGET):$(OBJS)
+	ar rcs $@ $^
+
+$(OBJS):$(SRCS)
+	mkdir -p $(@D)
+	$(CC) -c $(patsubst %.o, %.cpp, $@) -o $@ $(CCFLAGS) $(INCLUDES) 
 
 clean:
-	rm -rf *.out *.o
-
-.PHONY:clean
+	rm -rf $(OBJS) $(TARGET) $(SERBIN) $(CLIBIN)

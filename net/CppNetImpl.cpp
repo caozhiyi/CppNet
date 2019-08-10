@@ -1,4 +1,7 @@
 #include <random>
+#ifdef __linux__
+#include <sys/socket.h>
+#endif
 
 #include "CppNetImpl.h"
 #include "EventActions.h"
@@ -180,14 +183,26 @@ Handle CCppNetImpl::Connection(uint16_t port, std::string ip) {
 
 	auto actions = _RandomGetActions();
     base::CMemSharePtr<CSocketImpl> sock = base::MakeNewSharedPtr<CSocketImpl>(&_pool, actions);
-
 #ifndef __linux__
+    {
+        std::unique_lock<std::mutex> lock(_mutex);
+        _socket_map[sock->GetSocket()] = sock;
+    }
 	sock->SyncConnection(ip, port, "", 0);
 #else
+    //create socket
+    auto temp_socket = socket(PF_INET, SOCK_STREAM, 0);
+    if (temp_socket < 0) {
+        base::LOG_ERROR("create socket failed. errno : %d ", errno);
+        return 0;
+    }
+    sock->_sock = temp_socket;
+    {
+        std::unique_lock<std::mutex> lock(_mutex);
+        _socket_map[sock->GetSocket()] = sock;
+    }
 	sock->SyncConnection(ip, port);
 #endif
-    std::unique_lock<std::mutex> lock(_mutex);
-    _socket_map[sock->GetSocket()] = sock;
     return sock->GetSocket();
 }
 

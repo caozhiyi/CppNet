@@ -4,6 +4,7 @@
 #include <sys/epoll.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+
 #include "EventHandler.h"
 #include "Buffer.h"
 #include "Log.h"
@@ -11,6 +12,7 @@
 #include "AcceptSocket.h"
 #include "Socket.h"
 #include "LinuxFunc.h"
+#include "CppNetImpl.h"
 
 using namespace cppnet;
 
@@ -25,7 +27,7 @@ CAcceptSocket::~CAcceptSocket() {
 	
 }
 
-bool CAcceptSocket::Bind(short port, const std::string& ip) {
+bool CAcceptSocket::Bind(uint16_t port, const std::string& ip) {
 	SetSocketNoblocking(_sock);
 
 	struct sockaddr_in addr;
@@ -97,7 +99,7 @@ void CAcceptSocket::_Accept(base::CMemSharePtr<CAcceptEventHandler>& event) {
 		event->_client_socket->_sock = sock;
         
         sockaddr_in sock_addr;
-        int len = sizeof(sock_addr);
+        socklen_t len = sizeof(sock_addr);
     
         getpeername(sock, (struct sockaddr*)&sock_addr, &len);
 

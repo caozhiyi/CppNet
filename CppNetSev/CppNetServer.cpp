@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <thread>
 #include "CppNet.h"
 using namespace cppnet;
 
