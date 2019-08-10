@@ -6,10 +6,11 @@
 #include "IOCP.h"
 #include "EventActions.h"
 #include "SocketImpl.h"
+#include "CppNetImpl.h"
 
 using namespace cppnet;
 
-CSocketImpl::CSocketImpl(std::shared_ptr<CEventActions>& event_actions) : CSocketImplBase(event_actions), _post_event_num(0) {
+CSocketImpl::CSocketImpl(std::shared_ptr<CEventActions>& event_actions) : CSocketBase(event_actions), _post_event_num(0) {
 	_read_event = base::MakeNewSharedPtr<CEventHandler>(_pool.get());
 	_write_event = base::MakeNewSharedPtr<CEventHandler>(_pool.get());
 
@@ -35,59 +36,56 @@ CSocketImpl::~CSocketImpl() {
 }
 
 void CSocketImpl::SyncRead() {
-	if (!_read_event->_call_back) {
-		base::LOG_ERROR("call back function is null");
-		return;
-	}
+    if (!_read_event->_client_socket) {
+        _read_event->_client_socket = memshared_from_this();
+    }
 
 	if (_event_actions) {
 		_read_event->_event_flag_set = 0;
 		_read_event->_event_flag_set |= EVENT_READ;
 		if (_event_actions->AddRecvEvent(_read_event)) {
 			_post_event_num++;
-		}
+
+        // something wrong
+        }else {
+            CCppNetImpl::Instance()._ReadFunction(_write_event, EVENT_ERROR_CONNECT_BREAK);
+        }
 	}
 }
 
-void CSocketImpl::SyncWrite(char* src, int len) {
-	if (!_write_event->_call_back) {
-        base::LOG_WARN("call back function is null, src : %s, len : %d", src, len);
-		return;
-	}
-
+void CSocketImpl::SyncWrite(const char* src, uint32_t len) {
 	_write_event->_buffer->Write(src, len);
 
-	if (!_write_event->_client_socket) {
-		_write_event->_client_socket = _read_event->_client_socket;
-	}
+    if (!_write_event->_client_socket) {
+        _write_event->_client_socket = memshared_from_this();
+    }
 
 	if (_event_actions) {
         _write_event->_event_flag_set = 0;
 		_write_event->_event_flag_set |= EVENT_WRITE;
 		if (_event_actions->AddSendEvent(_write_event)) {
 			_post_event_num++;
-		}
+
+        // something wrong
+        } else {
+            CCppNetImpl::Instance()._WriteFunction(_write_event, EVENT_ERROR_CONNECT_BREAK);
+        }
 	}
 }
 
-void CSocketImpl::SyncConnection(const std::string& ip, short port, char* buf, int buf_len) {
-	if (!_read_event->_call_back) {
-        base::LOG_WARN("call back function is null, ip : %s, port : %d", ip.c_str(), port);
-		return;
-	}
-
+void CSocketImpl::SyncConnection(const std::string& ip, uint16_t port, const char* buf, uint32_t buf_len) {
 	if (ip.length() > 16 || ip.empty()) {
         base::LOG_ERROR("a wrong ip! ip : %s", ip.c_str());
 		return;
 	}
 
+    if (!_read_event->_client_socket) {
+        _read_event->_client_socket = memshared_from_this();
+    }
+
     // set address info
 	strcpy(_ip, ip.c_str());
 	_port = port;
-
-	if (!_read_event->_client_socket){
-		_read_event->_client_socket = memshared_from_this();
-	}
 
 	if (_event_actions) {
 		_read_event->_event_flag_set = 0;
@@ -98,15 +96,14 @@ void CSocketImpl::SyncConnection(const std::string& ip, short port, char* buf, i
 	}
 }
 
-void CSocketImpl::SyncDisconnection() {
-	if (!_read_event->_call_back) {
-        base::LOG_WARN("call back function is null");
-		return;
-	}
+void CSocketImpl::SyncConnection(const std::string& ip, uint16_t port) {
+    SyncConnection(ip, port, nullptr, 0);
+}
 
-	if (!_read_event->_client_socket) {
-		_read_event->_client_socket = memshared_from_this();
-	}
+void CSocketImpl::SyncDisconnection() {
+    if (!_read_event->_client_socket) {
+        _read_event->_client_socket = memshared_from_this();
+    }
 
 	if (_event_actions) {
 		_read_event->_event_flag_set = 0;
@@ -117,10 +114,11 @@ void CSocketImpl::SyncDisconnection() {
 	}
 }
 
-void CSocketImpl::SyncRead(unsigned int interval) {
+void CSocketImpl::SyncRead(uint32_t interval) {
 
     SyncRead();
 
+    // add to timer
 	if (_event_actions) {
 		_read_event->_event_flag_set |= EVENT_TIMER;
 		_event_actions->AddTimerEvent(interval, _read_event);
@@ -128,7 +126,7 @@ void CSocketImpl::SyncRead(unsigned int interval) {
 	}
 }
 
-void CSocketImpl::SyncWrite(unsigned int interval, char* src, int len) {
+void CSocketImpl::SyncWrite(uint32_t interval, const char* src, uint32_t len) {
 
     SyncWrite(src, len);
 
@@ -141,14 +139,6 @@ void CSocketImpl::SyncWrite(unsigned int interval, char* src, int len) {
 
 void CSocketImpl::PostTask(std::function<void(void)>& func) {
 	_event_actions->PostTask(func);
-}
-
-void CSocketImpl::SetReadCallBack(const std::function<void(base::CMemSharePtr<CEventHandler>&, int error)>& call_back) {
-	_read_event->_call_back = call_back;
-}
-
-void CSocketImpl::SetWriteCallBack(const std::function<void(base::CMemSharePtr<CEventHandler>&, int error)>& call_back) {
-	_write_event->_call_back = call_back;
 }
 
 bool cppnet::operator>(const CSocketBase& s1, const CSocketBase& s2) {
@@ -166,7 +156,6 @@ bool cppnet::operator==(const CSocketBase& s1, const CSocketBase& s2) {
 bool cppnet::operator!=(const CSocketBase& s1, const CSocketBase& s2) {
 	return s1._sock != s2._sock;
 }
-
 
 void CSocketImpl::_Recv(base::CMemSharePtr<CEventHandler>& event) {
 	EventOverlapped* context = (EventOverlapped*)event->_data;
@@ -194,8 +183,8 @@ void CSocketImpl::_Recv(base::CMemSharePtr<CEventHandler>& event) {
 		err = EVENT_ERROR_NO | event->_event_flag_set;
 		event->_buffer->Write(context->_wsa_buf.buf, event->_off_set);
 	}
-	if (event->_call_back && err > -1) {
-		event->_call_back(event, err);
+	if (err > -1) {
+        CCppNetImpl::Instance()._ReadFunction(event, err);
 		event->_event_flag_set = 0;
 	}
 }
@@ -218,8 +207,8 @@ void CSocketImpl::_Send(base::CMemSharePtr<CEventHandler>& event) {
 		err = EVENT_ERROR_NO | event->_event_flag_set;
 	}
 
-	if (event->_call_back && err > -1) {
-		event->_call_back(event, err);
+	if (err > -1) {
+        CCppNetImpl::Instance()._WriteFunction(event, err);
 		event->_event_flag_set = 0;
 	}
 }

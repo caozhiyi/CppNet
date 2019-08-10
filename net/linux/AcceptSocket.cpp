@@ -17,6 +17,8 @@ using namespace cppnet;
 CAcceptSocket::CAcceptSocket(std::shared_ptr<CEventActions>& event_actions) : CSocketBase(event_actions){
 	_sock = socket(PF_INET, SOCK_STREAM, 0);
 	SetReusePort(_sock);
+
+    _accept_event = base::MakeNewSharedPtr<CAcceptEventHandler>(_pool.get());
 }
 
 CAcceptSocket::~CAcceptSocket() {
@@ -50,21 +52,11 @@ bool CAcceptSocket::Listen(uint16_t listen_size) {
 		close(_sock);
 		return false;
 	}
-	_invalid = true;
 
 	return true;
 }
 
 void CAcceptSocket::SyncAccept() {
-	if (!_accept_event->_call_back) {
-		base::LOG_WARN("call back function is null");
-		return;
-	}
-
-	if (!_accept_event) {
-		_accept_event = base::MakeNewSharedPtr<CAcceptEventHandler>(_pool.get());
-	}
-
 	if (!_accept_event->_accept_socket) {
 		_accept_event->_accept_socket = memshared_from_this();
 	}
@@ -83,24 +75,6 @@ void CAcceptSocket::SyncAccept() {
 		_accept_event->_event_flag_set |= EVENT_ACCEPT;
 		_event_actions->AddAcceptEvent(_accept_event);
 	}
-}
-
-void CAcceptSocket::SetReadCallBack(const std::function<void(base::CMemSharePtr<CEventHandler>&, int error)>& call_back) {
-	if (!_accept_event->_client_socket) {
-		_accept_event->_client_socket = base::MakeNewSharedPtr<CSocketImpl>(_pool.get(), _event_actions);
-	}
-	if (!_accept_event->_client_socket->_read_event) {
-		_accept_event->_client_socket->_read_event = base::MakeNewSharedPtr<CEventHandler>(_accept_event->_client_socket->_pool.get());
-	}
-
-	_accept_event->_client_socket->_read_event->_call_back = call_back;
-}
-
-void CAcceptSocket::SetAcceptCallBack(const std::function<void(base::CMemSharePtr<CAcceptEventHandler>&, int error)>& call_back) {
-	if (!_accept_event) {
-		_accept_event = base::MakeNewSharedPtr<CAcceptEventHandler>(_pool.get());
-	}
-	_accept_event->_call_back = call_back;
 }
 
 void CAcceptSocket::_Accept(base::CMemSharePtr<CAcceptEventHandler>& event) {
@@ -131,18 +105,10 @@ void CAcceptSocket::_Accept(base::CMemSharePtr<CAcceptEventHandler>& event) {
 		event->_client_socket->_port = ntohs(sock_addr.sin_port);
 		//get client socket
 		event->_client_socket->_read_event->_client_socket = event->_client_socket;
-		//call accept call back function
-		if (event->_call_back) {
-			event->_call_back(event, EVENT_ERROR_NO | EVENT_ACCEPT);
-		}
+        //call accept call back function
+        CCppNetImpl::Instance()._AcceptFunction(event, EVENT_ERROR_NO | EVENT_ACCEPT);
 		event->_event_flag_set = 0;
 		event->_client_socket = base::MakeNewSharedPtr<CSocketImpl>(_pool.get(), _event_actions);
-		if (!_accept_event->_client_socket->_read_event) {
-			_accept_event->_client_socket->_read_event = base::MakeNewSharedPtr<CEventHandler>(_accept_event->_client_socket->_pool.get());
-		}
-		if (!_accept_event->_client_socket->_read_event->_buffer) {
-			_accept_event->_client_socket->_read_event->_buffer = base::MakeNewSharedPtr<CBuffer>(_accept_event->_client_socket->_pool.get(), _accept_event->_client_socket->_pool);
-		}
 	}
 }
 #endif // __linux__

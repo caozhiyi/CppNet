@@ -19,26 +19,22 @@ namespace cppnet {
         // post sync read event.
         void SyncRead();
         // post sync write event.
-        void SyncWrite(char* src, uint32_t len);
+        void SyncWrite(const char* src, uint32_t len);
 
         // post sync read event with time out
         void SyncRead(uint32_t interval);
         // post sync write event with time out
-        void SyncWrite(uint32_t interval, char* src, uint32_t len);
+        void SyncWrite(uint32_t interval, const char* src, uint32_t len);
 
         // post a sync task to io thread
         void PostTask(std::function<void(void)>& func);
 #ifndef __linux__
         // sync connection. 
-        void SyncConnection(const std::string& ip, uint16_t port, char* buf, uint32_t buf_len);
-#else
-        void SyncConnection(const std::string& ip, uint16_t port);
+        void SyncConnection(const std::string& ip, uint16_t port, const char* buf, uint32_t buf_len);
 #endif
-        void SyncDisconnection();
+        void SyncConnection(const std::string& ip, uint16_t port);
 
-        // set read and write event call back
-        void SetReadCallBack(const std::function<void(base::CMemSharePtr<CEventHandler>&, int error)>& call_back);
-        void SetWriteCallBack(const std::function<void(base::CMemSharePtr<CEventHandler>&, int error)>& call_back);
+        void SyncDisconnection();
 
         friend bool operator>(const CSocketBase& s1, const CSocketBase& s2);
         friend bool operator<(const CSocketBase& s1, const CSocketBase& s2);
@@ -54,7 +50,7 @@ namespace cppnet {
         base::CMemSharePtr<CEventHandler>		_write_event;
 #ifndef __linux__
         //iocp use it save post event num;
-        uint32_t					        _post_event_num;
+        uint32_t					            _post_event_num;
 #endif
     };
     bool operator>(const CSocketBase& s1, const CSocketBase& s2);

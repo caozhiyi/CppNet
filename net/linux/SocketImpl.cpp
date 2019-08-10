@@ -62,7 +62,7 @@ void CSocketImpl::SyncRead() {
 	}
 }
 
-void CSocketImpl::SyncWrite(char* src, int len) {
+void CSocketImpl::SyncWrite(const char* src, int len) {
 	if (!_write_event->_call_back) {
         base::LOG_WARN("call back function is null");
 		return;
@@ -141,7 +141,7 @@ void CSocketImpl::SyncRead(uint32_t interval) {
 	}
 }
 
-void CSocketImpl::SyncWrite(uint32_t interval, char* src, uint32_t len) {
+void CSocketImpl::SyncWrite(uint32_t interval, const char* src, uint32_t len) {
 	
     SyncWrite(src, len);
 
@@ -235,9 +235,7 @@ void CSocketImpl::_Recv(base::CMemSharePtr<CEventHandler>& event) {
 			}
 		}
 	}
-	if (CCppNetImpl::Instance()._read_call_back) {
-		CCppNetImpl::Instance()._read_call_back(memshared_from_this(), event->_buffer, event->_off_set, err);
-	}
+    CCppNetImpl::Instance()._ReadFunction(event, err);
 }
 
 void CSocketImpl::_Send(base::CMemSharePtr<CEventHandler>& event) {
@@ -288,9 +286,7 @@ void CSocketImpl::_Send(base::CMemSharePtr<CEventHandler>& event) {
 			event->_off_set = res;
 		}
 		
-		if (event->_call_back) {
-			event->_call_back(event, err);
-		}
+        CCppNetImpl::Instance()._WriteFunction(event, err);
 	}
 }
 #endif

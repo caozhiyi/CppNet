@@ -43,8 +43,6 @@ namespace cppnet {
         base::CMemSharePtr<base::CBuffer>	_buffer;
         base::CMemWeakPtr<CSocketImpl>		_client_socket;
         int							        _off_set;				//read or write size
-
-        std::function<void(base::CMemSharePtr<CEventHandler>&, int error)>	_call_back;
     };
 
     class CAcceptEventHandler : public Cevent {
@@ -52,7 +50,6 @@ namespace cppnet {
         base::CMemSharePtr<CSocketImpl>		_client_socket;
 
         base::CMemSharePtr<CAcceptSocket>	_accept_socket = nullptr;
-        std::function<void(base::CMemSharePtr<CAcceptEventHandler>&, int error)>	_call_back;
     };
 }
 
