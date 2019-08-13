@@ -84,10 +84,10 @@ void CAcceptSocket::_Accept(base::CMemSharePtr<CAcceptEventHandler>& event) {
 	event->_client_socket->_read_event->_client_socket = event->_client_socket;
 
 	//call accept call back function
-    CCppNetImpl::Instance()._AcceptFunction(event, EVENT_ERROR_NO | event->_event_flag_set);
+    CCppNetImpl::Instance()._AcceptFunction(event, CEC_SUCCESS | event->_event_flag_set);
 
 	//call read call back function
-    CCppNetImpl::Instance()._ReadFunction(event->_client_socket->_read_event, EVENT_ERROR_NO | EVENT_READ);
+    CCppNetImpl::Instance()._ReadFunction(event->_client_socket->_read_event, CEC_SUCCESS | EVENT_READ);
 
 	//post accept again
 	context->Clear();

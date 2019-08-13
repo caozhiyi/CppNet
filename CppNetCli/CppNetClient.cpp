@@ -23,7 +23,7 @@ void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t 
 	std::cout << "Thread ID : " << std::this_thread::get_id() << std::endl;
 	std::cout << "Read size : " << len << std::endl << std::endl;
     base::CRunnable::Sleep(1000);
-	if (error != EVENT_ERROR_CLOSED) {
+	if (error != CEC_CLOSED) {
         auto msg = GetMsg();
 		SyncWrite(handle, msg.c_str(), msg.length());
 	}

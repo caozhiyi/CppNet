@@ -160,21 +160,21 @@ void CSocketImpl::_Recv(base::CMemSharePtr<CEventHandler>& event) {
 	}
 	int err = -1;
 	if (event->_event_flag_set & EVENT_TIMER) {
-		err = EVENT_ERROR_TIMEOUT | event->_event_flag_set;
+		err = CEC_TIMEOUT | event->_event_flag_set;
 		//reset timer flag
 		event->_event_flag_set &= ~EVENT_TIMER;
 
 	//get a connection event
 	} else if (event->_event_flag_set & EVENT_CONNECT) {
-		err = EVENT_ERROR_NO | event->_event_flag_set;
+		err = CEC_SUCCESS | event->_event_flag_set;
 		event->_event_flag_set &= ~EVENT_CONNECT;
 
 	} else if (event->_event_flag_set & EVENT_DISCONNECT) {
-		err = EVENT_ERROR_NO | event->_event_flag_set;
+		err = CEC_SUCCESS | event->_event_flag_set;
 		event->_event_flag_set &= ~EVENT_DISCONNECT;
 
 	} else {
-		err = EVENT_ERROR_NO | event->_event_flag_set;
+		err = CEC_SUCCESS | event->_event_flag_set;
 		if (event->_event_flag_set & EVENT_READ) {
 			event->_off_set = 0;
 			//read all data.
@@ -187,7 +187,7 @@ void CSocketImpl::_Recv(base::CMemSharePtr<CEventHandler>& event) {
 						break;
 
 					} else if (errno == EBADMSG || errno == ECONNRESET) {
-						err = EVENT_ERROR_CLOSED | event->_event_flag_set;
+						err = CEC_CLOSED | event->_event_flag_set;
 						break;
 
 					} else {
@@ -195,7 +195,7 @@ void CSocketImpl::_Recv(base::CMemSharePtr<CEventHandler>& event) {
 						break;
 					}
 				} else if (recv_len == 0) {
-					err = EVENT_ERROR_CLOSED | event->_event_flag_set;
+					err = CEC_CLOSED | event->_event_flag_set;
 					break;
 				}
 				event->_buffer->Write(buf, recv_len);
@@ -220,11 +220,11 @@ void CSocketImpl::_Send(base::CMemSharePtr<CEventHandler>& event) {
 
 	int err = -1;
 	if (event->_event_flag_set & EVENT_TIMER) {
-		err = EVENT_ERROR_TIMEOUT | event->_event_flag_set;
+		err = CEC_TIMEOUT | event->_event_flag_set;
 		event->_event_flag_set &= ~EVENT_TIMER;
 
 	} else {
-		err = EVENT_ERROR_NO | event->_event_flag_set;
+		err = CEC_SUCCESS | event->_event_flag_set;
 		event->_off_set = 0;
 		if (event->_buffer && event->_buffer->GetCanReadSize()) {
 			char buf[8912] = { 0 };
@@ -245,10 +245,10 @@ void CSocketImpl::_Send(base::CMemSharePtr<CEventHandler>& event) {
 					//wait next time to do
 
 				} else if (errno == EBADMSG) {
-					err = EVENT_ERROR_CLOSED | event->_event_flag_set;
+					err = CEC_CLOSED | event->_event_flag_set;
 
 				} else {
-					err = EVENT_ERROR_CLOSED | event->_event_flag_set;
+					err = CEC_CLOSED | event->_event_flag_set;
                     base::LOG_ERROR("send filed! %d", errno);
 				}
 			}
