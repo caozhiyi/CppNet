@@ -2,6 +2,7 @@
 #include <string>
 #include "CppNet.h"
 #include "Runnable.h"
+#include "Socket.h"
 using namespace cppnet;
 
 int index = 0;
@@ -52,9 +53,9 @@ int main() {
 
     auto msg = GetMsg();
 #ifndef __linux__
-    Connection(8921, "192.168.1.4", msg.c_str(), msg.length());
+    cppnet::SyncConnection("192.168.1.4", 8921, msg.c_str(), msg.length());
 #else
-    Connection(8921, "192.168.233.128");
+    cppnet::SyncConnection("192.168.233.128", 8921);
 #endif // !__linux__
 
     cppnet::Join();

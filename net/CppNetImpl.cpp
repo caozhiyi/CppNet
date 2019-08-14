@@ -298,8 +298,8 @@ void CCppNetImpl::_WriteFunction(base::CMemSharePtr<CEventHandler>& event, uint3
 }
 
 std::shared_ptr<CEventActions>& CCppNetImpl::_RandomGetActions() {
-	std::random_device rd;
-	std::mt19937 mt(rd());
+	static std::random_device rd;
+	static std::mt19937 mt(rd());
 	int index = mt() % int(_actions_map.size());
 	auto iter = _actions_map.begin();
 	for (int i = 0; i < index; i++) {
