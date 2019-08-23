@@ -1,5 +1,5 @@
-#ifndef HEADER_NET_CNETOBJECT
-#define HEADER_NET_CNETOBJECT
+#ifndef HEADER_NET_CPPNETIMPL
+#define HEADER_NET_CPPNETIMPL
 
 #include <unordered_map>
 #include <thread>

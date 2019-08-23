@@ -31,7 +31,6 @@ $(TARGET):$(OBJS)
 	ar rcs $@ $^
 
 $(OBJS):$(SRCS)
-	mkdir -p $(@D)
 	$(CC) -c $(patsubst %.o, %.cpp, $@) -o $@ $(CCFLAGS) $(INCLUDES) 
 
 clean:

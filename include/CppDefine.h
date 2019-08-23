@@ -25,7 +25,9 @@ namespace cppnet {
     // data   : point to recv data buffer
     // len    : recv data len
     // err    : error code
-    typedef std::function<void(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t err)>     read_call_back;
+    // continue_read : continue post read event
+    typedef std::function<void(const Handle& handle, base::CBuffer* data, 
+                        uint32_t len, uint32_t err, bool& continue_read)>                                  read_call_back;
     
     // error code
     enum CPPNET_ERROR_CODE {

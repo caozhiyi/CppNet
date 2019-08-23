@@ -16,7 +16,7 @@ void WriteFunc(const Handle& handle, uint32_t len, uint32_t error) {
 	std::cout << "[WriteFunc]  len :" << len << std::endl;
 }
 
-void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t error) {
+void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t error, bool& continue_read) {
 	std::cout << "[ReadFunc]" << std::endl;
 	std::cout << *(data) << std::endl;
     data->Clear();
@@ -27,7 +27,6 @@ void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t 
         auto msg = GetMsg();
         SyncWrite(handle, msg.c_str(), msg.length());
 	}
-    SyncRead(handle);
 }
 
 void ConnectFunc(const Handle& handle, uint32_t err) {
