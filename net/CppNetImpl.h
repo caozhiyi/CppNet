@@ -24,7 +24,7 @@ namespace cppnet {
         CCppNetImpl();
         ~CCppNetImpl();
         // common
-        void Init(uint32_t thread_num = 0);
+        void Init(uint32_t thread_num = 0, bool per_handl_thread = false);
         void Dealloc();
         void Join();
 

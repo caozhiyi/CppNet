@@ -63,9 +63,6 @@
     <ClCompile Include="net\win\SocketImpl.cpp">
       <Filter>net\win</Filter>
     </ClCompile>
-    <ClCompile Include="net\linux\SocketImpl.cpp">
-      <Filter>net\linux</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\Buffer.h">
@@ -163,10 +160,18 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="net\linux\AcceptSocket.cpp" />
-    <None Include="net\linux\CEpoll.cpp" />
-    <None Include="net\linux\LinuxFunc.cpp" />
-    <None Include="net\linux\Socket.cpp" />
-    <None Include="net\linux\SocketBase.cpp" />
+    <None Include="net\linux\SocketImpl.cpp" />
+    <None Include="net\linux\CEpoll.cpp">
+      <Filter>net\linux</Filter>
+    </None>
+    <None Include="net\linux\AcceptSocket.cpp">
+      <Filter>net\linux</Filter>
+    </None>
+    <None Include="net\linux\LinuxFunc.cpp">
+      <Filter>net\linux</Filter>
+    </None>
+    <None Include="net\linux\SocketBase.cpp">
+      <Filter>net\linux</Filter>
+    </None>
   </ItemGroup>
 </Project>

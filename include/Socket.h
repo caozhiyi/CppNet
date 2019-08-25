@@ -1,6 +1,7 @@
 #ifndef HEADER_INCLUDE_CSOCKET
 #define HEADER_INCLUDE_CSOCKET
 
+#include <string>
 #include "CppDefine.h"
 
 namespace cppnet {
@@ -19,7 +20,7 @@ namespace cppnet {
     int16_t PostTask(std::function<void(void)>& func);
 #ifndef __linux__
     // sync connection. 
-    int16_t SyncConnection(const std::string& ip, int16_t port, char* buf, int32_t buf_len);
+    int16_t SyncConnection(const std::string& ip, int16_t port, const char* buf, int32_t buf_len);
 #endif
     int16_t SyncConnection(const std::string& ip, int16_t port);
 

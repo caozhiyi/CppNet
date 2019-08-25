@@ -7,7 +7,11 @@
 namespace cppnet {
 
     //common
-    void Init(int32_t thread_num, bool log = false);
+    // init cppnet library.
+    // thread_num:       the number of running threads.
+    // log:              print log out?
+    // per_handl_thread: every thread with a epoll handle. only use in linux.
+    void Init(int32_t thread_num, bool log = false, bool per_handl_thread = false);
     void Dealloc();
 
     // thread join

@@ -27,7 +27,7 @@ CEpoll::~CEpoll() {
 
 }
 
-bool CEpoll::Init() {
+bool CEpoll::Init(uint32_t thread_num) {
 	//Disable  SIGPIPE signal
 	sigset_t set;
 	sigprocmask(SIG_SETMASK, NULL, &set);
@@ -62,7 +62,7 @@ bool CEpoll::Dealloc() {
 	return true;
 }
 
-uint64_t CEpoll::AddTimerEvent(uint32_t interval, const std::function<void(void*)>& call_back, void* param, bool always) {
+uint64_t CEpoll::AddTimerEvent(uint32_t interval, const timer_call_back& call_back, void* param, bool always) {
     return _timer.AddTimer(interval, call_back, param, always);
 }
 

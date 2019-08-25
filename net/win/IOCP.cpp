@@ -23,10 +23,12 @@ CIOCP::~CIOCP() {
 
 }
 
-bool CIOCP::Init() {
-	uint32_t threads_num = CCppNetImpl::Instance().GetThreadNum();
+bool CIOCP::Init(uint32_t thread_num) {
+    if (thread_num == 0) {
+        thread_num = CCppNetImpl::Instance().GetThreadNum();
+    }
 	//tell iocp the must thread num
-	_iocp_handler = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, threads_num);
+	_iocp_handler = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, thread_num);
 	if (_iocp_handler == INVALID_HANDLE_VALUE) {
         base::LOG_FATAL("IOCP create io completion port failed!");
 		return false;

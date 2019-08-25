@@ -43,7 +43,7 @@ int16_t cppnet::PostTask(std::function<void(void)>& func) {
 
 #ifndef __linux__
 // sync connection. 
-int16_t cppnet::SyncConnection(const std::string& ip, int16_t port, char* buf, int32_t buf_len) {
+int16_t cppnet::SyncConnection(const std::string& ip, int16_t port, const char* buf, int32_t buf_len) {
     if (CCppNetImpl::Instance().Connection(port, ip, buf, buf_len)) {
         return cppnet::CEC_SUCCESS;
     }

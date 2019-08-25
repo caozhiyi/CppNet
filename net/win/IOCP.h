@@ -45,7 +45,7 @@ namespace cppnet {
         CIOCP();
         ~CIOCP();
 
-        virtual bool Init();
+        virtual bool Init(uint32_t thread_num = 0);
         virtual bool Dealloc();
 
         // timer event

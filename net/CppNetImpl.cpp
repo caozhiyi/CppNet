@@ -26,7 +26,7 @@ CCppNetImpl::~CCppNetImpl() {
 
 }
 
-void CCppNetImpl::Init(uint32_t thread_num) {
+void CCppNetImpl::Init(uint32_t thread_num, bool per_handl_thread) {
 #ifndef __linux__
 	InitScoket();
 #else
@@ -37,20 +37,38 @@ void CCppNetImpl::Init(uint32_t thread_num) {
 	if (thread_num == 0 || thread_num > cpus * 2) {
 		thread_num = cpus;
 	}
-	for (size_t i = 0; i < thread_num; i++) {
 #ifdef __linux__
-		std::shared_ptr<CEventActions> event_actions(new CEpoll);
-#else
-        // only one iocp
-		static std::shared_ptr<CEventActions> event_actions(new CIOCP);
-		//std::shared_ptr<CEventActions> event_actions(new CIOCP);
-#endif
+    if (per_handl_thread) {
+        for (size_t i = 0; i < thread_num; i++) {
+            // create a epoll
+            std::shared_ptr<CEventActions> event_actions(new CEpoll);
+            // start net io thread
+            event_actions->Init(thread_num);
+            std::shared_ptr<std::thread> thd(new std::thread(std::bind(&CEventActions::ProcessEvent, event_actions)));
+            _actions_map[thd->get_id()] = event_actions;
+            _thread_vec.push_back(thd);
+        }
+    } else {
+        // create only one epoll
+        std::shared_ptr<CEventActions> event_actions(new CEpoll);
         // start net io thread
-		event_actions->Init();
-		std::shared_ptr<std::thread> thd(new std::thread(std::bind(&CEventActions::ProcessEvent, event_actions)));
-		_actions_map[thd->get_id()] = event_actions;
-		_thread_vec.push_back(thd);
-	}
+        event_actions->Init(thread_num);
+        for (size_t i = 0; i < thread_num; i++) {
+            std::shared_ptr<std::thread> thd(new std::thread(std::bind(&CEventActions::ProcessEvent, event_actions)));
+            _actions_map[thd->get_id()] = event_actions;
+            _thread_vec.push_back(thd);
+        }
+    }
+	
+#else
+    // only one iocp
+    std::shared_ptr<CEventActions> event_actions(new CIOCP);
+    // start net io thread
+    event_actions->Init(thread_num);
+    std::shared_ptr<std::thread> thd(new std::thread(std::bind(&CEventActions::ProcessEvent, event_actions)));
+    _actions_map[thd->get_id()] = event_actions;
+    _thread_vec.push_back(thd);
+#endif
 }
 
 void CCppNetImpl::Dealloc() {

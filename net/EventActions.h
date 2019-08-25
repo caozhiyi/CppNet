@@ -16,7 +16,7 @@ namespace cppnet {
         CEventActions() {}
         virtual ~CEventActions() {}
 
-        virtual bool Init() = 0;
+        virtual bool Init(uint32_t thread_num = 0) = 0;
         virtual bool Dealloc() = 0;
 
         // timer event

@@ -6,7 +6,7 @@
 #include "CppNetImpl.h"
 #include "Log.h"
 
-void cppnet::Init(int32_t thread_num, bool log) {
+void cppnet::Init(int32_t thread_num, bool log, bool per_handl_thread) {
     if (log) {
         base::CLog::Instance().SetLogLevel(base::LOG_DEBUG_LEVEL);
         base::CLog::Instance().SetLogName("CppNet.txt");
