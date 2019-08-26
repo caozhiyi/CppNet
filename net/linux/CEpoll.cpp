@@ -19,7 +19,7 @@ enum EPOLL_CODE {
 	WEAK_EPOLL = 0
 };
 
-CEpoll::CEpoll() : _run(true) {
+CEpoll::CEpoll(bool only_one_epoll) : _run(true), _only_one_epoll(only_one_epoll) {
 
 }
 
@@ -308,6 +308,10 @@ bool CEpoll::_ModifyEvent(base::CMemSharePtr<CEventHandler>& event, int32_t even
 }
 
 bool CEpoll::_ReserOneShot(base::CMemSharePtr<CEventHandler>& event, int32_t event_flag, uint64_t sock) {
+	// if not only epoll handle, do nothing. 
+	if (!_only_one_epoll) {
+		return true;
+	}
 	epoll_event* content = (epoll_event*)event->_data;
 	content->events |= EPOLLONESHOT;
 	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_MOD, sock, content);

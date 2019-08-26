@@ -41,7 +41,7 @@ void CCppNetImpl::Init(uint32_t thread_num, bool per_handl_thread) {
     if (per_handl_thread) {
         for (size_t i = 0; i < thread_num; i++) {
             // create a epoll
-            std::shared_ptr<CEventActions> event_actions(new CEpoll);
+            std::shared_ptr<CEventActions> event_actions(new CEpoll(per_handl_thread));
             // start net io thread
             event_actions->Init(thread_num);
             std::shared_ptr<std::thread> thd(new std::thread(std::bind(&CEventActions::ProcessEvent, event_actions)));
@@ -50,9 +50,10 @@ void CCppNetImpl::Init(uint32_t thread_num, bool per_handl_thread) {
         }
     } else {
         // create only one epoll
-        std::shared_ptr<CEventActions> event_actions(new CEpoll);
+        std::shared_ptr<CEventActions> event_actions(new CEpoll(per_handl_thread));
         // start net io thread
         event_actions->Init(thread_num);
+		
         for (size_t i = 0; i < thread_num; i++) {
             std::shared_ptr<std::thread> thd(new std::thread(std::bind(&CEventActions::ProcessEvent, event_actions)));
             _actions_map[thd->get_id()] = event_actions;
