@@ -48,7 +48,7 @@ void CSocketImpl::SyncRead() {
 
         // something wrong
         }else {
-            CCppNetImpl::Instance()._ReadFunction(_write_event, CEC_CONNECT_BREAK);
+            CCppNetImpl::Instance()._ReadFunction(_write_event, _read_event->_event_flag_set | CEC_CLOSED);
         }
 	}
 }
@@ -68,7 +68,7 @@ void CSocketImpl::SyncWrite(const char* src, uint32_t len) {
 
         // something wrong
         } else {
-            CCppNetImpl::Instance()._WriteFunction(_write_event, CEC_CONNECT_BREAK);
+            CCppNetImpl::Instance()._WriteFunction(_write_event, _write_event->_event_flag_set | CEC_CLOSED);
         }
 	}
 }

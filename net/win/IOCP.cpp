@@ -164,6 +164,15 @@ void CIOCP::ProcessEvent() {
 			}
 			_DoTaskList();
 
+        } else if (ERROR_CONNECTION_REFUSED == dw_err) {
+            if (over_lapped) {
+                socket_context = CONTAINING_RECORD(over_lapped, EventOverlapped, _overlapped);
+                base::LOG_DEBUG("Get a new event : %d", socket_context->_event_flag_set);
+                socket_context->_event_flag_set |= CEC_CLOSED;
+                _DoEvent(socket_context, bytes_transfered);
+            }
+            _DoTaskList();
+
 		} else {
             base::LOG_ERROR("IOCP GetQueuedCompletionStatus return error : %d", dw_err);
 			continue;

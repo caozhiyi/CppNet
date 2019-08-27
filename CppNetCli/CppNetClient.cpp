@@ -27,14 +27,23 @@ void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t 
 	if (error != CEC_CLOSED) {
         auto msg = GetMsg();
 		SyncWrite(handle, msg.c_str(), msg.length());
-	}
+    } else {
+        continue_read = false;
+        std::cout << "Close" << std::endl;
+    }
 }
 
 void ConnectFunc(const Handle& handle, uint32_t err) {
-	std::cout << "[ConnectFunc]" << std::endl;
-    auto msg = GetMsg();
-    SyncWrite(handle, msg.c_str(), msg.length());
-    SyncRead(handle);
+    if (err == CEC_SUCCESS) {
+        std::cout << "[ConnectFunc]" << std::endl;
+        auto msg = GetMsg();
+        SyncWrite(handle, msg.c_str(), msg.length());
+        SyncRead(handle);
+
+    } else {
+        std::cout << "some thing error : " << err << std::endl;
+    }
+	
 }
 
 void DisConnectionFunc(const Handle& handle, uint32_t err) {
@@ -52,7 +61,7 @@ int main() {
 
     auto msg = GetMsg();
 #ifndef __linux__
-    cppnet::SyncConnection("192.168.1.4", 8921, msg.c_str(), msg.length());
+    cppnet::SyncConnection("192.168.1.9", 8921, msg.c_str(), msg.length());
 #else
     cppnet::SyncConnection("192.168.233.128", 8921);
 #endif // !__linux__

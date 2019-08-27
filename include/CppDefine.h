@@ -37,7 +37,8 @@ namespace cppnet {
         CEC_DONE                   = 0x0800,
         CEC_INVALID_HANDLE         = 0x0001,
         CEC_FAILED                 = 0x0002,
-        CEC_CONNECT_BREAK          = 0x0003,
+        CEC_CONNECT_BREAK          = 0x0003, 
+        CEC_CONNECT_REFUSE         = 0x0004,    // remote refuse connect or server not exist.
     };
 }
 

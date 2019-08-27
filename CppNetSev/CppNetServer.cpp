@@ -26,7 +26,10 @@ void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t 
 	if (error != CEC_CLOSED) {
         auto msg = GetMsg();
         SyncWrite(handle, msg.c_str(), msg.length());
-	}
+
+    } else {
+        std::cout << "Close" << std::endl;
+    }
 }
 
 void ConnectFunc(const Handle& handle, uint32_t err) {
