@@ -1,6 +1,16 @@
 #include "Socket.h"
 #include "CppNetImpl.h"
 
+int16_t cppnet::GetIpAddress(const Handle& handle, std::string& ip, uint16_t& port) {
+    auto socket = CCppNetImpl::Instance().GetSocket(handle);
+        if (socket) {
+            ip = socket->GetAddress();
+            port = socket->GetPort();
+            return cppnet::CEC_SUCCESS;
+        }
+        return cppnet::CEC_INVALID_HANDLE;
+}
+
 int16_t cppnet::SyncRead(const Handle& handle) {
     auto socket = CCppNetImpl::Instance().GetSocket(handle);
     if (socket) {

@@ -292,6 +292,7 @@ void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32
 		if (err == CEC_CLOSED) {
 			std::unique_lock<std::mutex> lock(_mutex);
 			_socket_map.erase(socket_ptr->GetSocket());
+			socket_ptr.Reset();
 			return;
 		}
 		// post read again

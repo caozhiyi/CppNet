@@ -45,9 +45,10 @@ bool CEpoll::Init(uint32_t thread_num) {
 	}
 	_pipe_content.events |= EPOLLIN;
 	_pipe_content.data.ptr = (void*)WEAK_EPOLL;
+	base::LOG_ERROR("_epoll_handler:%d, _pipe[0]:%d", _epoll_handler, _pipe[0]);
 	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_ADD, _pipe[0], &_pipe_content);
 	if (res == -1) {
-        base::LOG_ERROR("add event to epoll faild! error :%d", errno);
+        base::LOG_ERROR("add pipe handle to epoll faild! error :%d", errno);
 		return false;
 	}
 	return true;
@@ -389,15 +390,10 @@ void CEpoll::_DoEvent(std::vector<epoll_event>& event_vec, int num) {
 				continue;
 			}
 			if (event_vec[i].events & EPOLLIN) {
-				if (socket_ptr) {
-					socket_ptr->_Recv(socket_ptr->_read_event);
-				}
-
-			} else if (event_vec[i].events & EPOLLOUT) {
-				auto socket_ptr = normal_sock->Lock();
-				if (socket_ptr) {
-					socket_ptr->_Send(socket_ptr->_write_event);
-				}
+				socket_ptr->_Recv(socket_ptr->_read_event);
+			} 
+			if (event_vec[i].events & EPOLLOUT) {
+				socket_ptr->_Send(socket_ptr->_write_event);
 			}
 		}
 	}

@@ -6,6 +6,8 @@
 
 namespace cppnet {
 
+    // get socket ip and adress
+    int16_t GetIpAddress(const Handle& handle, std::string& ip, uint16_t& port);
     // post sync read event.
     int16_t SyncRead(const Handle& handle);
     // post sync write event.
