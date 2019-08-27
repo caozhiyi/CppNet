@@ -21,17 +21,17 @@ CLIBIN = cppnetcli
 
 all:$(TARGET) $(SERBIN) $(CLIBIN)
 
-$(SERBIN):$(SER)
+$(SERBIN):$(SER) $(TARGET)
 	$(CC) $(SER) -o $@  $(TARGET)  $(CCFLAGS) $(INCLUDES)
 
-$(CLIBIN):$(CLI)
+$(CLIBIN):$(CLI) $(TARGET)
 	$(CC) $(CLI) -o $@  $(TARGET)  $(CCFLAGS) $(INCLUDES)
 
 $(TARGET):$(OBJS)
 	ar rcs $@ $^
 
-$(OBJS):$(SRCS)
-	$(CC) -c $(patsubst %.o, %.cpp, $@) -o $@ $(CCFLAGS) $(INCLUDES) 
+%.o : %.cpp
+	$(CC) -c $< -o $@ $(CCFLAGS) $(INCLUDES) 
 
 clean:
 	rm -rf $(OBJS) $(TARGET) $(SERBIN) $(CLIBIN)

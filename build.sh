@@ -1,1 +1,1 @@
-make
+make -j4
