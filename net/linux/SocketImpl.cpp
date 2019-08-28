@@ -158,23 +158,20 @@ void CSocketImpl::_Recv(base::CMemSharePtr<CEventHandler>& event) {
         base::LOG_WARN("the event'socket is destroyed");
 		return;
 	}
-	int err = -1;
+	int err = 0;
 	if (event->_event_flag_set & EVENT_TIMER) {
-		err = CEC_TIMEOUT | event->_event_flag_set;
-		//reset timer flag
+		err = ERR_TIME_OUT | event->_event_flag_set;
 		event->_event_flag_set &= ~EVENT_TIMER;
 
 	//get a connection event
 	} else if (event->_event_flag_set & EVENT_CONNECT) {
-		err = CEC_SUCCESS | event->_event_flag_set;
+		err = event->_event_flag_set;
 		event->_event_flag_set &= ~EVENT_CONNECT;
 
 	} else if (event->_event_flag_set & EVENT_DISCONNECT) {
-		err = CEC_SUCCESS | event->_event_flag_set;
 		event->_event_flag_set &= ~EVENT_DISCONNECT;
 
 	} else {
-		err = CEC_SUCCESS | event->_event_flag_set;
 		if (event->_event_flag_set & EVENT_READ) {
 			event->_off_set = 0;
 			//read all data.
@@ -187,15 +184,18 @@ void CSocketImpl::_Recv(base::CMemSharePtr<CEventHandler>& event) {
 						break;
 
 					} else if (errno == EBADMSG || errno == ECONNRESET) {
-						err = CEC_CLOSED | event->_event_flag_set;
+						err = ERR_CONNECT_BREAK | event->_event_flag_set;
+						base::LOG_ERROR("recv filed! %d", errno);
 						break;
 
 					} else {
+						err = ERR_CONNECT_BREAK | event->_event_flag_set;
                         base::LOG_ERROR("recv filed! %d", errno);
 						break;
 					}
 				} else if (recv_len == 0) {
-					err = CEC_CLOSED | event->_event_flag_set;
+					err = ERR_CONNECT_CLOSE | event->_event_flag_set;
+					base::LOG_DEBUG("socket read 0 to close! %d", socket_ptr->GetSocket());
 					break;
 				}
 				event->_buffer->Write(buf, recv_len);
@@ -218,37 +218,35 @@ void CSocketImpl::_Send(base::CMemSharePtr<CEventHandler>& event) {
 		return;
 	}
 
-	int err = -1;
+	int err = 0;
 	if (event->_event_flag_set & EVENT_TIMER) {
-		err = CEC_TIMEOUT | event->_event_flag_set;
+		err = ERR_TIME_OUT | event->_event_flag_set;
 		event->_event_flag_set &= ~EVENT_TIMER;
 
 	} else {
-		err = CEC_SUCCESS | event->_event_flag_set;
 		event->_off_set = 0;
 		if (event->_buffer && event->_buffer->GetCanReadSize()) {
 			char buf[8912] = { 0 };
 			int send_len = 0;
 			send_len = event->_buffer->Read(buf, 8912);
 			int res = send(socket_ptr->GetSocket(), buf, send_len, 0);
-			if (res > 0) {
+			if (res >= 0) {
 				event->_buffer->Clear(res);
 				//can send complete
 				if (res < send_len) {
 					_write_event->_event_flag_set |= EVENT_WRITE;
 					_event_actions->AddSendEvent(_write_event);
 				}
-			}
-
-			if (res < 0) {
+			} else {
 				if (errno == EWOULDBLOCK || errno == EAGAIN || errno == EINTR) {
 					//wait next time to do
 
 				} else if (errno == EBADMSG) {
-					err = CEC_CLOSED | event->_event_flag_set;
+					err = ERR_CONNECT_BREAK | event->_event_flag_set;
+					base::LOG_ERROR("send filed! %d", errno);
 
 				} else {
-					err = CEC_CLOSED | event->_event_flag_set;
+					err = ERR_CONNECT_CLOSE | event->_event_flag_set;
                     base::LOG_ERROR("send filed! %d", errno);
 				}
 			}

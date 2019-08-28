@@ -31,14 +31,13 @@ namespace cppnet {
     
     // error code
     enum CPPNET_ERROR_CODE {
-        CEC_SUCCESS                = 0x0100,
-        CEC_TIMEOUT                = 0x0200,
-        CEC_CLOSED                 = 0x0400,
-        CEC_DONE                   = 0x0800,
-        CEC_INVALID_HANDLE         = 0x0001,
-        CEC_FAILED                 = 0x0002,
-        CEC_CONNECT_BREAK          = 0x0003, 
-        CEC_CONNECT_REFUSE         = 0x0004,    // remote refuse connect or server not exist.
+        CEC_SUCCESS                = 0x0001,
+        CEC_TIMEOUT                = 0x0002,
+        CEC_CLOSED                 = 0x0003,
+        CEC_INVALID_HANDLE         = 0x0004,
+        CEC_FAILED                 = 0x0005,
+        CEC_CONNECT_BREAK          = 0x0006, 
+        CEC_CONNECT_REFUSE         = 0x0007     // remote refuse connect or server not exist.
     };
 }
 

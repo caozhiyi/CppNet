@@ -108,7 +108,7 @@ void CAcceptSocket::_Accept(base::CMemSharePtr<CAcceptEventHandler>& event) {
 		//get client socket
 		event->_client_socket->_read_event->_client_socket = event->_client_socket;
         //call accept call back function
-        CCppNetImpl::Instance()._AcceptFunction(event, CEC_SUCCESS | EVENT_ACCEPT);
+        CCppNetImpl::Instance()._AcceptFunction(event, EVENT_ACCEPT);
 		event->_event_flag_set = 0;
 		event->_client_socket = base::MakeNewSharedPtr<CSocketImpl>(_pool.get(), _event_actions);
 	}

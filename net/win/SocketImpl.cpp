@@ -48,7 +48,7 @@ void CSocketImpl::SyncRead() {
 
         // something wrong
         }else {
-            CCppNetImpl::Instance()._ReadFunction(_write_event, _read_event->_event_flag_set | CEC_CLOSED);
+            CCppNetImpl::Instance()._ReadFunction(_write_event, _read_event->_event_flag_set | ERR_CONNECT_BREAK);
         }
 	}
 }
@@ -68,7 +68,7 @@ void CSocketImpl::SyncWrite(const char* src, uint32_t len) {
 
         // something wrong
         } else {
-            CCppNetImpl::Instance()._WriteFunction(_write_event, _write_event->_event_flag_set | CEC_CLOSED);
+            CCppNetImpl::Instance()._WriteFunction(_write_event, _write_event->_event_flag_set | ERR_CONNECT_BREAK);
         }
 	}
 }
@@ -163,24 +163,23 @@ void CSocketImpl::_Recv(base::CMemSharePtr<CEventHandler>& event) {
 	_post_event_num--;
 	int err = -1;
 	if (event->_event_flag_set & EVENT_TIMER) {
-		err = CEC_TIMEOUT | event->_event_flag_set;
-        event->_event_flag_set &= ~EVENT_TIMER;
+		err = ERR_TIME_OUT | event->_event_flag_set;
 
 	//get a connection event
-	} else if (event->_event_flag_set == EVENT_CONNECT) {
-		err = CEC_SUCCESS | event->_event_flag_set;
+	} else if (event->_event_flag_set & EVENT_CONNECT) {
+		err = event->_event_flag_set;
 
 	} else if (event->_event_flag_set & EVENT_DISCONNECT) {
-		err = CEC_SUCCESS | event->_event_flag_set;
+		err = event->_event_flag_set;
 
 	//get 0 bytes means close
 	} else if (!event->_off_set) {
 		if (_post_event_num == 0) {
-			err = CEC_CLOSED | event->_event_flag_set;
+			err = ERR_CONNECT_CLOSE | event->_event_flag_set;
 		}
 
 	} else {
-		err = CEC_SUCCESS | event->_event_flag_set;
+		err = event->_event_flag_set;
 		event->_buffer->Write(context->_wsa_buf.buf, event->_off_set);
 	}
 	if (err > -1) {
@@ -195,16 +194,15 @@ void CSocketImpl::_Send(base::CMemSharePtr<CEventHandler>& event) {
 	_post_event_num--;
 	int err = -1;
 	if (event->_event_flag_set & EVENT_TIMER) {
-		err = CEC_TIMEOUT | event->_event_flag_set;
-        event->_event_flag_set &= ~EVENT_TIMER;
+		err = ERR_TIME_OUT | event->_event_flag_set;
 
 	} else if (!event->_off_set) {
 		if (_post_event_num == 0) {
-			err = CEC_CLOSED | event->_event_flag_set;
+			err = ERR_CONNECT_CLOSE | event->_event_flag_set;
 		}
 
 	} else {
-		err = CEC_SUCCESS | event->_event_flag_set;
+		err = event->_event_flag_set;
 	}
 
 	if (err > -1) {

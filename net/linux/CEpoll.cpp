@@ -3,6 +3,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <signal.h>
+#include <sys/poll.h>
 #include "CEpoll.h"
 #include "OSInfo.h"
 #include "Log.h"
@@ -13,6 +14,29 @@
 #include "LinuxFunc.h"
 
 using namespace cppnet;
+
+// check socket connect
+bool CheckConnect(const uint64_t& sock) {
+	struct pollfd fd;
+	int ret = 0;
+	socklen_t len = 0;
+	fd.fd = sock;
+	fd.events = POLLOUT;
+
+	if (poll (&fd, 1, -1) == -1) {
+		if(errno != EINTR){
+			return false;
+		}
+	}
+	len = sizeof(ret);
+	if (getsockopt (sock, SOL_SOCKET, SO_ERROR, &ret, &len) == -1) {
+		return false;
+	}
+	if(ret != 0) {
+		return false;
+	}
+	return true;
+}
 
 enum EPOLL_CODE {
 	EXIT_EPOLL = 1,
@@ -159,13 +183,20 @@ bool CEpoll::AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::
 		addr.sin_port = htons(port);
 		addr.sin_addr.s_addr = inet_addr(ip.c_str());
 		//block here in linux
-		int res = connect(socket_ptr->GetSocket(), (sockaddr *)&addr, sizeof(addr));
+		base::LOG_WARN("begin to connect %s, port %d", ip.c_str(), port);
 		SetSocketNoblocking(socket_ptr->GetSocket());
-
-		if (res == 0 || errno == EINPROGRESS) {
-			//res = _AddEvent(event, EPOLLOUT, socket_ptr->GetSocket());
+		int res = connect(socket_ptr->GetSocket(), (sockaddr *)&addr, sizeof(addr));
+		base::LOG_WARN("connect event failed! %d, %d", errno, res);
+		if (res == 0) {
 			socket_ptr->_Recv(socket_ptr->_read_event);
 			return true;
+		} else if (errno == EINPROGRESS) {
+			if (CheckConnect(socket_ptr->GetSocket())) {
+				socket_ptr->_Recv(socket_ptr->_read_event);
+				return true;
+			}
+			socket_ptr->_read_event->_event_flag_set |= ERR_CONNECT_FAILED;
+			socket_ptr->_Recv(socket_ptr->_read_event);
 		}
         base::LOG_WARN("connect event failed! %d", errno);
 		return false;

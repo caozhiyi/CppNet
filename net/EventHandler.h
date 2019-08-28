@@ -20,6 +20,11 @@ namespace cppnet {
         EVENT_DISCONNECT    = 0x0020,		//disconnect event
 
         EVENT_TIMER_ALWAYS  = 0x0040,       //timer always check
+
+        ERR_CONNECT_BREAK   = 0x0080,       //connect break
+        ERR_CONNECT_FAILED  = 0x0100,       //connect faild
+        ERR_CONNECT_CLOSE   = 0x0200,       //connect close
+        ERR_TIME_OUT        = 0x0400,       //time out
     };
 
     class Cevent {

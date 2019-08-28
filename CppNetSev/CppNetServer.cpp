@@ -13,28 +13,34 @@ std::string GetMsg() {
 }
 
 void WriteFunc(const Handle& handle, uint32_t len, uint32_t error) {
-	std::cout << "[WriteFunc]  len :" << len << std::endl;
+	if (error != CEC_SUCCESS) {
+        std::cout << "[WriteFunc]  something error : " << error << std::endl;
+    }
 }
 
 void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t error, bool& continue_read) {
-	std::cout << "[ReadFunc]" << std::endl;
-	std::cout << *(data) << std::endl;
-    data->Clear();
-	std::cout << "Thread ID : " << std::this_thread::get_id() << std::endl;
-	std::cout << "Read size : " << len << std::endl << std::endl;
-	
-	if (error != CEC_CLOSED) {
+	if (error != CEC_CLOSED && error != CEC_CONNECT_BREAK) {
+        std::cout << "[ReadFunc]" << std::endl;
+	    std::cout << *(data) << std::endl;
+        data->Clear();
+	    std::cout << "Thread ID : " << std::this_thread::get_id() << std::endl;
+	    std::cout << "Read size : " << len << std::endl << std::endl;
         auto msg = GetMsg();
-        SyncWrite(handle, msg.c_str(), msg.length());
-
+		SyncWrite(handle, msg.c_str(), msg.length());
     } else {
+        continue_read = false;
         std::cout << "Close" << std::endl;
     }
 }
 
 void ConnectFunc(const Handle& handle, uint32_t err) {
-	std::cout << "[AcceptFunc]" << std::endl;
-	SyncRead(handle);
+    if (err == CEC_SUCCESS) {
+        std::cout << "[ConnectFunc]" << std::endl;
+        SyncRead(handle);
+
+    } else {
+        std::cout << "[ConnectFunc] some thing error : " << err << std::endl;
+    }
 }
 
 int main() {

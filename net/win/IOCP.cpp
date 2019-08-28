@@ -168,7 +168,7 @@ void CIOCP::ProcessEvent() {
             if (over_lapped) {
                 socket_context = CONTAINING_RECORD(over_lapped, EventOverlapped, _overlapped);
                 base::LOG_DEBUG("Get a new event : %d", socket_context->_event_flag_set);
-                socket_context->_event_flag_set |= CEC_CLOSED;
+                socket_context->_event_flag_set |= ERR_CONNECT_CLOSE;
                 _DoEvent(socket_context, bytes_transfered);
             }
             _DoTaskList();
