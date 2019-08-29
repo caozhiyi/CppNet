@@ -23,13 +23,13 @@ bool CheckConnect(const uint64_t& sock) {
 	fd.fd = sock;
 	fd.events = POLLOUT;
 
-	if (poll (&fd, 1, -1) == -1) {
+	if (poll(&fd, 1, -1) == -1) {
 		if(errno != EINTR){
 			return false;
 		}
 	}
 	len = sizeof(ret);
-	if (getsockopt (sock, SOL_SOCKET, SO_ERROR, &ret, &len) == -1) {
+	if (getsockopt(sock, SOL_SOCKET, SO_ERROR, &ret, &len) == -1) {
 		return false;
 	}
 	if(ret != 0) {
@@ -69,7 +69,6 @@ bool CEpoll::Init(uint32_t thread_num) {
 	}
 	_pipe_content.events |= EPOLLIN;
 	_pipe_content.data.ptr = (void*)WEAK_EPOLL;
-	base::LOG_ERROR("_epoll_handler:%d, _pipe[0]:%d", _epoll_handler, _pipe[0]);
 	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_ADD, _pipe[0], &_pipe_content);
 	if (res == -1) {
         base::LOG_ERROR("add pipe handle to epoll faild! error :%d", errno);
@@ -183,10 +182,8 @@ bool CEpoll::AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::
 		addr.sin_port = htons(port);
 		addr.sin_addr.s_addr = inet_addr(ip.c_str());
 		//block here in linux
-		base::LOG_WARN("begin to connect %s, port %d", ip.c_str(), port);
 		SetSocketNoblocking(socket_ptr->GetSocket());
 		int res = connect(socket_ptr->GetSocket(), (sockaddr *)&addr, sizeof(addr));
-		base::LOG_WARN("connect event failed! %d, %d", errno, res);
 		if (res == 0) {
 			socket_ptr->_Recv(socket_ptr->_read_event);
 			return true;

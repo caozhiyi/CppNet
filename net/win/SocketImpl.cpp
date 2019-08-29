@@ -161,25 +161,24 @@ void CSocketImpl::_Recv(base::CMemSharePtr<CEventHandler>& event) {
 	EventOverlapped* context = (EventOverlapped*)event->_data;
 
 	_post_event_num--;
-	int err = -1;
+	int err = event->_event_flag_set;
 	if (event->_event_flag_set & EVENT_TIMER) {
-		err = ERR_TIME_OUT | event->_event_flag_set;
+		err |= ERR_TIME_OUT;
 
 	//get a connection event
 	} else if (event->_event_flag_set & EVENT_CONNECT) {
-		err = event->_event_flag_set;
+		// do nothing
 
 	} else if (event->_event_flag_set & EVENT_DISCONNECT) {
-		err = event->_event_flag_set;
+		// do nothing
 
 	//get 0 bytes means close
 	} else if (!event->_off_set) {
 		if (_post_event_num == 0) {
-			err = ERR_CONNECT_CLOSE | event->_event_flag_set;
+			err |= ERR_CONNECT_CLOSE;
 		}
 
 	} else {
-		err = event->_event_flag_set;
 		event->_buffer->Write(context->_wsa_buf.buf, event->_off_set);
 	}
 	if (err > -1) {
@@ -192,17 +191,14 @@ void CSocketImpl::_Send(base::CMemSharePtr<CEventHandler>& event) {
 	EventOverlapped* context = (EventOverlapped*)event->_data;
 
 	_post_event_num--;
-	int err = -1;
+	int err = event->_event_flag_set;
 	if (event->_event_flag_set & EVENT_TIMER) {
-		err = ERR_TIME_OUT | event->_event_flag_set;
+		err |= ERR_TIME_OUT; 
 
 	} else if (!event->_off_set) {
 		if (_post_event_num == 0) {
-			err = ERR_CONNECT_CLOSE | event->_event_flag_set;
+			err |= ERR_CONNECT_CLOSE |;
 		}
-
-	} else {
-		err = event->_event_flag_set;
 	}
 
 	if (err > -1) {

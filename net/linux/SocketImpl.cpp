@@ -68,15 +68,14 @@ void CSocketImpl::SyncWrite(const char* src, uint32_t len) {
 	_write_event->_buffer->Write(src, len);
 	_Send(_write_event);
 
-	//send complete!
-	if (_write_event->_buffer->GetCanReadSize() == 0) {
-		return;
-	}
+	// if not send complete. _Send function will add send event to action.
+	// if (_write_event->_buffer->GetCanReadSize() == 0) {
+	// 	return;
+	// }
 
-	if (_event_actions) {
-		_write_event->_event_flag_set |= EVENT_WRITE;
-		_event_actions->AddSendEvent(_write_event);
-	}
+	// if (_event_actions) {
+	// 	_event_actions->AddSendEvent(_write_event);
+	// }
 }
 
 void CSocketImpl::SyncConnection(const std::string& ip, uint16_t port) {
@@ -158,14 +157,13 @@ void CSocketImpl::_Recv(base::CMemSharePtr<CEventHandler>& event) {
         base::LOG_WARN("the event'socket is destroyed");
 		return;
 	}
-	int err = 0;
+	int err = event->_event_flag_set;
 	if (event->_event_flag_set & EVENT_TIMER) {
-		err = ERR_TIME_OUT | event->_event_flag_set;
+		err |= ERR_TIME_OUT;
 		event->_event_flag_set &= ~EVENT_TIMER;
 
 	//get a connection event
 	} else if (event->_event_flag_set & EVENT_CONNECT) {
-		err = event->_event_flag_set;
 		event->_event_flag_set &= ~EVENT_CONNECT;
 
 	} else if (event->_event_flag_set & EVENT_DISCONNECT) {
@@ -184,17 +182,17 @@ void CSocketImpl::_Recv(base::CMemSharePtr<CEventHandler>& event) {
 						break;
 
 					} else if (errno == EBADMSG || errno == ECONNRESET) {
-						err = ERR_CONNECT_BREAK | event->_event_flag_set;
+						err |= ERR_CONNECT_BREAK;
 						base::LOG_ERROR("recv filed! %d", errno);
 						break;
 
 					} else {
-						err = ERR_CONNECT_BREAK | event->_event_flag_set;
+						err |= ERR_CONNECT_BREAK;
                         base::LOG_ERROR("recv filed! %d", errno);
 						break;
 					}
 				} else if (recv_len == 0) {
-					err = ERR_CONNECT_CLOSE | event->_event_flag_set;
+					err |= ERR_CONNECT_CLOSE;
 					base::LOG_DEBUG("socket read 0 to close! %d", socket_ptr->GetSocket());
 					break;
 				}
@@ -218,9 +216,9 @@ void CSocketImpl::_Send(base::CMemSharePtr<CEventHandler>& event) {
 		return;
 	}
 
-	int err = 0;
+	int err = event->_event_flag_set;
 	if (event->_event_flag_set & EVENT_TIMER) {
-		err = ERR_TIME_OUT | event->_event_flag_set;
+		err |= ERR_TIME_OUT;
 		event->_event_flag_set &= ~EVENT_TIMER;
 
 	} else {
@@ -229,24 +227,26 @@ void CSocketImpl::_Send(base::CMemSharePtr<CEventHandler>& event) {
 			char buf[8912] = { 0 };
 			int send_len = 0;
 			send_len = event->_buffer->Read(buf, 8912);
+			base::LOG_ERROR("buf : %s, len : %d", buf, send_len);
 			int res = send(socket_ptr->GetSocket(), buf, send_len, 0);
+			base::LOG_ERROR("res : %d err : %d", res, errno);
 			if (res >= 0) {
 				event->_buffer->Clear(res);
 				//can send complete
 				if (res < send_len) {
-					_write_event->_event_flag_set |= EVENT_WRITE;
 					_event_actions->AddSendEvent(_write_event);
 				}
+
 			} else {
 				if (errno == EWOULDBLOCK || errno == EAGAIN || errno == EINTR) {
 					//wait next time to do
 
 				} else if (errno == EBADMSG) {
-					err = ERR_CONNECT_BREAK | event->_event_flag_set;
+					err |= ERR_CONNECT_BREAK;
 					base::LOG_ERROR("send filed! %d", errno);
 
 				} else {
-					err = ERR_CONNECT_CLOSE | event->_event_flag_set;
+					err |= ERR_CONNECT_CLOSE;
                     base::LOG_ERROR("send filed! %d", errno);
 				}
 			}
