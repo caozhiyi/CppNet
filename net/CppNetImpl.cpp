@@ -278,7 +278,7 @@ void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32
 	Handle handle = socket_ptr->GetSocket();
 	if (err & EVENT_CONNECT && _connection_call_back) {
         // remote refuse connect
-        if (err & ERR_CONNECT_FAILED) {
+        if (err & ERR_CONNECT_FAILED || err & ERR_CONNECT_CLOSE) {
             err = CEC_CONNECT_REFUSE;
 
         } else {

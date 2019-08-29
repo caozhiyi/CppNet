@@ -164,7 +164,7 @@ void CIOCP::ProcessEvent() {
 			}
 			_DoTaskList();
 
-        } else if (ERROR_CONNECTION_REFUSED == dw_err) {
+        } else if (ERROR_CONNECTION_REFUSED == dw_err || ERROR_SEM_TIMEOUT == dw_err) {
             if (over_lapped) {
                 socket_context = CONTAINING_RECORD(over_lapped, EventOverlapped, _overlapped);
                 base::LOG_DEBUG("Get a new event : %d", socket_context->_event_flag_set);

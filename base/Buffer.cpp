@@ -357,6 +357,7 @@ int CBuffer::ReadUntil(char* res, int len) {
 
 int CBuffer::ReadUntil(char* res, int len, const char* find, int find_len, int& need_len) {
 	int size = FindStr(find, find_len);
+    size += find_len;
 	if (size) {
 		if (size <= len) {
 			return Read(res, size);

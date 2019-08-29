@@ -11,7 +11,7 @@ std::vector<Handle> handle_vec;
 static const char* __buf_spilt = "\r\n";
 
 std::string GetMsg() {
-    return "It is a test msg, It is a long test msg. index : " + std::to_string(index) + __buf_spilt;
+    return "It is a test msg, It is a long test msg. index : " + std::to_string(index++) + __buf_spilt;
 }
 
 void WriteFunc(const Handle& handle, uint32_t len, uint32_t error) {
@@ -36,6 +36,7 @@ void ConnectFunc(const Handle& handle, uint32_t error) {
         std::cout << "something err while connect : " << error << std::endl;
     } else {
         handle_vec.push_back(handle);
+        cppnet::SyncRead(handle);
     }
 }
 
@@ -49,16 +50,16 @@ void DisConnectionFunc(const Handle& handle, uint32_t err) {
 
 int main() {
 
-	cppnet::Init(1, true);
+	cppnet::Init(1, false);
 
     cppnet::SetConnectionCallback(ConnectFunc);
     cppnet::SetWriteCallback(WriteFunc);
     cppnet::SetReadCallback(ReadFunc);
     cppnet::SetDisconnectionCallback(DisConnectionFunc);
-    for (size_t i = 0; i < 1; i++) {
+    for (size_t i = 0; i < 1500; i++) {
 #ifndef __linux__
         std::string msg = GetMsg();
-        cppnet::SyncConnection("192.168.1.4", 8921, msg.c_str(), msg.length());
+        cppnet::SyncConnection("192.168.1.9", 8921, msg.c_str(), msg.length());
 #else
         cppnet::SyncConnection("172.21.193.122", 8921);
 #endif // !__linux__
