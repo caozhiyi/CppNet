@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <string.h> // for strlen
 #include <thread>
 #include "CppNet.h"
 using namespace cppnet;
