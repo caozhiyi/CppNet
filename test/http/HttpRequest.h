@@ -1,6 +1,11 @@
 #ifndef TEST_HTTP_HTTP_REQUEST_HEADER
 #define TEST_HTTP_HTTP_REQUEST_HEADER
 
+#ifndef __linux__
+#include <string.h>
+#define isspace(c) (c == ' ')
+#endif
+
 #include <map>
 #include <stdio.h>
 #include <assert.h>

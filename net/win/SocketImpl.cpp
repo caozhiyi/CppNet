@@ -197,7 +197,7 @@ void CSocketImpl::_Send(base::CMemSharePtr<CEventHandler>& event) {
 
 	} else if (!event->_off_set) {
 		if (_post_event_num == 0) {
-			err |= ERR_CONNECT_CLOSE |;
+			err |= ERR_CONNECT_CLOSE;
 		}
 	}
 

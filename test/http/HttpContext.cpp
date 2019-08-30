@@ -3,7 +3,8 @@
 #include "HttpContext.h"
 
 const char CRLF[] = "\r\n";
-const int CRLF_LEN = sizeof(CRLF);
+const int CRLF_LEN = 2;
+const int VERSION_LEN = sizeof("HTTP/1.1");
 
 bool CHttpContext::processRequestLine(const char* begin, const char* end) {
     bool succeed = false;
@@ -23,19 +24,18 @@ bool CHttpContext::processRequestLine(const char* begin, const char* end) {
             }
 
             start = space + 1;
-            succeed = end - start == 8 && std::equal(start, end - 1, "HTTP/1.");
-            if (succeed) {
-                if (*(end-1) == '1') {
-                    _request.SetVersion(Http11);
+            const char* version_end = start + VERSION_LEN - 1;
+            succeed = true;
+            if (std::equal(start, version_end, "HTTP/1.1")) {
+                _request.SetVersion(Http11);
 
-                } else if (*(end-1) == '0') {
-                    _request.SetVersion(Http10);
+            } else if (std::equal(start, version_end, "HTTP/1.0")) {
+                _request.SetVersion(Http10);
 
-                } else {
-                    succeed = false;
-                }
-             }
-         }
+            } else {
+                succeed = false;
+            }
+        }
     }
     return succeed;
 }

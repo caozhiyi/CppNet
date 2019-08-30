@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string>
 #include "HttpResponse.h"
 
 std::string CHttpResponse::GetSendBuffer() const {
