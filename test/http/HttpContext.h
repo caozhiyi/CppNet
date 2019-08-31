@@ -22,7 +22,7 @@ class CHttpContext {
         // return false if any error
         bool ParseRequest(base::CBuffer* buf, uint64_t receive_time);
 
-        bool gotAll() const { 
+        bool IsGotAll() const { 
             return _state == GotAll;
         }
 

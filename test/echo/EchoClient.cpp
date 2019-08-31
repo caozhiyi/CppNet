@@ -50,7 +50,7 @@ void DisConnectionFunc(const Handle& handle, uint32_t err) {
 
 int main() {
 
-	cppnet::Init(1, false);
+	cppnet::Init(1, true);
 
     cppnet::SetConnectionCallback(ConnectFunc);
     cppnet::SetWriteCallback(WriteFunc);
@@ -61,7 +61,7 @@ int main() {
         std::string msg = GetMsg();
         cppnet::SyncConnection("192.168.1.9", 8921, msg.c_str(), msg.length());
 #else
-        cppnet::SyncConnection("172.21.193.122", 8921);
+        cppnet::SyncConnection("192.168.233.128", 8921);
 #endif // !__linux__
     }
 

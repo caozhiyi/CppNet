@@ -266,6 +266,10 @@ void CCppNetImpl::_AcceptFunction(base::CMemSharePtr<CAcceptEventHandler>& event
 		_accept_call_back(handle, err);
 	}
 
+#ifdef __linux__
+	socket_ptr->SyncRead();
+#endif
+
     base::LOG_DEBUG("get client num : %d", int(_socket_map.size()));
 }
 

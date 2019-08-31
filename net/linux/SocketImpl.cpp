@@ -227,9 +227,7 @@ void CSocketImpl::_Send(base::CMemSharePtr<CEventHandler>& event) {
 			char buf[8912] = { 0 };
 			int send_len = 0;
 			send_len = event->_buffer->Read(buf, 8912);
-			base::LOG_ERROR("buf : %s, len : %d", buf, send_len);
 			int res = send(socket_ptr->GetSocket(), buf, send_len, 0);
-			base::LOG_ERROR("res : %d err : %d", res, errno);
 			if (res >= 0) {
 				event->_buffer->Clear(res);
 				//can send complete

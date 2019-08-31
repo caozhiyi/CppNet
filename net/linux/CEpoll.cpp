@@ -14,7 +14,7 @@
 #include "LinuxFunc.h"
 
 using namespace cppnet;
-
+            
 // check socket connect
 bool CheckConnect(const uint64_t& sock) {
 	struct pollfd fd;
@@ -22,7 +22,6 @@ bool CheckConnect(const uint64_t& sock) {
 	socklen_t len = 0;
 	fd.fd = sock;
 	fd.events = POLLOUT;
-
 	if (poll(&fd, 1, -1) == -1) {
 		if(errno != EINTR){
 			return false;
@@ -187,6 +186,7 @@ bool CEpoll::AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::
 		if (res == 0) {
 			socket_ptr->_Recv(socket_ptr->_read_event);
 			return true;
+
 		} else if (errno == EINPROGRESS) {
 			if (CheckConnect(socket_ptr->GetSocket())) {
 				socket_ptr->_Recv(socket_ptr->_read_event);
@@ -195,6 +195,7 @@ bool CEpoll::AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::
 			socket_ptr->_read_event->_event_flag_set |= ERR_CONNECT_FAILED;
 			socket_ptr->_Recv(socket_ptr->_read_event);
 		}
+
         base::LOG_WARN("connect event failed! %d", errno);
 		return false;
 	}

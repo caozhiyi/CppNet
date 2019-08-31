@@ -5,12 +5,6 @@
 
 using namespace cppnet;
 
-void DefaultHttpCallback(const CHttpRequest&, CHttpResponse* resp) {
-    resp->SetStatusCode(k404NotFound);
-    resp->SetStatusMessage("Not Found");
-    resp->SetCloseConnection(true);
-}
-
 base::CTimeTool CHttpServer::_time_tool;
 
 CHttpServer::CHttpServer() {
@@ -39,7 +33,7 @@ void CHttpServer::OnMessage(const cppnet::Handle& handle, base::CBuffer* data,
         cppnet::Close(handle);
     }
 
-    if (context.gotAll()) {
+    if (context.IsGotAll()) {
         OnRequest(handle, context.GetRequest());
         context.Reset();
     }

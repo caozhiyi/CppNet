@@ -34,10 +34,7 @@ void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t 
 void ConnectFunc(const Handle& handle, uint32_t error) {
 	if (error != CEC_SUCCESS) {
         std::cout << "something err while connect : " << error << std::endl;
-    } else {
-        SyncRead(handle);
     }
-
 }
 
 int main() {
