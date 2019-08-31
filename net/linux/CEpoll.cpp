@@ -217,6 +217,7 @@ bool CEpoll::AddDisconnection(base::CMemSharePtr<CEventHandler>& event) {
 bool CEpoll::DelEvent(base::CMemSharePtr<CEventHandler>& event) {
 	auto socket_ptr = event->_client_socket.Lock();
 	if (!socket_ptr) {
+		base::LOG_ERROR("444444444444");
 		return false;
 	}
 	epoll_event* content = (epoll_event*)event->_data;
@@ -226,6 +227,16 @@ bool CEpoll::DelEvent(base::CMemSharePtr<CEventHandler>& event) {
 		return false;
 	}
     base::LOG_DEBUG("del a socket from epoll, %d", socket_ptr->GetSocket());
+	return true;
+}
+
+bool CEpoll::DelEvent(const uint64_t& sock) {
+	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_DEL, sock, nullptr);
+	if (res == -1) {
+        base::LOG_ERROR("remove event from epoll faild! error :%d, socket : %d", errno, sock);
+		return false;
+	}
+    base::LOG_DEBUG("del a socket from epoll, %d", sock);
 	return true;
 }
 

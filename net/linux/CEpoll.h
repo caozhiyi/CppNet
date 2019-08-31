@@ -30,6 +30,7 @@ namespace cppnet {
         virtual bool AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port);
         virtual bool AddDisconnection(base::CMemSharePtr<CEventHandler>& event);
         virtual bool DelEvent(base::CMemSharePtr<CEventHandler>& event);
+        virtual bool DelEvent(const uint64_t& sock);
 
         // net io process
         virtual void ProcessEvent();

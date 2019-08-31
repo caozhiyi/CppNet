@@ -32,6 +32,7 @@ namespace cppnet {
         virtual bool AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, const char* buf, int buf_len) = 0;
 #else
         virtual bool AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port) = 0;
+        virtual bool DelEvent(const uint64_t& sock) = 0;
 #endif
         virtual bool AddDisconnection(base::CMemSharePtr<CEventHandler>& event) = 0;
         virtual bool DelEvent(base::CMemSharePtr<CEventHandler>& event) = 0;

@@ -31,12 +31,10 @@ CSocketImpl::~CSocketImpl() {
     base::LOG_DEBUG("delete from epoll, socket : %d, TheadId : %d", _sock, std::this_thread::get_id());
 	//delete from epoll
 	if (_event_actions) {
-		if (_event_actions->DelEvent(_read_event)) {
-			base::CRunnable::Sleep(100);
+		if (_event_actions->DelEvent(_sock)) {
 			close(_sock);
 		}
 	}
-	
     // remove from epoll
 	if (_read_event && _read_event->_data) {
 		epoll_event* temp = (epoll_event*)_read_event->_data;
