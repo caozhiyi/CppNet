@@ -83,7 +83,7 @@ CppNet是一个封装在Tcp协议上的Proactor模式multi-thread C++11网络库
 ## 示例
 
 简单使用实例可以看 [CppNetServer](/CppNetSev/CppNetServer.cpp) 和 [CppNetClient](/CppNetCli/CppNetClient.cpp)。   
-其他示例在 [test](/test) 目录下，(echo)[/test/echo]实现了10000连接量的echo的测试程序，(http)[/test/http]参照muduo实现了一个简单的http服务器。
+其他示例在 [test](/test) 目录下，[echo](/test/echo)实现了10000连接量的echo的测试程序，[http](/test/http)参照muduo实现了一个简单的http服务器。
 
 ## 编译(Windows)
 

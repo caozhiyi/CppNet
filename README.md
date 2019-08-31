@@ -84,7 +84,7 @@ When each interface takes the next action, you should first check the error code
 ## Example
 
 Simple use examples can be seen [CppNetServer](/CppNetSev/CppNetServer.cpp) and [CppNetClient](/CppNetCli/CppNetClient.cpp)。   
-Other Simples are in [test](/test). [echo](/test/echo): The test program of echo with 10000 connection. (http)[/test/http]: A simple HTTP server is implemented with reference to muduo.
+Other simples are in [test](/test). [echo](/test/echo): The test program of echo with 10000 connection. [http](/test/http): A simple HTTP server is implemented with reference to muduo.
 
 ## Build(Windows)
 
