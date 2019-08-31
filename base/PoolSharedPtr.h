@@ -465,6 +465,18 @@ namespace base {
         }
 
         // construct CBasePtr object that takes resource from _Right
+        CMemWeakPtr<T>& operator=(CMemSharePtr<T>&& r) {
+            this->Resetw(r);
+            return (*this);
+        }
+
+        // construct CBasePtr object that takes resource from _Right
+        CMemWeakPtr<T>& operator=(CMemWeakPtr<T>&& r) {
+            this->Resetw(r);
+            return (*this);
+        }
+
+        // construct CBasePtr object that takes resource from _Right
         CMemWeakPtr<T>& operator=(CMemSharePtr<T>& r) {
             this->Resetw(r);
             return (*this);

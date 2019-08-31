@@ -11,18 +11,30 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CppNetSev", "CppNetSev\CppN
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CppNetCli", "CppNetCli\CppNetCli.vcxproj", "{8C4CE7D6-9C74-4FEC-BEFC-EC99EA8A0D0A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E98183C7-10C3-4B1A-B8FB-D60BB6217962} = {E98183C7-10C3-4B1A-B8FB-D60BB6217962}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{76E82C5D-E3D2-4DA1-9F61-FB3D244C4BBC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "echo", "echo", "{2F87BAE1-DE01-410E-9DC2-34B5188D928F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EchoClient", "test\echo\EchoClient.vcxproj", "{25B16872-AB29-4667-B345-04979B149DD7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E98183C7-10C3-4B1A-B8FB-D60BB6217962} = {E98183C7-10C3-4B1A-B8FB-D60BB6217962}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EchoServer", "test\echo\EchoServer.vcxproj", "{5C8EF7D1-E00B-43B7-8A49-38A68157ADC5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E98183C7-10C3-4B1A-B8FB-D60BB6217962} = {E98183C7-10C3-4B1A-B8FB-D60BB6217962}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "http", "http", "{9A610A2A-2F46-4390-AB37-42589C3FA503}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "http", "test\http\http.vcxproj", "{1C9F6CAE-56CD-4508-A3C0-0FC1A4A3DF72}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E98183C7-10C3-4B1A-B8FB-D60BB6217962} = {E98183C7-10C3-4B1A-B8FB-D60BB6217962}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

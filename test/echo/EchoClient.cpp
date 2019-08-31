@@ -50,13 +50,13 @@ void DisConnectionFunc(const Handle& handle, uint32_t err) {
 
 int main() {
 
-	cppnet::Init(1, true);
+	cppnet::Init(1, false);
 
     cppnet::SetConnectionCallback(ConnectFunc);
     cppnet::SetWriteCallback(WriteFunc);
     cppnet::SetReadCallback(ReadFunc);
     cppnet::SetDisconnectionCallback(DisConnectionFunc);
-    for (size_t i = 0; i < 1500; i++) {
+    for (size_t i = 0; i < 10000; i++) {
 #ifndef __linux__
         std::string msg = GetMsg();
         cppnet::SyncConnection("192.168.1.9", 8921, msg.c_str(), msg.length());
@@ -65,10 +65,13 @@ int main() {
 #endif // !__linux__
     }
 
+    // wait all connect success.
+    base::CRunnable::Sleep(5000);
+
     while (1) {
         // sleep 1s;
-        base::CRunnable::Sleep(1000);
         for (auto iter = handle_vec.begin(); iter != handle_vec.end(); ++iter) {
+            base::CRunnable::Sleep(1);
             std::string msg = GetMsg();
             cppnet::SyncWrite(*iter, msg.c_str(), msg.length());
         }

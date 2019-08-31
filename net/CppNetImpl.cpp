@@ -313,7 +313,6 @@ void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32
 		if (err == CEC_CLOSED || err == CEC_CONNECT_BREAK) {
 			std::unique_lock<std::mutex> lock(_mutex);
 			_socket_map.erase(socket_ptr->GetSocket());
-			socket_ptr.Reset();
 			return;
 		}
 		// post read again
@@ -345,11 +344,17 @@ void CCppNetImpl::_WriteFunction(base::CMemSharePtr<CEventHandler>& event, uint3
 			err = CEC_SUCCESS;
 		}
 		_write_call_back(handle, socket_ptr->_read_event->_off_set, err);
-		if (err == CEC_CLOSED || err == CEC_CONNECT_BREAK) {
-			std::unique_lock<std::mutex> lock(_mutex);
-			_socket_map.erase(socket_ptr->GetSocket());
+#ifndef __linux__
+        // on windows. while connect break, all post event will return.
+        // so we only release socket when err == CEC_CLOSED.
+        if (err == CEC_CLOSED) {
+#else 
+        if (err == CEC_CLOSED || err == CEC_CONNECT_BREAK) {
+#endif // !__linux__
+            std::unique_lock<std::mutex> lock(_mutex);
+            _socket_map.erase(socket_ptr->GetSocket());
             socket_ptr.Reset();
-		}
+        }
 	}
 }
 
