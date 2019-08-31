@@ -88,7 +88,7 @@ Other Simples are in [test](/test). [echo](/test/echo): The test program of echo
 
 ## Build(Windows)
 
-You can compile Hudp library and example with vs2017.   
+You can compile CppNet library and example with vs2017.   
 
 ## Build(Linux)
 
