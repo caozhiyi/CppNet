@@ -5,17 +5,16 @@
     <a href="https://opensource.org/licenses/BSD-3-Clause"><img src="https://img.shields.io/badge/license-bsd-orange.svg" alt="Licenses"></a>
 </p> 
 
-See [chinese](/README_cn.md) 
-## Introduction
+## 简介
 
-CppNet is a proactor mode and multithreaded network with C++11 on tcp.   
- Simple: only export a little interfaces, all net ios insterface are asynchronous callbacks, as much as possible like calling the socket API of the system. There is only one additional buffer object type for the client.       
- Fast: epoll and IOCP are used, in which epoll multithreaded threads are handled by the Linux kernel through port reuse. Each socket has a single memory pool object. All memory requested from the memory pool is managed by an intelligent pointer.    
- Clear：three layers: event-driven layer, session management layer and interface layer, upward notification through callbacks between layers. Clear division of responsibilities among modules, pay to Caesar what belongs to Caesar and God what belongs to God. The largest class does not exceed 500 lines of code.   
+CppNet是一个封装在Tcp协议上的Proactor模式multi-thread C++11网络库，目前支持在windows和linux上编译使用。     
+ 简单：对外只导出了少量的调用接口，所有的网络IO都封装为异步回调的形式，且接口声明都尽可能的像是调用系统socket API，对客户端而言，只多了一个新增的buffer对象类型。   
+ 快速：分别采用epoll和IOCP做底层事件驱动，其中epoll多线程惊群通过端口复用交由Linux内核处理。参照SGI STL和Nginx实现了内存池，每个建立连接的socket都独享一个内存池对象，所有从内存池中申请的内存都由智能指针管理。   
+ 明了：结构上分为三层：事件驱动层，会话管理层，接口层，各层之间通过回调向上通知。各个模块之间职责分工明确，上帝的事儿归上帝管，凯撒的事儿归凯撒管。最大的类不超过500行代码。   
 
-## Interface
+## 接口
 
-All the interface files are in [include](/include). The interface definitions for library initialization and timer are in [CppNet](/include/CppNet.h):    
+所有的接口文件都在 [include](/include) 中，其中关于库初始化和定时器的接口定义在 [CppNet](/include/CppNet.h) 中：   
 ```c++
     void Init(int32_t thread_num, bool log = false, bool per_handl_thread = false);
     void Dealloc();
@@ -39,9 +38,9 @@ All the interface files are in [include](/include). The interface definitions fo
     //client
     void SetConnectionCallback(const connection_call_back& func);
 ```
-Since all network IO interfaces are defined as callback notification modes, callback functions for each call need to be set when initializing the library.     
-By setting callbacks instead of providing virtual function inheritance, we hope to be as simple as possible, reduce the inheritance relationship of classes, and increase the flexibility of callbacks. You can set callbacks to any function.         
-The interface definition for network IO are in [Socket](/include/Socket.h):      
+因为所有的网络IO接口都被定义为回调通知的模式，所以初始化库的时候需要设置各个调用的回调函数。     
+这里通过设置回调而不是提供虚函数继承的方式，是希望尽量的简单，减少类的继承关系，增加回调的灵活性，你可以将回调设置为任意一个函数。      
+关于网络IO的接口定义在[Socket](/include/Socket.h)中：   
 ```c++
     // get socket ip and adress
     int16_t GetIpAddress(const Handle& handle, std::string& ip, uint16_t& port);
@@ -67,7 +66,7 @@ The interface definition for network IO are in [Socket](/include/Socket.h):
 
     int16_t Close(const Handle& handle);
 ```
-The function of the interface is evident through declarations and annotations. Attention should be paid to the error code returned by the interface, defined in [CppDefine](/include/CppDefine.h):    
+接口的作用通过声明和注释即可明了。需要关注的是接口返回的错误码，与回调函数的声明一起定义在[CppDefine](/include/CppDefine.h)中：
 ```c++
     enum CPPNET_ERROR_CODE {
         CEC_SUCCESS                = 1,    // success.
@@ -79,25 +78,25 @@ The function of the interface is evident through declarations and annotations. A
         CEC_CONNECT_REFUSE         = 7     // remote refuse connect or server not exist.
     };
 ```
-When each interface takes the next action, you should first check the error code returned at present to know whether the current connection is normal. 
+每个接口在采取下一步动作时应先检测一下当前返回的错误码，以获知当前连接是否正常。  
 
-## Example
+## 示例
 
-Simple use examples can be seen [CppNetServer](/CppNetSev/CppNetServer.cpp) and [CppNetClient](/CppNetCli/CppNetClient.cpp)。   
-Other Simples are in [test](/test). [echo](/test/echo): The test program of echo with 10000 connection. (http)[/test/http]: A simple HTTP server is implemented with reference to muduo.
+简单使用实例可以看 [CppNetServer](/CppNetSev/CppNetServer.cpp) 和 [CppNetClient](/CppNetCli/CppNetClient.cpp)。   
+其他示例在 [test](/test) 目录下，(echo)[/test/echo]实现了10000连接量的echo的测试程序，(http)[/test/http]参照muduo实现了一个简单的http服务器。
 
-## Build(Windows)
+## 编译(Windows)
 
-You can compile Hudp library and example with vs2017.   
+你可以使用vs2017来编译CppNet库和示例。    
 
-## Build(Linux)
+## 编译(Linux)
 
-The CppNet library and examples can be compiled simply by executing make in the source directory.     
-Other examples need to make in local directories after compiling static libraries.     
+只需要在源码目录下执行make即可编译CppNet库和示例。   
+其他示例则需要在编译完静态库之后，分别在本地目录里执行make。   
 ```
 $ make
 ```
 
-## Licenses
+## 协议
 
-This program is under the terms of the BSD 3-Clause License. See [https://opensource.org/licenses/BSD-3-Clause](https://opensource.org/licenses/BSD-3-Clause).
+Hudp使用BSD 3-Clause使用条款，详情请看[https://opensource.org/licenses/BSD-3-Clause](https://opensource.org/licenses/BSD-3-Clause)。
