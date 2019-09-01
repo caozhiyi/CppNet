@@ -217,7 +217,6 @@ bool CEpoll::AddDisconnection(base::CMemSharePtr<CEventHandler>& event) {
 bool CEpoll::DelEvent(base::CMemSharePtr<CEventHandler>& event) {
 	auto socket_ptr = event->_client_socket.Lock();
 	if (!socket_ptr) {
-		base::LOG_ERROR("444444444444");
 		return false;
 	}
 	epoll_event* content = (epoll_event*)event->_data;
@@ -233,7 +232,7 @@ bool CEpoll::DelEvent(base::CMemSharePtr<CEventHandler>& event) {
 bool CEpoll::DelEvent(const uint64_t& sock) {
 	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_DEL, sock, nullptr);
 	if (res == -1) {
-        base::LOG_ERROR("remove event from epoll faild! error :%d, socket : %d", errno, sock);
+        //base::LOG_ERROR("remove event from epoll faild! error :%d, socket : %d", errno, sock);
 		return false;
 	}
     base::LOG_DEBUG("del a socket from epoll, %d", sock);
@@ -274,15 +273,15 @@ void CEpoll::ProcessEvent() {
 	}
 
 	if (close(_epoll_handler) == -1) {
-        base::LOG_ERROR("epoll close failed! error : %d", errno);
+        //base::LOG_ERROR("epoll close failed! error : %d", errno);
 	}
 	if (close(_pipe[0]) == -1) {
-        base::LOG_ERROR("_pipe[0] close failed! error : %d", errno);
+        //base::LOG_ERROR("_pipe[0] close failed! error : %d", errno);
 	}
 	if (close(_pipe[1]) == -1) {
-        base::LOG_ERROR("_pipe[1] close failed! error : %d", errno);
+        //base::LOG_ERROR("_pipe[1] close failed! error : %d", errno);
 	}
-    base::LOG_INFO("return the net io thread");
+    //base::LOG_INFO("return the net io thread");
 }
 
 void CEpoll::PostTask(std::function<void(void)>& task) {
