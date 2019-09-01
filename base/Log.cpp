@@ -54,6 +54,9 @@ LogLevel CLog::GetLogLevel() {
 }
 
 void CLog::LogDebug(const char* file, int line, const char* log...) {
+    if (!_stop) {
+        return;
+    }
 	if (_log_level <= LOG_DEBUG_LEVEL) {
 		va_list list;
 		va_start(list, log);
@@ -63,6 +66,9 @@ void CLog::LogDebug(const char* file, int line, const char* log...) {
 }
 
 void CLog::LogInfo(const char* file, int line, const char* log...) {
+    if (!_stop) {
+        return;
+    }
 	if (_log_level <= LOG_INFO_LEVEL) {
 		va_list list;
 		va_start(list, log);
@@ -72,6 +78,9 @@ void CLog::LogInfo(const char* file, int line, const char* log...) {
 }
 
 void CLog::LogWarn(const char* file, int line, const char* log...) {
+    if (!_stop) {
+        return;
+    }
 	if (_log_level <= LOG_WARN_LEVEL) {
 		va_list list;
 		va_start(list, log);
@@ -81,6 +90,9 @@ void CLog::LogWarn(const char* file, int line, const char* log...) {
 }
 
 void CLog::LogError(const char* file, int line, const char* log...) {
+    if (!_stop) {
+        return;
+    }
 	if (_log_level <= LOG_ERROR_LEVEL) {
 		va_list list;
 		va_start(list, log);
@@ -90,6 +102,9 @@ void CLog::LogError(const char* file, int line, const char* log...) {
 }
 
 void CLog::LogFatal(const char* file, int line, const char* log...) {
+    if (!_stop) {
+        return;
+    }
 	if (_log_level <= LOG_FATAL_LEVEL) {
 		va_list list;
 		va_start(list, log);
