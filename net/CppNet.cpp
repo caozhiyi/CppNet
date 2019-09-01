@@ -13,7 +13,7 @@ void cppnet::Init(int32_t thread_num, bool log, bool per_handl_thread) {
         base::CLog::Instance().Start();
     }
     
-    cppnet::CCppNetImpl::Instance().Init(thread_num);
+    cppnet::CCppNetImpl::Instance().Init(thread_num, per_handl_thread);
 }
 
 void cppnet::Dealloc() {

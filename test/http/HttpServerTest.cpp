@@ -7,7 +7,7 @@
 #include "HttpRequest.h"
 
 std::string image;
-bool benchmark = false;
+bool benchmark = true;
 
 std::string GetFile();
 void OnRequest(const CHttpRequest& req, CHttpResponse& resp) {
@@ -43,7 +43,7 @@ void OnRequest(const CHttpRequest& req, CHttpResponse& resp) {
         resp.SetStatusCode(k200Ok);
         resp.SetStatusMessage("OK");
         resp.SetContentType("text/plain");
-        resp.AddHeader("Server", "Muduo");
+        resp.AddHeader("Server", "CppNet");
         resp.SetBody("hello, world!\n");
 
     } else {
@@ -65,7 +65,7 @@ void DisConnectionFunc(const cppnet::Handle& handle, uint32_t err) {
 }
 
 int main() {
-    cppnet::Init(1, true);
+    cppnet::Init(2, true);
 
     CHttpServer server;
     server.SetHttpCallback(OnRequest);

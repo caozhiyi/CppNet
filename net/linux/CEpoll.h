@@ -12,7 +12,7 @@ namespace cppnet {
     class CEpoll : public CEventActions
     {
     public:
-        CEpoll(bool only_one_epoll);
+        CEpoll(bool per_epoll);
         ~CEpoll();
         // thread_num not useful
         virtual bool Init(uint32_t thread_num = 0);
@@ -50,7 +50,7 @@ namespace cppnet {
     private:
         std::atomic_bool	_run;
 
-        bool                _only_one_epoll;
+        bool                _per_epoll;
         uint32_t		    _epoll_handler;
         uint32_t      	    _pipe[2];
         epoll_event		    _pipe_content;

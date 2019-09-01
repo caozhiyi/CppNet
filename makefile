@@ -13,7 +13,10 @@ INCLUDES = -I.           \
            -I./net/linux \
            -I./include   \
 
-CCFLAGS = -lpthread -fPIC -m64 -g -std=c++11 -lstdc++
+#debug
+#CCFLAGS = -lpthread -fPIC -m64 -g -std=c++11 -lstdc++ -pipe 
+
+CCFLAGS = -lpthread -fPIC -m64 -O2 -std=c++11 -lstdc++ -pipe -march=corei7 
 
 TARGET = libcppnet.a
 SERBIN = cppnetser
