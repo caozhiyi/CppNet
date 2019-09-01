@@ -180,9 +180,15 @@ void CIOCP::ProcessEvent() {
 	}
 
 	if (_is_inited) {
-		if (CloseHandle(_iocp_handler) == -1) {
-            base::LOG_ERROR("IOCP close io completion port failed!");
-		}
+        // only one iocp handle
+        static bool once = true;
+        if (once) {
+            once = false;
+            if (CloseHandle(_iocp_handler) == -1) {
+                base::LOG_ERROR("IOCP close io completion port failed!");
+            }
+        }
+		
 	}
 	_is_inited = false;
 }
