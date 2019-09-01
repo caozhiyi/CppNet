@@ -17,6 +17,7 @@ CHttpServer::~CHttpServer() {
 
 void CHttpServer::OnConnection(const cppnet::Handle& handle, uint32_t err) {
     if (err == CEC_SUCCESS) {
+        std::unique_lock<std::mutex> lock(_mutex);
         if (_context_map.find(handle) == _context_map.end()) {
             _context_map[handle] = CHttpContext();
         }
@@ -26,7 +27,10 @@ void CHttpServer::OnConnection(const cppnet::Handle& handle, uint32_t err) {
 void CHttpServer::OnMessage(const cppnet::Handle& handle, base::CBuffer* data, 
                           uint32_t len, uint32_t err, bool& continue_read) {
 
+    _mutex.lock();
     CHttpContext& context = _context_map[handle];
+    _mutex.unlock();
+
     _time_tool.Now();
     if (!context.ParseRequest(data, _time_tool.GetMsec())) {
         cppnet::SyncWrite(handle, "HTTP/1.1 400 Bad Request\r\n\r\n", sizeof("HTTP/1.1 400 Bad Request\r\n\r\n"));

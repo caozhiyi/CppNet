@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <functional>
+#include <mutex>
 
 #include "CppNet.h"
 #include "CppDefine.h"
@@ -33,6 +34,7 @@ class CHttpServer {
         void OnRequest(const cppnet::Handle& handle, const CHttpRequest&);
 
     private:
+        std::mutex _mutex;
         std::unordered_map<cppnet::Handle, CHttpContext> _context_map;
         HttpCallback _http_call_back;
 
