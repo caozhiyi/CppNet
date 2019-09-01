@@ -28,7 +28,7 @@ CSocketImpl::CSocketImpl(std::shared_ptr<CEventActions>& event_actions) : CSocke
 }
 
 CSocketImpl::~CSocketImpl() {
-    base::LOG_DEBUG("delete from epoll, socket : %d, TheadId : %d", _sock, std::this_thread::get_id());
+    base::LOG_DEBUG("delete from epoll, socket : %d, TheadId : %lld", _sock, std::this_thread::get_id());
 	//delete from epoll
 	if (_event_actions) {
 		if (_event_actions->DelEvent(_sock)) {

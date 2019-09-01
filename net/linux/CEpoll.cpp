@@ -260,7 +260,7 @@ void CEpoll::ProcessEvent() {
 		}
 
 		if (res > 0) {
-            base::LOG_DEBUG("epoll_wait get events! num :%d, TheadId : %d", res, std::this_thread::get_id());
+            base::LOG_DEBUG("epoll_wait get events! num :%d, TheadId : %lld", res, std::this_thread::get_id());
 
 			_DoEvent(event_vec, res);
 			_DoTaskList();

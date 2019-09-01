@@ -18,7 +18,7 @@
 
 using namespace cppnet;
 
-CCppNetImpl::CCppNetImpl() {
+CCppNetImpl::CCppNetImpl() : _per_epoll_handle(true) {
 
 }
 
@@ -31,6 +31,7 @@ void CCppNetImpl::Init(uint32_t thread_num, bool per_handl_thread) {
 	InitScoket();
 #else
 	SetCoreFileUnlimit();
+	_per_epoll_handle = per_handl_thread;
 #endif // __linux__
 
 	uint32_t cpus = GetCpuNum();
@@ -60,7 +61,6 @@ void CCppNetImpl::Init(uint32_t thread_num, bool per_handl_thread) {
             _thread_vec.push_back(thd);
         }
     }
-	
 #else
     // only one iocp
     std::shared_ptr<CEventActions> event_actions(new CIOCP);
@@ -78,6 +78,7 @@ void CCppNetImpl::Dealloc() {
 	for (auto iter = _actions_map.begin(); iter != _actions_map.end(); ++iter) {
 		iter->second->Dealloc();
 	}
+	Join();
 #ifndef __linux__
 	DeallocSocket();
 #endif // __linux__
@@ -160,9 +161,10 @@ bool CCppNetImpl::ListenAndAccept(uint16_t port, std::string ip, uint32_t listen
 
 		accept_socket->SyncAccept();
 		_accept_socket[accept_socket->GetSocket()] = accept_socket;
-#ifndef __linux__
-		break;
-#endif
+		
+		if (!_per_epoll_handle) {
+			break;
+		}
 	}
 	return true;
 }

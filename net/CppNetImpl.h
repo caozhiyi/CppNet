@@ -70,6 +70,7 @@ namespace cppnet {
         connection_call_back	_accept_call_back        = nullptr;
         
         base::CMemoryPool       _pool;
+        bool                    _per_epoll_handle;
 
         std::mutex			    _mutex;
         std::vector<std::shared_ptr<std::thread>>					            _thread_vec;
