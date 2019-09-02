@@ -54,7 +54,7 @@ LogLevel CLog::GetLogLevel() {
 }
 
 void CLog::LogDebug(const char* file, int line, const char* log...) {
-    if (!_stop) {
+    if (_stop) {
         return;
     }
 	if (_log_level <= LOG_DEBUG_LEVEL) {
@@ -66,7 +66,7 @@ void CLog::LogDebug(const char* file, int line, const char* log...) {
 }
 
 void CLog::LogInfo(const char* file, int line, const char* log...) {
-    if (!_stop) {
+    if (_stop) {
         return;
     }
 	if (_log_level <= LOG_INFO_LEVEL) {
@@ -78,7 +78,7 @@ void CLog::LogInfo(const char* file, int line, const char* log...) {
 }
 
 void CLog::LogWarn(const char* file, int line, const char* log...) {
-    if (!_stop) {
+    if (_stop) {
         return;
     }
 	if (_log_level <= LOG_WARN_LEVEL) {
@@ -90,7 +90,7 @@ void CLog::LogWarn(const char* file, int line, const char* log...) {
 }
 
 void CLog::LogError(const char* file, int line, const char* log...) {
-    if (!_stop) {
+    if (_stop) {
         return;
     }
 	if (_log_level <= LOG_ERROR_LEVEL) {
@@ -102,7 +102,7 @@ void CLog::LogError(const char* file, int line, const char* log...) {
 }
 
 void CLog::LogFatal(const char* file, int line, const char* log...) {
-    if (!_stop) {
+    if (_stop) {
         return;
     }
 	if (_log_level <= LOG_FATAL_LEVEL) {

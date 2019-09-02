@@ -23,7 +23,9 @@ CCppNetImpl::CCppNetImpl() : _per_epoll_handle(true) {
 }
 
 CCppNetImpl::~CCppNetImpl() {
-
+	_thread_vec.clear();
+	_actions_map.clear();
+	_accept_socket.clear();
 }
 
 void CCppNetImpl::Init(uint32_t thread_num, bool per_handl_thread) {
@@ -150,12 +152,14 @@ bool CCppNetImpl::ListenAndAccept(uint16_t port, std::string ip, uint32_t listen
 	}
 
 	for (auto iter = _actions_map.begin(); iter != _actions_map.end(); ++iter) {
-        base::CMemSharePtr<CAcceptSocket> accept_socket = base::MakeNewSharedPtr<CAcceptSocket>(&_pool, _actions_map.begin()->second);
+        base::CMemSharePtr<CAcceptSocket> accept_socket = base::MakeNewSharedPtr<CAcceptSocket>(&_pool, iter->second);
 		if (!accept_socket->Bind(port, ip)) {
+			base::LOG_ERROR("bind failed. port : %d, ip : %s ", port, ip.c_str());
 			return false;
 		}
 
 		if (!accept_socket->Listen(listen_num)) {
+			base::LOG_ERROR("listen failed. port : %d, ip : %s ", port, ip.c_str());
 			return false;
 		}
 
