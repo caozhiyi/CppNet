@@ -30,6 +30,10 @@ int CMemoryPool::GetLargeSize() {
 	return _block_pool.GetSize();
 }
 
+int CMemoryPool::GetLargeBlockLength() {
+	return _block_pool.GetBlockLength();
+}
+
 void CMemoryPool::ReleaseLargeHalf() {
     _block_pool.ReleaseHalf();
 }

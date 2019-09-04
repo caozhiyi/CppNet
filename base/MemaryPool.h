@@ -49,6 +49,8 @@ namespace base {
     
     	//return bulk memory size
     	int GetLargeSize();
+        // return length of bulk memory
+		int GetLargeBlockLength();
 
         // release half memory
         void ReleaseLargeHalf();

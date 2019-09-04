@@ -18,8 +18,10 @@ namespace base {
     	void* PoolLargeMalloc();
     	void PoolLargeFree(void* &m);
 
-    	// return bulk memory size
+    	// return bulk memory list size
     	int GetSize();
+		// return length of bulk memory
+		int GetBlockLength();
 
 		// release half memory
 		void ReleaseHalf();

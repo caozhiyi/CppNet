@@ -37,6 +37,10 @@ int CBlockMemoryPool::GetSize() {
 	return _free_mem_vec.size();
 }
 
+int CBlockMemoryPool::GetBlockLength() {
+	return _large_size;
+}
+
 void CBlockMemoryPool::ReleaseHalf() {
 	std::unique_lock<std::mutex> lock(_large_mutex);
 	size_t size = _free_mem_vec.size();
