@@ -18,7 +18,10 @@
 
 using namespace cppnet;
 
-CCppNetImpl::CCppNetImpl() : _per_epoll_handle(true) {
+const uint16_t __mem_block_size = 1024;
+const uint16_t __mem_block_add_step = 5;
+
+CCppNetImpl::CCppNetImpl() : _per_epoll_handle(true), _pool(__mem_block_size, __mem_block_add_step) {
 
 }
 

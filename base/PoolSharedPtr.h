@@ -18,8 +18,6 @@ namespace base {
     enum MemoryType {
         TYPE_NEW = 0x00,
         TYPE_MALLOC = 0x01,
-        TYPE_LARGE = 0x02,
-        TYPE_LARGE_WITH_SIZE = 0x03
     };
 
     template<class Ty>
@@ -359,12 +357,6 @@ namespace base {
                 case TYPE_MALLOC:
                     _pool->PoolFree<T>(_ptr, _malloc_size);
                     break;
-                case TYPE_LARGE:
-                    _pool->PoolLargeFree<T>(_ptr);
-                    break;
-                case TYPE_LARGE_WITH_SIZE:
-                    _pool->PoolLargeFree<T>(_ptr, _malloc_size);
-                    break;
                 case TYPE_NEW:
                     _pool->PoolDelete<T>(_ptr);
                     break;
@@ -523,21 +515,5 @@ namespace base {
         CRefCount* ref = pool->PoolNew<CRefCount>();
         return CMemSharePtr<T>(o, ref, pool, TYPE_MALLOC, size);
     }
-
-    //malloc large memory from pool
-    template<typename T>
-    CMemSharePtr<T> MakeLargeSharedPtr(CMemoryPool* pool) {
-        T* o = pool->PoolLargeMalloc<T>();
-        CRefCount* ref = pool->PoolNew<CRefCount>();
-        return CMemSharePtr<T>(o, ref, pool, TYPE_LARGE);
-    }
-
-    template<typename T>
-    CMemSharePtr<T> MakeLargeSharedPtr(CMemoryPool* pool, int size) {
-        T* o = pool->PoolLargeMalloc<T>(size);
-        CRefCount* ref = pool->PoolNew<CRefCount>();
-        return CMemSharePtr<T>(o, ref, pool, TYPE_LARGE_WITH_SIZE, size);
-    }
-
 }
 #endif

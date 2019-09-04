@@ -9,6 +9,9 @@ LPFN_CONNECTEX				cppnet::__ConnectEx         = nullptr;
 LPFN_GETACCEPTEXSOCKADDRS	cppnet::__AcceptExScokAddrs = nullptr;
 LPFN_DISCONNECTEX			cppnet::__DisconnectionEx   = nullptr;
 
+const uint16_t __mem_block_size = 1024;
+const uint16_t __mem_block_add_step = 5;
+
 static void* _GetExFunctnion(uint64_t& socket, const GUID& which) {
 	void* func = nullptr;
 	DWORD bytes = 0;
@@ -65,7 +68,7 @@ void DeallocSocket() {
 	WSACleanup();
 }
 
-CSocketBase::CSocketBase() : _add_event_actions(false), _event_actions(nullptr), _pool(new base::CMemoryPool(1024, 20)) {
+CSocketBase::CSocketBase() : _add_event_actions(false), _event_actions(nullptr), _pool(new base::CMemoryPool(__mem_block_size, __mem_block_add_step)) {
 	memset(_ip, 0, __addr_str_len);
 	_sock = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
 	SetReusePort(_sock);
@@ -74,7 +77,7 @@ CSocketBase::CSocketBase() : _add_event_actions(false), _event_actions(nullptr),
 	}
 }
 
-CSocketBase::CSocketBase(std::shared_ptr<CEventActions>& event_actions) : _add_event_actions(false), _event_actions(event_actions), _pool(new base::CMemoryPool(1024, 20)) {
+CSocketBase::CSocketBase(std::shared_ptr<CEventActions>& event_actions) : _add_event_actions(false), _event_actions(event_actions), _pool(new base::CMemoryPool(__mem_block_size, __mem_block_add_step)) {
 	memset(_ip, 0, __addr_str_len);
 	_sock = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
 	SetReusePort(_sock);

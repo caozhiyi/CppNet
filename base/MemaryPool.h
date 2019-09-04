@@ -10,6 +10,8 @@
 #include <cstring>		//for memset
 #include <stdexcept>	//for logic_error
 
+#include "BlockMemaryPool.h"
+
 namespace base {
 
     static const int __align = 8;
@@ -19,8 +21,8 @@ namespace base {
 
     class CMemoryPool {
     public:
-    	CMemoryPool();
-    	//bulk memory size. everytime add nodes num
+    	// bulk memory size. 
+        // everytime add nodes num
     	CMemoryPool(const int large_sz, const int add_num);
     	~CMemoryPool();
     
@@ -42,15 +44,16 @@ namespace base {
     	T* PoolLargeMalloc();
     	template<typename T>
     	void PoolLargeFree(T* &m);
-    	template<typename T>
-    	T* PoolLargeMalloc(int size, int& res);
-    	template<typename T>
-    	void PoolLargeFree(T* &m, int size);
     
     	std::thread::id GetCreateThreadId();
     
     	//return bulk memory size
-    	int GetLargeSize() const;
+    	int GetLargeSize();
+
+        // release half memory
+        void ReleaseLargeHalf();
+
+        void ExpansionLarge(int num = 0);
     
     private:
     	int RoundUp(int size, int align = __align) {
@@ -61,8 +64,8 @@ namespace base {
     		return (size + align - 1) / align - 1;
     	}
     
-    	void* ReFill(int size, int num = __number_add_nodes, bool is_large = false);
-    	void* ChunkAlloc(int size, int& nums, bool is_large = false);
+    	void* ReFill(int size, int num = __number_add_nodes);
+    	void* ChunkAlloc(int size, int& nums);
     	
     private:
     	union MemNode {
@@ -76,11 +79,8 @@ namespace base {
     	std::thread::id			_create_thread_id;
     	std::vector<char*>		_malloc_vec;
     	std::recursive_mutex	_mutex;
-    
-    	std::recursive_mutex	_large_mutex;
-    	int			_number_large_add_nodes;			//everytime add nodes num
-    	int			_large_size;						//bulk memory size
-    	std::map<int, MemNode*>	_free_large;			//bulk memory list
+
+        CBlockMemoryPool        _block_pool;
     };
     
     template<typename T, typename... Args>
@@ -173,27 +173,8 @@ namespace base {
     
     template<typename T>
     T* CMemoryPool::PoolLargeMalloc() {
-    	if (_number_large_add_nodes == 0 || _large_size == 0) {
-    		throw std::exception(std::logic_error("Large block of memory is not set!"));
-    		return nullptr;
-    	}
-    
-    	std::unique_lock<std::recursive_mutex> lock(_large_mutex);
-    	if (_free_large.find(_large_size) == _free_large.end()) {
-    		_free_large[_large_size] = nullptr;
-    	}
-    
-    	MemNode** my_free = &_free_large[_large_size];
-    	MemNode* result = _free_large[_large_size];
-    	if (result == nullptr) {
-    		void* bytes = ReFill(_large_size, _number_large_add_nodes, true);
-    		memset(bytes, 0, _large_size);
-    		return (T*)bytes;
-    	}
-    
-    	*my_free = result->_next;
-    	memset(result, 0, _large_size);
-    	return (T*)result;
+        T* ret = (T*)_block_pool.PoolLargeMalloc();
+        return ret;
     }
     
     template<typename T>
@@ -202,66 +183,9 @@ namespace base {
     		return;
     	}
     	
-    	if (_free_large.find(_large_size) == _free_large.end()){
-    		throw std::exception(std::logic_error("free_large map error!"));
-    		return;
-    	}
-    
-    	MemNode* node = (MemNode*)m;
-    	std::unique_lock<std::recursive_mutex> lock(_large_mutex);
-    	MemNode** my_free = &_free_large[_large_size];
-    	node->_next = *my_free;
-    	*my_free = node;
-    	m = nullptr;
+        _block_pool.PoolLargeFree((void*&)m);
+        m = nullptr;
     }
-    
-    template<typename T>
-    T* CMemoryPool::PoolLargeMalloc(int size, int& res) {
-    	if (_number_large_add_nodes == 0 || _large_size == 0) {
-    		throw std::exception(std::logic_error("Large block of memory is not set!"));
-    		return nullptr;
-    	}
-    	int large_size = RoundUp(size, _large_size);
-    	res = large_size;
-    
-    	std::unique_lock<std::recursive_mutex> lock(_large_mutex);
-    	if (_free_large.find(large_size) == _free_large.end()) {
-    		_free_large[large_size] = nullptr;
-    	}
-    	MemNode** my_free = &_free_large[large_size];
-    	MemNode* result = _free_large[large_size];
-    	
-    	if (result == nullptr) {
-    		void* bytes = ReFill(large_size, _number_large_add_nodes, true);
-    		memset(bytes, 0, large_size);
-    		return (T*)bytes;
-    	}
-    
-    	*my_free = result->_next;
-    	memset(result, 0, large_size);
-    	return (T*)result;
-    }
-    
-    template<typename T>
-    void CMemoryPool::PoolLargeFree(T* &m, int size) {
-    	if (!m) {
-    		return;
-    	}
-    
-    	int large_size = RoundUp(size, _large_size);
-    	if (_free_large.find(large_size) == _free_large.end()) {
-    		throw std::exception(std::logic_error("free_large map error!"));
-    		return;
-    	}
-    
-    	MemNode* node = (MemNode*)m;
-    	std::unique_lock<std::recursive_mutex> lock(_large_mutex);
-    	MemNode** my_free = &_free_large[large_size];
-    	node->_next = *my_free;
-    	*my_free = node;
-    	m = nullptr;
-    }
-
 }
 
 #endif

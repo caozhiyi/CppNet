@@ -6,8 +6,6 @@
 
 namespace base {
 
-    static const int __align = 8;
-
 	// all memory must return memory pool before destory.
     class CBlockMemoryPool {
     public:
@@ -26,11 +24,6 @@ namespace base {
 		// release half memory
 		void ReleaseHalf();
 		void Expansion(int num = 0);
-
-    private:
-    	int RoundUp(int size, int align = __align) {
-    		return ((size + align - 1) & ~(align - 1));
-    	}
 
     private:
     	std::mutex				_large_mutex;

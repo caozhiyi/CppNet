@@ -63,6 +63,9 @@
     <ClCompile Include="net\win\SocketImpl.cpp">
       <Filter>net\win</Filter>
     </ClCompile>
+    <ClCompile Include="base\BlockMemoryPool.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\Buffer.h">
@@ -157,6 +160,9 @@
     </ClInclude>
     <ClInclude Include="net\SocketImpl.h">
       <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="base\BlockMemaryPool.h">
+      <Filter>base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

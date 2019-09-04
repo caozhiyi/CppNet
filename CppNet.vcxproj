@@ -121,6 +121,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="base\BlockMemoryPool.cpp" />
     <ClCompile Include="base\Buffer.cpp" />
     <ClCompile Include="base\Config.cpp" />
     <ClCompile Include="base\Log.cpp" />
@@ -144,6 +145,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\Any.h" />
+    <ClInclude Include="base\BlockMemaryPool.h" />
     <ClInclude Include="base\Buffer.h" />
     <ClInclude Include="base\Config.h" />
     <ClInclude Include="base\Log.h" />

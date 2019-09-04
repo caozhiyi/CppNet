@@ -3,7 +3,7 @@
 using namespace base;
 
 CBlockMemoryPool::CBlockMemoryPool(const int large_sz, const int add_num) : 
-                                  _large_size(RoundUp(large_sz)), 
+                                  _large_size(large_sz), 
 								  _number_large_add_nodes(add_num) {
 
 }
@@ -53,7 +53,7 @@ void CBlockMemoryPool::ReleaseHalf() {
 }
 
 void CBlockMemoryPool::Expansion(int num) {
-	if (num = 0) {
+	if (num == 0) {
 		num = _number_large_add_nodes;
 	}
 

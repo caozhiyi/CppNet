@@ -4,16 +4,7 @@
 
 using namespace base;
 
-CMemoryPool::CMemoryPool() {
-	for (int i = 0; i < __number_of_free_lists; i++) {
-		_free_list[i] = nullptr;
-	}
-	_pool_start = nullptr;
-	_pool_end = nullptr;
-	_create_thread_id = std::this_thread::get_id();
-}
-
-CMemoryPool::CMemoryPool(const int large_sz, const int add_num) : _large_size(RoundUp(large_sz)), _number_large_add_nodes(add_num){
+CMemoryPool::CMemoryPool(const int large_sz, const int add_num) : _block_pool(RoundUp(large_sz), add_num) {
 	for (int i = 0; i < __number_of_free_lists; i++) {
 		_free_list[i] = nullptr;
 	}
@@ -35,11 +26,19 @@ std::thread::id CMemoryPool::GetCreateThreadId() {
 	return _create_thread_id;
 }
 
-int CMemoryPool::GetLargeSize() const {
-	return _large_size;
+int CMemoryPool::GetLargeSize() {
+	return _block_pool.GetSize();
 }
 
-void* CMemoryPool::ReFill(int size, int num, bool is_large) {
+void CMemoryPool::ReleaseLargeHalf() {
+    _block_pool.ReleaseHalf();
+}
+
+void CMemoryPool::ExpansionLarge(int num) {
+    _block_pool.Expansion(num);
+}
+
+void* CMemoryPool::ReFill(int size, int num) {
 	int nums = num;
 
 	char* chunk = nullptr;
@@ -59,45 +58,24 @@ void* CMemoryPool::ReFill(int size, int num, bool is_large) {
 
 	res = (MemNode*)chunk;
 	
-	if (is_large) {
-		if (_free_large.find(size) == _free_large.end()) {
-			_free_large[size] = nullptr;
-		}
-		my_free = &_free_large[size];
+    my_free = &(_free_list[FreeListIndex(size)]);
 
-		*my_free = next = (MemNode*)(chunk + size);
-		for (int i = 1;; i++) {
-			current = next;
-			next = (MemNode*)((char*)next + size);
-			if (nums - 1 == i) {
-				current->_next = nullptr;
-				break;
+    *my_free = next = (MemNode*)(chunk + size);
+    for (int i = 1;; i++) {
+        current = next;
+        next = (MemNode*)((char*)next + size);
+        if (nums - 1 == i) {
+            current->_next = nullptr;
+            break;
 
-			} else {
-				current->_next = next;
-			}
-		}
-
-	} else {
-		my_free = &(_free_list[FreeListIndex(size)]);
-
-		*my_free = next = (MemNode*)(chunk + size);
-		for (int i = 1;; i++) {
-			current = next;
-			next = (MemNode*)((char*)next + size);
-			if (nums - 1 == i) {
-				current->_next = nullptr;
-				break;
-
-			} else {
-				current->_next = next;
-			}
-		}
-	}
+        } else {
+            current->_next = next;
+        }
+    }
 	return res;
 }
 
-void* CMemoryPool::ChunkAlloc(int size, int& nums, bool is_large) {
+void* CMemoryPool::ChunkAlloc(int size, int& nums) {
 	char* res;
 	int need_bytes = size * nums;
 	int left_bytes = _pool_end - _pool_start;
@@ -118,17 +96,10 @@ void* CMemoryPool::ChunkAlloc(int size, int& nums, bool is_large) {
 	} 
 	int bytes_to_get = size * nums;
 
-	if (!is_large) {
-		if (left_bytes > 0) {
-			MemNode* my_free = _free_list[FreeListIndex(left_bytes)];
-			((MemNode*)_pool_start)->_next = my_free;
-			_free_list[FreeListIndex(size)] = (MemNode*)_pool_start;
-		}
-
-	} else {
-		MemNode* volatile* my_free = &_free_list[FreeListIndex(left_bytes)];
-		((MemNode*)_pool_start)->_next = *my_free;
-		*my_free = (MemNode*)_pool_start;
+	if (left_bytes > 0) {
+		MemNode* my_free = _free_list[FreeListIndex(left_bytes)];
+		((MemNode*)_pool_start)->_next = my_free;
+		_free_list[FreeListIndex(size)] = (MemNode*)_pool_start;
 	}
 
 	_pool_start = (char*)malloc(bytes_to_get);
@@ -141,5 +112,5 @@ void* CMemoryPool::ChunkAlloc(int size, int& nums, bool is_large) {
 
 	_malloc_vec.push_back(_pool_start);
 	_pool_end = _pool_start + bytes_to_get;
-	return ChunkAlloc(size, nums, is_large);
+	return ChunkAlloc(size, nums);
 }

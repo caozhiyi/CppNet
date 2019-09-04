@@ -34,7 +34,7 @@ CLoopBuffer::CLoopBuffer(std::shared_ptr<CMemoryPool>& pool, int size, int index
 
 CLoopBuffer::~CLoopBuffer() {
 	if (_buffer_start) {
-		_pool->PoolLargeFree<char>(_buffer_start, _total_size);
+		_pool->PoolLargeFree<char>(_buffer_start);
 	}
 }
 
@@ -231,7 +231,7 @@ int CLoopBuffer::Write(const char* str, int len) {
 			//malloc memory from pool
 			if (!_buffer_start) {
 				if (_total_size) {
-					_buffer_start = _pool->PoolLargeMalloc<char>(_total_size, _total_size);
+					_buffer_start = _pool->PoolLargeMalloc<char>();
 					_buffer_end = _buffer_start + _total_size;
 					_read = _write = _buffer_start;
 				
