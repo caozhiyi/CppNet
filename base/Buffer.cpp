@@ -75,19 +75,29 @@ int CBuffer::Write(const char* str, int len) {
 	CLoopBuffer* prv_temp = nullptr;
 	CLoopBuffer* temp = _buffer_write;
 	int cur_len = 0;
-	while (cur_len < len) {
+	while (1) {
 		if (prv_temp != nullptr) {
 			prv_temp->SetNext(temp);
 		}
 		if (temp == nullptr) {
 			temp = _pool->PoolNew<CLoopBuffer>(_pool);
+            // set buffer end to net node
+            _buffer_end = temp;
 		}
 		cur_len += temp->Write(str + cur_len, len - cur_len);
+
+        // set buffer read to first
+        if (_buffer_read == nullptr) {
+            _buffer_read = temp;
+        }
+
 		prv_temp = temp;
+        if (cur_len >= len) {
+            break;
+        }
 		temp = temp->GetNext();
 	}
 	_buffer_write = temp;
-	_buffer_end = _buffer_write;
 	return cur_len;
 }
 

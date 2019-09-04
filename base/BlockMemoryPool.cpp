@@ -12,7 +12,7 @@ CBlockMemoryPool::~CBlockMemoryPool() {
 	// free all memory
 	std::unique_lock<std::mutex> lock(_large_mutex);
 	for (auto iter = _free_mem_vec.begin(); iter != _free_mem_vec.end(); ++iter) {
-		free(*iter);		
+		free(*iter);
 	}
 }
 
@@ -22,7 +22,7 @@ void* CBlockMemoryPool::PoolLargeMalloc() {
 	}
 	
 	std::unique_lock<std::mutex> lock(_large_mutex);
-	void* ret = _free_mem_vec.front();
+	void* ret = _free_mem_vec.back();
 	_free_mem_vec.pop_back();
 	return ret;
 }
@@ -34,7 +34,7 @@ void CBlockMemoryPool::PoolLargeFree(void* &m) {
 
 int CBlockMemoryPool::GetSize() {
 	std::unique_lock<std::mutex> lock(_large_mutex);
-	return _free_mem_vec.size();
+	return (int)_free_mem_vec.size();
 }
 
 int CBlockMemoryPool::GetBlockLength() {
