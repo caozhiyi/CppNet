@@ -12,6 +12,8 @@
 #include "LinuxFunc.h"
 #include "CppNetImpl.h"
 
+#include <iostream>
+
 using namespace cppnet;
 
 CSocketImpl::CSocketImpl(std::shared_ptr<CEventActions>& event_actions) : CSocketBase(event_actions){
@@ -49,6 +51,10 @@ CSocketImpl::~CSocketImpl() {
 }
 
 void CSocketImpl::SyncRead() {
+	if (!_read_event->_client_socket) {
+		_read_event->_client_socket = memshared_from_this();
+	}
+
 	if (_event_actions) {
 		_read_event->_event_flag_set |= EVENT_READ;
 		_event_actions->AddRecvEvent(_read_event);
@@ -62,18 +68,18 @@ void CSocketImpl::SyncWrite(const char* src, uint32_t len) {
 
     _write_event->_event_flag_set |= EVENT_WRITE;
 
-	//try send
-	_write_event->_buffer->Write(src, len);
-	_Send(_write_event);
+	//can't send now
+    if (_write_event->_buffer->GetCanReadLength() > 0) {
+        _write_event->_buffer->Write(src, len);
+        if (_event_actions) {
+            _event_actions->AddSendEvent(_write_event);
+        }
 
-	// if not send complete. _Send function will add send event to action.
-	// if (_write_event->_buffer->GetCanReadLength() == 0) {
-	// 	return;
-	// }
-
-	// if (_event_actions) {
-	// 	_event_actions->AddSendEvent(_write_event);
-	// }
+    } else {
+        // try send now
+        _write_event->_buffer->Write(src, len);
+        _Send(_write_event);
+    }
 }
 
 void CSocketImpl::SyncConnection(const std::string& ip, uint16_t port) {
@@ -224,9 +230,7 @@ void CSocketImpl::_Send(base::CMemSharePtr<CEventHandler>& event) {
 		if (event->_buffer && event->_buffer->GetCanReadLength()) {
 			char buf[8912] = { 0 };
 			int send_len = 0;
-			base::LOG_DEBUG("start Read! %d", socket_ptr->GetSocket());
 			send_len = event->_buffer->Read(buf, 8912);
-			base::LOG_DEBUG("end Read! %d", socket_ptr->GetSocket());
 			int res = send(socket_ptr->GetSocket(), buf, send_len, 0);
 			if (res >= 0) {
 				event->_buffer->Clear(res);

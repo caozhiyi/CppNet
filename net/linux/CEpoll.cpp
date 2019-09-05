@@ -317,7 +317,7 @@ bool CEpoll::_AddEvent(base::CMemSharePtr<CEventHandler>& event, int32_t event_f
 
 bool CEpoll::_AddEvent(base::CMemSharePtr<CAcceptEventHandler>& event, int32_t event_flag, uint64_t sock) {
 	epoll_event* content = (epoll_event*)event->_data;
-	content->events |= event_flag | EPOLLET;
+	content->events |= event_flag;
 	content->data.ptr = (void*)&event->_accept_socket;
 	content->data.ptr = (void*)(((uintptr_t)content->data.ptr) | 1);
 	int res = epoll_ctl(_epoll_handler, EPOLL_CTL_ADD, sock, content);
@@ -414,6 +414,7 @@ void CEpoll::_DoEvent(std::vector<epoll_event>& event_vec, int num) {
             _run = false;
 			continue;
 		}
+
 		if (((uintptr_t)sock) & 1) {
 			sock = (void*)(((uintptr_t)sock) & (uintptr_t)~1);
 			accept_sock = (base::CMemSharePtr<CAcceptSocket>*)sock;

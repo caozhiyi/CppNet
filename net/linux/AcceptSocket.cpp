@@ -68,10 +68,6 @@ void CAcceptSocket::SyncAccept() {
 		((epoll_event*)_accept_event->_data)->events = 0;
 	}
 
-	if (!_accept_event->_client_socket) {
-		_accept_event->_client_socket = base::MakeNewSharedPtr<CSocketImpl>(_pool.get(), _event_actions);
-	}
-	
 	//add event to epoll
 	if (_event_actions) {
 		_accept_event->_event_flag_set |= EVENT_ACCEPT;
@@ -96,21 +92,23 @@ void CAcceptSocket::_Accept(base::CMemSharePtr<CAcceptEventHandler>& event) {
 		}
 		//set the socket noblocking
 		SetSocketNoblocking(sock);
-		event->_client_socket->_sock = sock;
+
+		 //create a new socket
+        auto client_socket = base::MakeNewSharedPtr<CSocketImpl>(_pool.get(), _event_actions);
+    
+        client_socket->_sock = sock;
         
         sockaddr_in sock_addr;
         socklen_t len = sizeof(sock_addr);
     
         getpeername(sock, (struct sockaddr*)&sock_addr, &len);
 
-		memcpy(event->_client_socket->_ip, inet_ntoa(sock_addr.sin_addr), __addr_str_len);
-		event->_client_socket->_port = ntohs(sock_addr.sin_port);
-		//get client socket
-		event->_client_socket->_read_event->_client_socket = event->_client_socket;
+		memcpy(client_socket->_ip, inet_ntoa(sock_addr.sin_addr), __addr_str_len);
+        client_socket->_port = ntohs(sock_addr.sin_port);
+
         //call accept call back function
-        CCppNetImpl::Instance()._AcceptFunction(event, EVENT_ACCEPT);
-		event->_event_flag_set = 0;
-		event->_client_socket = base::MakeNewSharedPtr<CSocketImpl>(_pool.get(), _event_actions);
+        CCppNetImpl::Instance()._AcceptFunction(client_socket, EVENT_ACCEPT);
+		client_socket->SyncRead();
 	}
 }
 #endif // __linux__
