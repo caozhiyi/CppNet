@@ -55,7 +55,7 @@ namespace cppnet {
         uint32_t GetThreadNum();
 
     private:
-        void _AcceptFunction(base::CMemSharePtr<CAcceptEventHandler>& event, uint32_t err);
+        void _AcceptFunction(base::CMemSharePtr<CSocketImpl>& sock, uint32_t err);
         void _ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32_t err);
         void _WriteFunction(base::CMemSharePtr<CEventHandler>& event, uint32_t err);
         std::shared_ptr<CEventActions>& _RandomGetActions();

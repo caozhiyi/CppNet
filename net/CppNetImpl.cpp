@@ -259,18 +259,17 @@ uint32_t CCppNetImpl::GetThreadNum() {
     return (uint32_t)_thread_vec.size();
 }
 
-void CCppNetImpl::_AcceptFunction(base::CMemSharePtr<CAcceptEventHandler>& event, uint32_t err) {
-	if (!event) {
+void CCppNetImpl::_AcceptFunction(base::CMemSharePtr<CSocketImpl>& sock, uint32_t err) {
+	if (!sock) {
         base::LOG_WARN("event is null while accept.");
 		return;
 	}
 	
-	Handle handle = event->_client_socket->GetSocket();
-	auto socket_ptr = event->_client_socket;
+	Handle handle = sock->GetSocket();
 	{
 		// add socket to map
 		std::unique_lock<std::mutex> lock(_mutex);
-		_socket_map[handle] = event->_client_socket;
+		_socket_map[handle] = sock;
 	}
 	err = CEC_SUCCESS;
 	if (_accept_call_back) {
@@ -278,7 +277,7 @@ void CCppNetImpl::_AcceptFunction(base::CMemSharePtr<CAcceptEventHandler>& event
 	}
 
 #ifdef __linux__
-	socket_ptr->SyncRead();
+    sock->SyncRead();
 #endif
 
     base::LOG_DEBUG("get client num : %d", int(_socket_map.size()));
