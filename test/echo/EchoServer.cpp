@@ -25,9 +25,7 @@ void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t 
         int find_len = strlen(__buf_spilt);
         // get recv data to send back.
         int size = data->ReadUntil(msg_buf, __buf_len, __buf_spilt, find_len, need_len);
-        if (error != CEC_CLOSED && error != CEC_CONNECT_BREAK) {
-            Write(handle, msg_buf, size);
-        }
+        Write(handle, msg_buf, size);
     }
 }
 
@@ -40,7 +38,11 @@ void ConnectFunc(const Handle& handle, uint32_t error) {
 int main() {
 
     // start 4 threads
+<<<<<<< HEAD
     cppnet::Init(4, false);
+=======
+	cppnet::Init(2);
+>>>>>>> ab5b267518d5d2cec5134ae4b727409d3f4324b1
 
     cppnet::SetAcceptCallback(ConnectFunc);
     cppnet::SetWriteCallback(WriteFunc);
