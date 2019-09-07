@@ -20,12 +20,12 @@ void WriteFunc(const Handle& handle, uint32_t len, uint32_t error) {
 }
 
 void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t error) {
-	if (error != CEC_CLOSED && error != CEC_CONNECT_BREAK) {
+    if (error != CEC_CLOSED && error != CEC_CONNECT_BREAK) {
         std::cout << " [ReadFunc]" << std::endl;
-	    std::cout << *(data) << std::endl;
+        std::cout << *(data) << std::endl;
         data->Clear();
-	    std::cout << " Thread ID : " << std::this_thread::get_id() << std::endl;
-	    std::cout << " Read size : " << len << std::endl << std::endl;
+        std::cout << " Thread ID : " << std::this_thread::get_id() << std::endl;
+        std::cout << " Read size : " << len << std::endl << std::endl;
         base::CRunnable::Sleep(1000);
 
         if (index > 5) {
@@ -34,7 +34,7 @@ void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t 
         }
         
         auto msg = GetMsg();
-		Write(handle, msg.c_str(), msg.length());
+        Write(handle, msg.c_str(), msg.length());
 
     } else {
         std::cout << "Close" << std::endl;
@@ -61,7 +61,7 @@ void DisConnectionFunc(const Handle& handle, uint32_t err) {
 
 int main() {
 
-	cppnet::Init(1, true);
+    cppnet::Init(1, true);
 
     cppnet::SetConnectionCallback(ConnectFunc);
     cppnet::SetWriteCallback(WriteFunc);

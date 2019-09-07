@@ -7,23 +7,23 @@ namespace base {
     template<typename T>
     class CSingle {
     private:
-    	CSingle(const CSingle&);
-    	CSingle& operator = (const CSingle&);
+        CSingle(const CSingle&);
+        CSingle& operator = (const CSingle&);
     public:
-    	CSingle() {}
-    	virtual ~CSingle() {}
+        CSingle() {}
+        virtual ~CSingle() {}
     
-    	static T& Instance() {
-    		std::unique_lock<std::mutex> lock(_mutex);
-    		static T instance;
-    		return instance;
-    	}
+        static T& Instance() {
+            std::unique_lock<std::mutex> lock(_mutex);
+            static T instance;
+            return instance;
+        }
     
     private:
-    	static std::mutex	_mutex;
+        static std::mutex    _mutex;
     };
     
     template<typename T>
-    std::mutex	CSingle<T>::_mutex;
+    std::mutex    CSingle<T>::_mutex;
 }
 #endif

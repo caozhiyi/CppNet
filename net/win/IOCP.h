@@ -14,11 +14,11 @@
 namespace cppnet {
     class Cevent;
     struct EventOverlapped {
-        OVERLAPPED	_overlapped;
+        OVERLAPPED  _overlapped;
         WSABUF      _wsa_buf;
-        int			_event_flag_set;
+        int         _event_flag_set;
         char        _lapped_buffer[MAX_BUFFER_LEN];
-        void*		_event;
+        void*       _event;
 
         EventOverlapped() {
             _event_flag_set = 0;
@@ -29,8 +29,7 @@ namespace cppnet {
         }
 
         ~EventOverlapped() {
-            int i = 0;
-            i++;
+
         }
 
         void Clear() {
@@ -81,10 +80,10 @@ namespace cppnet {
 
         bool _AddToActions(base::CMemSharePtr<CSocketImpl>& socket);
     private:
-        HANDLE	            _iocp_handler;
-        bool	            _is_inited;
-        std::mutex			_mutex;
-        std::atomic_bool	_run;
+        HANDLE                _iocp_handler;
+        bool                  _is_inited;
+        std::mutex            _mutex;
+        std::atomic_bool      _run;
         std::vector<std::function<void(void)>> _task_list;
     };
 }

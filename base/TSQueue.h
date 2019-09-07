@@ -46,8 +46,8 @@ namespace base {
         }
 
     private:
-        std::queue<T>		_queue;
-        std::mutex			_mutex;
+        std::queue<T>        _queue;
+        std::mutex           _mutex;
     };
 }
 

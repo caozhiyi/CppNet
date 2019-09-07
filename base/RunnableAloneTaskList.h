@@ -12,20 +12,20 @@ namespace base {
     class CRunnableAloneTaskList : public CRunnable
     {
     public:
-    	CRunnableAloneTaskList() {}
-    	virtual ~CRunnableAloneTaskList() {}
+        CRunnableAloneTaskList() {}
+        virtual ~CRunnableAloneTaskList() {}
     
-    	int GetTaskListSize() {
-    		return _task_list.Size();
-    	}
+        int GetTaskListSize() {
+            return _task_list.Size();
+        }
     
-    	//post task
-    	void Push(const T&& t) {
-    		_task_list.Push(t);
-    	}
-    	void Push(const T& t) {
-    		_task_list.Push(t);
-    	}
+        //post task
+        void Push(const T&& t) {
+            _task_list.Push(t);
+        }
+        void Push(const T& t) {
+            _task_list.Push(t);
+        }
 
         void PushFront(const T&& t) {
             _task_list.PushFront(t);
@@ -34,19 +34,19 @@ namespace base {
             _task_list.PushFront(t);
         }
     
-    	//TO DO
-    	virtual void Run() = 0;
+        //TO DO
+        virtual void Run() = 0;
     
     protected:
-    	T _Pop() {
-    		return std::move(_task_list.Pop());
-    	}
+        T _Pop() {
+            return std::move(_task_list.Pop());
+        }
     
-    	CRunnableAloneTaskList(const CRunnableAloneTaskList&) = delete;
-    	CRunnableAloneTaskList& operator=(const CRunnableAloneTaskList&) = delete;
+        CRunnableAloneTaskList(const CRunnableAloneTaskList&) = delete;
+        CRunnableAloneTaskList& operator=(const CRunnableAloneTaskList&) = delete;
     
     private:
-    	CTaskQueue<T>			_task_list;			//every thread have a task queue
+        CTaskQueue<T>            _task_list;            //every thread have a task queue
     };
 }
 #endif

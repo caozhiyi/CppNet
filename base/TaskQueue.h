@@ -57,11 +57,11 @@ namespace base {
         }
 
     private:
-        size_t							_list_size;
-        std::list<T>					_block_queue;
-        std::mutex						_block_mutex;
-        std::condition_variable_any		_empty_notify;
-        std::condition_variable_any		_full_notify;
+        size_t                             _list_size;
+        std::list<T>                       _block_queue;
+        std::mutex                         _block_mutex;
+        std::condition_variable_any        _empty_notify;
+        std::condition_variable_any        _full_notify;
     };
 }
 #endif

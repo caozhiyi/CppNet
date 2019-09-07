@@ -12,12 +12,12 @@
 
 namespace cppnet {
     enum EVENT_FLAG {
-        EVENT_READ          = 0x0001,		//read event
-        EVENT_WRITE         = 0x0002,		//write event
-        EVENT_ACCEPT        = 0x0004,		//accept event
-        EVENT_TIMER         = 0x0008,		//timer event
-        EVENT_CONNECT       = 0x0010,		//connect event
-        EVENT_DISCONNECT    = 0x0020,		//disconnect event
+        EVENT_READ          = 0x0001,        //read event
+        EVENT_WRITE         = 0x0002,        //write event
+        EVENT_ACCEPT        = 0x0004,        //accept event
+        EVENT_TIMER         = 0x0008,        //timer event
+        EVENT_CONNECT       = 0x0010,        //connect event
+        EVENT_DISCONNECT    = 0x0020,        //disconnect event
 
         EVENT_TIMER_ALWAYS  = 0x0040,       //timer always check
 
@@ -29,12 +29,12 @@ namespace cppnet {
 
     class Cevent {
     public:
-        void*						_data = nullptr;
-        int							_event_flag_set = 0;
+        void*                        _data = nullptr;
+        int                          _event_flag_set = 0;
     };
 
     struct CTimerEvent {
-        int							_event_flag;
+        int                         _event_flag;
         uint64_t                    _timer_id;
         unsigned int                _interval;
         void*                       _timer_param;
@@ -45,16 +45,16 @@ namespace cppnet {
     class CBuffer;
     class CEventHandler : public Cevent {
     public:
-        base::CMemSharePtr<base::CBuffer>	_buffer;
-        base::CMemWeakPtr<CSocketImpl>		_client_socket;
-        int							        _off_set;				//read or write size
+        base::CMemSharePtr<base::CBuffer>    _buffer;
+        base::CMemWeakPtr<CSocketImpl>       _client_socket;
+        int                                  _off_set;                //read or write size
     };
 
     class CAcceptEventHandler : public Cevent {
     public:
-        base::CMemSharePtr<CSocketImpl>		_client_socket;
+        base::CMemSharePtr<CSocketImpl>      _client_socket;
 
-        base::CMemSharePtr<CAcceptSocket>	_accept_socket = nullptr;
+        base::CMemSharePtr<CAcceptSocket>    _accept_socket = nullptr;
     };
 }
 

@@ -46,7 +46,7 @@ namespace cppnet {
 
         virtual CTimer& Timer() { return _timer; }
     protected:
-        CTimer			_timer;
+        CTimer            _timer;
     };
 }
 

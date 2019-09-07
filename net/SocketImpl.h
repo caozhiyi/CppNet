@@ -40,11 +40,11 @@ namespace cppnet {
         void _Send(base::CMemSharePtr<CEventHandler>& event);
 
     public:
-        base::CMemSharePtr<CEventHandler>		_read_event;
-        base::CMemSharePtr<CEventHandler>		_write_event;
+        base::CMemSharePtr<CEventHandler>        _read_event;
+        base::CMemSharePtr<CEventHandler>        _write_event;
 #ifndef __linux__
         //iocp use it save post event num;
-        uint32_t					            _post_event_num;
+        uint32_t                                 _post_event_num;
 #endif
     };
     bool operator>(const CSocketBase& s1, const CSocketBase& s2);

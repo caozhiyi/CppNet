@@ -14,8 +14,7 @@ namespace cppnet {
 
     class CEventHandler;
     struct CTimerEvent;
-    class CTimer
-    {
+    class CTimer {
     public:
         CTimer();
         ~CTimer();
@@ -41,11 +40,11 @@ namespace cppnet {
         void _AddTimer(uint32_t interval, const base::CMemSharePtr<CTimerEvent>& t, uint64_t& id);
         void _AddTimer(uint32_t interval, base::CMemSharePtr<CTimerEvent>& event);
     private:
-        std::shared_ptr<base::CMemoryPool>	    _pool;
-        std::recursive_mutex			        _mutex;
-        base::CTimeTool							_time;
-        std::map<uint64_t, base::CMemSharePtr<CTimerEvent>>	_timer_map;
-        std::map<uint64_t, base::CMemWeakPtr<CTimerEvent>>	_fix_timer_id_map;
+        std::shared_ptr<base::CMemoryPool>         _pool;
+        std::recursive_mutex                       _mutex;
+        base::CTimeTool                            _time;
+        std::map<uint64_t, base::CMemSharePtr<CTimerEvent>>    _timer_map;
+        std::map<uint64_t, base::CMemWeakPtr<CTimerEvent>>     _fix_timer_id_map;
     };
 
 }

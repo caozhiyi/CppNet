@@ -7,13 +7,13 @@
 #endif
 
 uint32_t cppnet::GetCpuNum() {
-	unsigned count = 1;
+    unsigned count = 1;
 #ifdef __linux__
-	count = sysconf(_SC_NPROCESSORS_CONF);
+    count = sysconf(_SC_NPROCESSORS_CONF);
 #else 
-	SYSTEM_INFO si;
-	GetSystemInfo(&si);
-	count = si.dwNumberOfProcessors;
+    SYSTEM_INFO si;
+    GetSystemInfo(&si);
+    count = si.dwNumberOfProcessors;
 #endif  
-	return count;
+    return count;
 }

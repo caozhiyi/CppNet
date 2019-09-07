@@ -26,7 +26,7 @@ void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t 
         std::cout << "something err while read : " << error << std::endl;
     } else {
         // print
-	    std::cout << *(data) << std::endl;
+        std::cout << *(data) << std::endl;
         data->Clear();
     }
 }
@@ -49,7 +49,7 @@ void DisConnectionFunc(const Handle& handle, uint32_t err) {
 
 int main() {
 
-	cppnet::Init(1, false);
+    cppnet::Init(1, false);
 
     cppnet::SetConnectionCallback(ConnectFunc);
     cppnet::SetWriteCallback(WriteFunc);

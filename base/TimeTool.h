@@ -36,9 +36,9 @@ namespace base {
         bool operator<=(CTimeTool const& t);
 
     private:
-        time_t		_time;
-        std::tm     _tm;
-        std::mutex	_mutex;
+        time_t        _time;
+        std::tm       _tm;
+        std::mutex    _mutex;
     };
 }
 

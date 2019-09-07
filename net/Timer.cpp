@@ -70,12 +70,12 @@ bool CTimer::DelTimer(uint64_t timerid) {
         }
     }
 
-	return false;
+    return false;
 }
 
 uint32_t CTimer::TimeoutCheck(std::vector<base::CMemSharePtr<CTimerEvent>>& res) {
-	_time.Now();
-	return TimeoutCheck(_time.GetMsec(), res);
+    _time.Now();
+    return TimeoutCheck(_time.GetMsec(), res);
 }
 
 uint32_t CTimer::TimeoutCheck(uint64_t nowtime, std::vector<base::CMemSharePtr<CTimerEvent>>& res) {
@@ -103,12 +103,12 @@ uint32_t CTimer::TimeoutCheck(uint64_t nowtime, std::vector<base::CMemSharePtr<C
             AddTimer((*iter)->_interval, (*iter));
         }
     }
-	return recent_timeout;
+    return recent_timeout;
 }
 
 uint32_t CTimer::GetTimerNum() {
     std::unique_lock<std::recursive_mutex> lock(_mutex);
-	return _timer_map.size();
+    return _timer_map.size();
 }
 
 void CTimer::_AddTimer(uint32_t interval, const base::CMemSharePtr<CTimerEvent>& t, uint64_t& id) {

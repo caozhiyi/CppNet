@@ -7,8 +7,8 @@
 #include <mutex>
 #include <vector>
 #include <map>
-#include <cstring>		//for memset
-#include <stdexcept>	//for logic_error
+#include <cstring>        //for memset
+#include <stdexcept>      //for logic_error
 
 #include "BlockMemaryPool.h"
 
@@ -21,36 +21,36 @@ namespace base {
 
     class CMemoryPool {
     public:
-    	// bulk memory size. 
+        // bulk memory size. 
         // everytime add nodes num
-    	CMemoryPool(const int large_sz, const int add_num);
-    	~CMemoryPool();
+        CMemoryPool(const int large_sz, const int add_num);
+        ~CMemoryPool();
     
-    	//for object. invocation of constructors and destructors
-    	template<typename T, typename... Args >
-    	T* PoolNew(Args&&... args);
-    	template<typename T>
-    	void PoolDelete(T* &c);
+        //for object. invocation of constructors and destructors
+        template<typename T, typename... Args >
+        T* PoolNew(Args&&... args);
+        template<typename T>
+        void PoolDelete(T* &c);
     
-    	//for continuous memory
-    	template<typename T>
-    	T* PoolMalloc(int size);
-    	template<typename T>
-    	void PoolFree(T* &m, int len);
+        //for continuous memory
+        template<typename T>
+        T* PoolMalloc(int size);
+        template<typename T>
+        void PoolFree(T* &m, int len);
     
-    	//for bulk memory. 
-    	//return one bulk memory node
-    	template<typename T>
-    	T* PoolLargeMalloc();
-    	template<typename T>
-    	void PoolLargeFree(T* &m);
+        //for bulk memory. 
+        //return one bulk memory node
+        template<typename T>
+        T* PoolLargeMalloc();
+        template<typename T>
+        void PoolLargeFree(T* &m);
     
-    	std::thread::id GetCreateThreadId();
+        std::thread::id GetCreateThreadId();
     
-    	//return bulk memory size
-    	int GetLargeSize();
+        //return bulk memory size
+        int GetLargeSize();
         // return length of bulk memory
-		int GetLargeBlockLength();
+        int GetLargeBlockLength();
 
         // release half memory
         void ReleaseLargeHalf();
@@ -58,120 +58,120 @@ namespace base {
         void ExpansionLarge(int num = 0);
     
     private:
-    	int RoundUp(int size, int align = __align) {
-    		return ((size + align - 1) & ~(align - 1));
-    	}
+        int RoundUp(int size, int align = __align) {
+            return ((size + align - 1) & ~(align - 1));
+        }
     
-    	int FreeListIndex(int size, int align = __align) {
-    		return (size + align - 1) / align - 1;
-    	}
+        int FreeListIndex(int size, int align = __align) {
+            return (size + align - 1) / align - 1;
+        }
     
-    	void* ReFill(int size, int num = __number_add_nodes);
-    	void* ChunkAlloc(int size, int& nums);
-    	
+        void* ReFill(int size, int num = __number_add_nodes);
+        void* ChunkAlloc(int size, int& nums);
+        
     private:
-    	union MemNode {
-    		MemNode*	_next;
-    		char		_data[1];
-    	};
+        union MemNode {
+            MemNode*    _next;
+            char        _data[1];
+        };
     
-    	MemNode*	_free_list[__number_of_free_lists];	
-    	char*		_pool_start;					
-    	char*		_pool_end;				
-    	std::thread::id			_create_thread_id;
-    	std::vector<char*>		_malloc_vec;
-    	std::recursive_mutex	_mutex;
+        MemNode*     _free_list[__number_of_free_lists];    
+        char*        _pool_start;                    
+        char*        _pool_end;                
+        std::thread::id            _create_thread_id;
+        std::vector<char*>         _malloc_vec;
+        std::recursive_mutex       _mutex;
 
-        CBlockMemoryPool        _block_pool;
+        CBlockMemoryPool           _block_pool;
     };
     
     template<typename T, typename... Args>
     T* CMemoryPool::PoolNew(Args&&... args) {
-    	int sz = sizeof(T);
-    	if (sz > __max_bytes) {
-    		void* bytes = malloc(sz);
-    		T* res = new(bytes) T(std::forward<Args>(args)...);
-    		return res;
-    	}
+        int sz = sizeof(T);
+        if (sz > __max_bytes) {
+            void* bytes = malloc(sz);
+            T* res = new(bytes) T(std::forward<Args>(args)...);
+            return res;
+        }
     
-    	std::unique_lock<std::recursive_mutex> lock(_mutex);
-    	MemNode** my_free = &(_free_list[FreeListIndex(sz)]);
-    	MemNode* result = *my_free;
-    	if (result == nullptr) {
-    		void* bytes = ReFill(RoundUp(sz));
-    		T* res = new(bytes) T(std::forward<Args>(args)...);
-    		return res;
-    	}
-    	*my_free = result->_next;
-    	T* res = new(result) T(std::forward<Args>(args)...);
-    	return res;
+        std::unique_lock<std::recursive_mutex> lock(_mutex);
+        MemNode** my_free = &(_free_list[FreeListIndex(sz)]);
+        MemNode* result = *my_free;
+        if (result == nullptr) {
+            void* bytes = ReFill(RoundUp(sz));
+            T* res = new(bytes) T(std::forward<Args>(args)...);
+            return res;
+        }
+        *my_free = result->_next;
+        T* res = new(result) T(std::forward<Args>(args)...);
+        return res;
     }
     
     template<typename T>
     void CMemoryPool::PoolDelete(T* &c) {
-    	if (!c) {
-    		return;
-    	}
+        if (!c) {
+            return;
+        }
     
-    	int sz = sizeof(T);
-    	if (sz > __max_bytes) {
-    		c->~T();
-    		free(c);
+        int sz = sizeof(T);
+        if (sz > __max_bytes) {
+            c->~T();
+            free(c);
             c = nullptr;
-    		return;
-    	}
+            return;
+        }
     
-    	MemNode* node = (MemNode*)c;
-    	std::unique_lock<std::recursive_mutex> lock(_mutex);
-    	MemNode** my_free = &(_free_list[FreeListIndex(sz)]);
+        MemNode* node = (MemNode*)c;
+        std::unique_lock<std::recursive_mutex> lock(_mutex);
+        MemNode** my_free = &(_free_list[FreeListIndex(sz)]);
     
-    	c->~T();
-    	node->_next = *my_free;
-    	*my_free = node;
-    	c = nullptr;
+        c->~T();
+        node->_next = *my_free;
+        *my_free = node;
+        c = nullptr;
     }
     
     template<typename T>
     T* CMemoryPool::PoolMalloc(int sz) {
-    	if (sz > __max_bytes) {
-    		void* bytes = malloc(sz);
-    		memset(bytes, 0, sz);
-    		return (T*)bytes;
-    	}
+        if (sz > __max_bytes) {
+            void* bytes = malloc(sz);
+            memset(bytes, 0, sz);
+            return (T*)bytes;
+        }
     
-    	std::unique_lock<std::recursive_mutex> lock(_mutex);
-    	MemNode** my_free = &(_free_list[FreeListIndex(sz)]);
-    	MemNode* result = *my_free;
-    	if (result == nullptr) {
-    		void* bytes = ReFill(RoundUp(sz));
-    		memset(bytes, 0, sz);
-    		return (T*)bytes;
-    	}
+        std::unique_lock<std::recursive_mutex> lock(_mutex);
+        MemNode** my_free = &(_free_list[FreeListIndex(sz)]);
+        MemNode* result = *my_free;
+        if (result == nullptr) {
+            void* bytes = ReFill(RoundUp(sz));
+            memset(bytes, 0, sz);
+            return (T*)bytes;
+        }
     
-    	*my_free = result->_next;
-    	memset(result, 0, sz);
-    	return (T*)result;
+        *my_free = result->_next;
+        memset(result, 0, sz);
+        return (T*)result;
     }
     
     template<typename T>
     void CMemoryPool::PoolFree(T* &m, int len) {
-    	if (!m) {
-    		return;
-    	}
+        if (!m) {
+            return;
+        }
     
-    	if (len > __max_bytes) {
-    		free(m);
-    		m = nullptr;
-    		return;
-    	}
+        if (len > __max_bytes) {
+            free(m);
+            m = nullptr;
+            return;
+        }
     
-    	MemNode* node = (MemNode*)m;
-    	std::unique_lock<std::recursive_mutex> lock(_mutex);
-    	MemNode** my_free = &(_free_list[FreeListIndex(len)]);
+        MemNode* node = (MemNode*)m;
+        std::unique_lock<std::recursive_mutex> lock(_mutex);
+        MemNode** my_free = &(_free_list[FreeListIndex(len)]);
     
-    	node->_next = *my_free;
-    	*my_free = node;
-    	m = nullptr;
+        node->_next = *my_free;
+        *my_free = node;
+        m = nullptr;
     }
     
     template<typename T>
@@ -182,10 +182,10 @@ namespace base {
     
     template<typename T>
     void CMemoryPool::PoolLargeFree(T* &m) {
-    	if (!m) {
-    		return;
-    	}
-    	
+        if (!m) {
+            return;
+        }
+        
         _block_pool.PoolLargeFree((void*&)m);
         m = nullptr;
     }

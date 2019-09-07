@@ -48,14 +48,14 @@ namespace cppnet {
         void _DoEvent(std::vector<epoll_event>& event_vec, int32_t num);
         void _DoTaskList();
     private:
-        std::atomic_bool	_run;
+        std::atomic_bool    _run;
 
         bool                _per_epoll;
-        uint32_t		    _epoll_handler;
-        uint32_t      	    _pipe[2];
-        epoll_event		    _pipe_content;
+        uint32_t            _epoll_handler;
+        uint32_t            _pipe[2];
+        epoll_event         _pipe_content;
 
-        std::mutex		_mutex;
+        std::mutex          _mutex;
         std::vector<std::function<void(void)>> _task_list;
     };
 }

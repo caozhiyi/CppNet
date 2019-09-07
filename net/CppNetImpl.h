@@ -18,8 +18,7 @@ namespace cppnet {
     class CEventActions;
     class CSocket;
     class CAcceptSocket;
-    class CCppNetImpl : public base::CSingle<CCppNetImpl>
-    {
+    class CCppNetImpl : public base::CSingle<CCppNetImpl> {
     public:
         CCppNetImpl();
         ~CCppNetImpl();
@@ -63,21 +62,21 @@ namespace cppnet {
     private:
         friend class CSocketImpl;
         friend class CAcceptSocket;
-        read_call_back	        _read_call_back          = nullptr;
-        write_call_back	        _write_call_back         = nullptr;
-        connection_call_back	_connection_call_back    = nullptr;
-        connection_call_back	_disconnection_call_back = nullptr;
-        connection_call_back	_accept_call_back        = nullptr;
+        read_call_back          _read_call_back          = nullptr;
+        write_call_back         _write_call_back         = nullptr;
+        connection_call_back    _connection_call_back    = nullptr;
+        connection_call_back    _disconnection_call_back = nullptr;
+        connection_call_back    _accept_call_back        = nullptr;
         
         base::CMemoryPool       _pool;
         bool                    _per_epoll_handle;
 
-        std::mutex			    _mutex;
-        std::vector<std::shared_ptr<std::thread>>					            _thread_vec;
-        std::unordered_map<uint64_t, base::CMemSharePtr<CAcceptSocket>>	        _accept_socket;
-        std::unordered_map<uint64_t, base::CMemSharePtr<CSocketImpl>>		    _socket_map;
-        std::unordered_map<std::thread::id, std::shared_ptr<CEventActions>>	    _actions_map;
-        std::unordered_map<uint64_t, std::weak_ptr<CEventActions>>              _timer_actions_map;
+        std::mutex              _mutex;
+        std::vector<std::shared_ptr<std::thread>>                                _thread_vec;
+        std::unordered_map<uint64_t, base::CMemSharePtr<CAcceptSocket>>          _accept_socket;
+        std::unordered_map<uint64_t, base::CMemSharePtr<CSocketImpl>>            _socket_map;
+        std::unordered_map<std::thread::id, std::shared_ptr<CEventActions>>      _actions_map;
+        std::unordered_map<uint64_t, std::weak_ptr<CEventActions>>               _timer_actions_map;
     };
 
 }
