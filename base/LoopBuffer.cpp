@@ -32,70 +32,10 @@ int CLoopBuffer::Read(char* res, int len) {
 }
 
 int CLoopBuffer::Write(const char* str, int len) {
-	std::unique_lock<std::mutex> lock(_mutex);
-	if (_read < _write) {
-		if (_write + len <= _buffer_end) {
-			memcpy(_write, str, len);
-			_write += len;
-			return len;
-		
-		} else {
-			auto size_end = _buffer_end - _write;
-            auto left = len - size_end;
-			memcpy(_write, str, size_end);
-
-			if (_buffer_start + left <= _read) {
-				memcpy(_buffer_start, str + size_end, left);
-				_write = _buffer_start + left;
-				if (_buffer_start + left == _read) {
-					_can_read = true;
-				}
-				return len;
-
-			} else {
-                auto can_save = _read - _buffer_start;
-				if (can_save) {
-					memcpy(_buffer_start, str + size_end, can_save);
-				}
-				_write = _read;
-				_can_read = true;
-				return  (int)(can_save + size_end);
-			}
-		}
-	
-	} else if (_read > _write) {
-        auto size = _read - _write;
-		if (len <= size) {
-			memcpy(_write, str, len);
-			_write += len;
-			return len;
-
-		} else {
-			memcpy(_write, str, size);
-			_write += size;
-			_can_read = true;
-
-			return (int)size;
-		}
-	
-	} else {
-		// there is no free memory
-		if (_can_read) {
-			return 0;
-
-		} else {
-			int size = _total_size;
-			if (size <= len) {
-				memcpy(_write, str, size);
-				_can_read = true;
-				return size;
-			} else {
-				memcpy(_write, str, len);
-				_write += len;
-				return len;
-			}
-		}
+	if (str == nullptr) {
+		return 0;
 	}
+	return _Write(str, len, true);
 }
 
 int CLoopBuffer::Clear(int len) {
@@ -150,6 +90,10 @@ int CLoopBuffer::Clear(int len) {
 			}
 		}
 	} 
+}
+
+int CLoopBuffer::MoveWritePt(int len) {
+	return _Write(nullptr, len, false);
 }
 
 int CLoopBuffer::ReadUntil(char* res, int len) {
@@ -233,6 +177,31 @@ bool CLoopBuffer::GetFreeMemoryBlock(void*& res1, int& len1, void*& res2, int& l
 	} else {
 		res1 = _write;
 		len1 = (int)(_read - _write);
+		return true;
+	}
+}
+
+bool CLoopBuffer::GetUseMemoryBlock(void*& res1, int& len1, void*& res2, int& len2) {
+	res1 = res2 = nullptr;
+	len1 = len2 = 0;
+
+	std::unique_lock<std::mutex> lock(_mutex);
+	if (_read >= _write) {
+		if (!_can_read && _write == _read) {
+			return false;
+		}
+		res1 = _read;
+		len1 = (int)(_buffer_end - _read);
+
+		len2 = (int)(_write - _buffer_start);
+		if(len2 > 0) {
+			res2 = _buffer_start;
+		}
+		return true;
+
+	} else {
+		res1 = _read;
+		len1 = (int)(_write - _read);
 		return true;
 	}
 }
@@ -374,6 +343,87 @@ int CLoopBuffer::_Read(char* res, int len, bool clear) {
 			}
 		}
 	} 
+}
+
+int CLoopBuffer::_Write(const char* str, int len, bool write) {
+	std::unique_lock<std::mutex> lock(_mutex);
+	if (_read < _write) {
+		if (_write + len <= _buffer_end) {
+			if (write) {
+				memcpy(_write, str, len);
+			}
+			_write += len;
+			return len;
+		
+		} else {
+			auto size_end = _buffer_end - _write;
+            auto left = len - size_end;
+			if (write) {
+			    memcpy(_write, str, size_end);
+			}
+
+			if (_buffer_start + left <= _read) {
+				if (write) {
+				    memcpy(_buffer_start, str + size_end, left);
+				}
+				_write = _buffer_start + left;
+				if (_buffer_start + left == _read) {
+					_can_read = true;
+				}
+				return len;
+
+			} else {
+                auto can_save = _read - _buffer_start;
+				if (can_save && write) {
+					memcpy(_buffer_start, str + size_end, can_save);
+				}
+				_write = _read;
+				_can_read = true;
+				return  (int)(can_save + size_end);
+			}
+		}
+	
+	} else if (_read > _write) {
+        auto size = _read - _write;
+		if (len <= size) {
+			if (write) {
+			    memcpy(_write, str, len);
+			}
+			_write += len;
+			return len;
+
+		} else {
+			if (write) {
+			    memcpy(_write, str, size);
+			}
+			_write += size;
+			_can_read = true;
+
+			return (int)size;
+		}
+	
+	} else {
+		// there is no free memory
+		if (_can_read) {
+			return 0;
+
+		} else {
+			int size = _total_size;
+			if (size <= len) {
+				if (write) {
+					memcpy(_write, str, size);
+				}
+				_can_read = true;
+				return size;
+			} else {
+				if (write) {
+				    memcpy(_write, str, len);
+				}
+				_write += len;
+				return len;
+			}
+		}
+	}
 }
 
 std::ostream& base::operator<< (std::ostream &out, const base::CLoopBuffer &obj) {

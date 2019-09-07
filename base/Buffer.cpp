@@ -1,4 +1,3 @@
-#include <iostream>
 #include "Buffer.h"
 #include "MemaryPool.h"
 #include "LoopBuffer.h"
@@ -134,6 +133,21 @@ void CBuffer::Clear(int len) {
 	_buffer_read = temp;
 }
 
+int CBuffer::MoveWritePt(int len) {
+	std::unique_lock<std::mutex> lock(_mutex);
+	CLoopBuffer* temp = _buffer_write;
+	int cur_len = 0;
+	while (temp) {
+		cur_len += temp->MoveWritePt(len - cur_len);
+        if (temp == _buffer_end) {
+			break;
+		}
+		temp = temp->GetNext();
+	}
+	_buffer_write = temp;
+	return cur_len;
+}
+
 int CBuffer::ReadUntil(char* res, int len) {
 	if (GetCanReadLength() < len) {
 		return 0;
@@ -166,7 +180,7 @@ int CBuffer::GetFreeLength() {
 	CLoopBuffer* temp = _buffer_write;
 	int cur_len = 0;
 	while (temp) {
-		cur_len += temp->GetCanReadLength();
+		cur_len += temp->GetFreeLength();
 		if (temp == _buffer_end) {
 			break;
 		}
@@ -193,9 +207,7 @@ int CBuffer::GetCanReadLength() {
 	return cur_len;
 }
 
-bool CBuffer::GetFreeMemoryBlock(std::vector<std::pair<void*, int>>& block_vec, int size) {
-	std::unique_lock<std::mutex> lock(_mutex);
-
+int CBuffer::GetFreeMemoryBlock(std::vector<iovec>& block_vec, int size) {
 	void* mem_1 = nullptr;
 	void* mem_2 = nullptr;
 	int mem_len_1 = 0;
@@ -204,28 +216,83 @@ bool CBuffer::GetFreeMemoryBlock(std::vector<std::pair<void*, int>>& block_vec, 
 	CLoopBuffer* temp = _buffer_write;
 	CLoopBuffer* prv_temp = nullptr;
 	int cur_len = 0;
-
-	while (cur_len < size) {
-		if (prv_temp != nullptr) {
-			prv_temp->SetNext(temp);
-		}
-		if (temp == nullptr) {
-			temp = _pool->PoolNew<CLoopBuffer>(_pool);
-		}
+	if (size > 0) {
+		std::unique_lock<std::mutex> lock(_mutex);
+        while (cur_len < size) {
+		    if (prv_temp != nullptr) {
+			    prv_temp->SetNext(temp);
+		    }
+		    if (temp == nullptr) {
+			    temp = _pool->PoolNew<CLoopBuffer>(_pool);
+		    }
 		
-		temp->GetFreeMemoryBlock(mem_1, mem_len_1, mem_2, mem_len_2);
-		if (mem_len_1 > 0) {
-			block_vec.push_back(std::make_pair(mem_1, mem_len_1));
-			cur_len += mem_len_1;
-		}
-		if (mem_len_2 > 0) {
-			block_vec.push_back(std::make_pair(mem_2, mem_len_2));
-			cur_len += mem_len_2;
-		}
-		prv_temp = temp;
-		temp = temp->GetNext();
+		    temp->GetFreeMemoryBlock(mem_1, mem_len_1, mem_2, mem_len_2);
+		    if (mem_len_1 > 0) {
+			    block_vec.push_back(iovec(mem_1, mem_len_1));
+			    cur_len += mem_len_1;
+	    	}
+		    if (mem_len_2 > 0) {
+			    block_vec.push_back(iovec(mem_2, mem_len_2));
+			    cur_len += mem_len_2;
+		    }
+			// set buffer read to first
+			if (_buffer_read == nullptr) {
+                _buffer_read = temp;
+            }
+			// set buffer read to first
+			if (_buffer_write == nullptr) {
+                _buffer_write = temp;
+            }
+		    prv_temp = temp;
+		    temp = temp->GetNext();
+	    }
+	    _buffer_end = temp;
+
+	} else {
+        std::unique_lock<std::mutex> lock(_mutex);
+	    while (temp) {
+			temp->GetFreeMemoryBlock(mem_1, mem_len_1, mem_2, mem_len_2);
+		    if (mem_len_1 > 0) {
+			    block_vec.push_back(iovec(mem_1, mem_len_1));
+			    cur_len += mem_len_1;
+	    	}
+		    if (mem_len_2 > 0) {
+			    block_vec.push_back(iovec(mem_2, mem_len_2));
+			    cur_len += mem_len_2;
+		    }
+		    if (temp == _buffer_end) {
+			    break;
+		    }
+		    temp = temp->GetNext();
+	    }
 	}
-	_buffer_end = temp;
+	return cur_len;
+}
+
+int CBuffer::GetUseMemoryBlock(std::vector<iovec>& block_vec) {
+	void* mem_1 = nullptr;
+	void* mem_2 = nullptr;
+	int mem_len_1 = 0;
+	int mem_len_2 = 0;
+
+	std::unique_lock<std::mutex> lock(_mutex);
+	CLoopBuffer* temp = _buffer_read;
+	int cur_len = 0;
+	while (temp) {
+		temp->GetUseMemoryBlock(mem_1, mem_len_1, mem_2, mem_len_2);
+		if (mem_len_1 > 0) {
+		    block_vec.push_back(iovec(mem_1, mem_len_1));
+		    cur_len += mem_len_1;
+    	}
+	    if (mem_len_2 > 0) {
+		    block_vec.push_back(iovec(mem_2, mem_len_2));
+		    cur_len += mem_len_2;
+	    }
+	    if (temp == _buffer_write) {
+		    break;
+	    }
+	    temp = temp->GetNext();
+	}
 	return cur_len;
 }
 

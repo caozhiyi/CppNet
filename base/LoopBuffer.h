@@ -23,6 +23,9 @@ namespace base {
 		// or modify read point
     	int Clear(int len = 0);
     
+        // move write point
+		int MoveWritePt(int len);
+
     	// do not read when buffer less than len. 
 		// return len when read otherwise return 0
     	int ReadUntil(char* res, int len);
@@ -42,6 +45,12 @@ namespace base {
 		// there may be two blocks
 		bool GetFreeMemoryBlock(void*& res1, int& len1, void*& res2, int& len2);
 
+		// get used memory block, 
+		// res1: point to memory fo start.
+		// len1: length of memory.
+		// there may be two blocks
+		bool GetUseMemoryBlock(void*& res1, int& len1, void*& res2, int& len2);
+
     	// return can read bytes
     	int FindStr(const char* s, int s_len);
 
@@ -55,6 +64,7 @@ namespace base {
     	//find str in fix length buffer. return the first pos if find otherwise return nullptr
     	const char* _FindStrInMem(const char* buffer, const char* ch, int buffer_len, int ch_len) const;
 		int _Read(char* res, int len, bool clear);
+		int _Write(const char* str, int len, bool write);
     
     private:
     	int		_total_size;	//total buffer size

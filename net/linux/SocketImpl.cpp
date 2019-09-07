@@ -150,10 +150,16 @@ void CSocketImpl::_Recv(base::CMemSharePtr<CEventHandler>& event) {
 		if (event->_event_flag_set & EVENT_READ) {
 			event->_off_set = 0;
 			//read all data.
-			for (;;) {
-				char buf[65536] = { 0 };
+			int expand_buff_len = 4096;
+			for (int i = 0;;i++) {
+				if (event->_buffer->GetFreeLength() != 0) {
+					expand_buff_len *= i;
+			    }
+				std::vector<base::iovec> io_vec;
+				int buff_len = event->_buffer->GetFreeMemoryBlock(io_vec, expand_buff_len);
+				
 				int recv_len = 0;
-				recv_len = recv(socket_ptr->GetSocket(), buf, 65536, 0);
+				recv_len = readv(socket_ptr->GetSocket(), (iovec*)&*io_vec.begin(), io_vec.size());
 				if (recv_len < 0) {
 					if (errno == EWOULDBLOCK || errno == EAGAIN || errno == EINTR) {
 						break;
@@ -173,9 +179,12 @@ void CSocketImpl::_Recv(base::CMemSharePtr<CEventHandler>& event) {
 					base::LOG_DEBUG("socket read 0 to close! %d", socket_ptr->GetSocket());
 					break;
 				}
-				event->_buffer->Write(buf, recv_len);
+				event->_buffer->MoveWritePt(recv_len);
 				event->_off_set += recv_len;
-				memset(buf, 0, recv_len);
+				// read all
+				if (recv_len < buff_len) {
+					break;
+				}
 			}
 		}
 	}
@@ -200,21 +209,24 @@ void CSocketImpl::_Send(base::CMemSharePtr<CEventHandler>& event) {
 
 	} else {
 		event->_off_set = 0;
-		if (event->_buffer && event->_buffer->GetCanReadLength()) {
-			char buf[8912] = { 0 };
-			int send_len = 0;
-			send_len = event->_buffer->Read(buf, 8912);
-			int res = send(socket_ptr->GetSocket(), buf, send_len, 0);
+		while(event->_buffer && event->_buffer->GetCanReadLength() > 0) {
+			std::vector<base::iovec> io_vec;
+			int data_len = event->_buffer->GetUseMemoryBlock(io_vec);
+			int res = writev(socket_ptr->GetSocket(), (iovec*)&*io_vec.begin(), io_vec.size());
 			if (res >= 0) {
 				event->_buffer->Clear(res);
-				//can send complete
-				if (res < send_len) {
-					_event_actions->AddSendEvent(_write_event);
+				event->_off_set += res;
+				// all sended
+				if (res == data_len) {
+					break;
 				}
 
 			} else {
 				if (errno == EWOULDBLOCK || errno == EAGAIN || errno == EINTR) {
-					//wait next time to do
+					//can't send complete
+					if (res < data_len) {
+						_event_actions->AddSendEvent(_write_event);
+					}
 
 				} else if (errno == EBADMSG) {
 					err |= ERR_CONNECT_BREAK;
@@ -225,9 +237,7 @@ void CSocketImpl::_Send(base::CMemSharePtr<CEventHandler>& event) {
                     base::LOG_ERROR("send filed! %d", errno);
 				}
 			}
-			event->_off_set = res;
 		}
-		
         CCppNetImpl::Instance()._WriteFunction(event, err);
 	}
 }
