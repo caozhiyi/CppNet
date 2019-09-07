@@ -17,7 +17,7 @@ namespace cppnet {
 
         bool Bind(uint16_t port, const std::string& ip = "");
 
-        bool Listen(uint16_t listen_size);
+        bool Listen();
 
         void SyncAccept();
 

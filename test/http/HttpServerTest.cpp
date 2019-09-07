@@ -76,7 +76,7 @@ int main() {
                                               std::placeholders::_3, std::placeholders::_4, std::placeholders::_5));
     cppnet::SetDisconnectionCallback(DisConnectionFunc);
 
-    cppnet::ListenAndAccept(8921, "0.0.0.0", 20);
+    cppnet::ListenAndAccept(8921, "0.0.0.0");
 
     cppnet::Join();
 }

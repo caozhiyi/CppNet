@@ -47,8 +47,8 @@ bool CAcceptSocket::Bind(uint16_t port, const std::string& ip) {
 	return true;
 }
 
-bool CAcceptSocket::Listen(uint16_t listen_size) {
-	int ret = listen(_sock, listen_size);
+bool CAcceptSocket::Listen() {
+	int ret = listen(_sock, SOMAXCONN);
 	if (-1 == ret) {
 		base::LOG_FATAL("linux listen socket filed! error code:%d", errno);
 		close(_sock);
@@ -84,7 +84,7 @@ void CAcceptSocket::_Accept(base::CMemSharePtr<CAcceptEventHandler>& event) {
 		//may get more than one connections
 		sock = accept(event->_accept_socket->GetSocket(), (sockaddr*)&client_addr, &addr_size);
 		if (sock <= 0) {
-			if (errno == EWOULDBLOCK || errno == EAGAIN) {
+			if (errno == EAGAIN) {
 				break;
 			}
 			base::LOG_FATAL("accept socket filed! error code:%d", errno);

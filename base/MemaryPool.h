@@ -117,6 +117,7 @@ namespace base {
     	if (sz > __max_bytes) {
     		c->~T();
     		free(c);
+            c = nullptr;
     		return;
     	}
     

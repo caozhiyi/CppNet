@@ -138,7 +138,7 @@ void CCppNetImpl::SetAcceptCallback(const connection_call_back& func) {
 	_accept_call_back = func;
 }
 
-bool CCppNetImpl::ListenAndAccept(uint16_t port, std::string ip, uint32_t listen_num) {
+bool CCppNetImpl::ListenAndAccept(uint16_t port, std::string ip) {
 	if (!_accept_call_back) {
         base::LOG_ERROR("accept call back function is null!, port : %d, ip : %s ", port, ip.c_str());
 		return false;
@@ -150,7 +150,7 @@ bool CCppNetImpl::ListenAndAccept(uint16_t port, std::string ip, uint32_t listen
 	}
 
 	if (_actions_map.size() <= 0) {
-        base::LOG_ERROR("CCppNetImpl obj is not inited!, port : %d, ip : %s ", port, ip.c_str());
+        base::LOG_ERROR("CCppNetImpl obj is not init!, port : %d, ip : %s ", port, ip.c_str());
 		return false;
 	}
 
@@ -161,7 +161,7 @@ bool CCppNetImpl::ListenAndAccept(uint16_t port, std::string ip, uint32_t listen
 			return false;
 		}
 
-		if (!accept_socket->Listen(listen_num)) {
+		if (!accept_socket->Listen()) {
 			base::LOG_ERROR("listen failed. port : %d, ip : %s ", port, ip.c_str());
 			return false;
 		}

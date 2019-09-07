@@ -47,7 +47,7 @@ int main() {
     cppnet::SetReadCallback(ReadFunc);
     cppnet::SetDisconnectionCallback(ConnectFunc);
 
-    cppnet::ListenAndAccept(8921, "0.0.0.0", 20);
+    cppnet::ListenAndAccept(8921, "0.0.0.0");
 
     cppnet::Join();
 }

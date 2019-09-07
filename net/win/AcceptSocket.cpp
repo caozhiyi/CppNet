@@ -38,8 +38,8 @@ bool CAcceptSocket::Bind(uint16_t port, const std::string& ip) {
 	return true;
 }
 
-bool CAcceptSocket::Listen(uint16_t listen_size) {
-	int ret = listen(_sock, listen_size);
+bool CAcceptSocket::Listen() {
+	int ret = listen(_sock, SOMAXCONN);
 	if (SOCKET_ERROR == ret) {
         base::LOG_FATAL("win32 listen socket filed! errno : %d", GetLastError());
 		WSACleanup();
