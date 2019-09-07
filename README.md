@@ -17,7 +17,12 @@ CppNet is a proactor mode and multithreaded network with C++11 on tcp.
 
 All the interface files are in [include](/include). The interface definitions for library initialization and timer are in [CppNet](/include/CppNet.h):    
 ```c++
-    void Init(int32_t thread_num, bool log = false, bool per_handl_thread = false);
+    // common
+    // init cppnet library.
+    // thread_num:       the number of running threads.
+    // log:              print log out?
+    // per_handl_thread: every thread with a epoll handle. only useful in linux.
+    void Init(int32_t thread_num, bool log = false, bool per_handl_thread = true);
     void Dealloc();
 
     // thread join
@@ -34,7 +39,7 @@ All the interface files are in [include](/include). The interface definitions fo
 
     //server
     void SetAcceptCallback(const connection_call_back& func);
-    bool ListenAndAccept(int16_t port, std::string ip, uint32_t listen_num);
+    bool ListenAndAccept(int16_t port, std::string ip);
 
     //client
     void SetConnectionCallback(const connection_call_back& func);
@@ -45,25 +50,17 @@ The interface definition for network IO are in [Socket](/include/Socket.h):
 ```c++
     // get socket ip and adress
     int16_t GetIpAddress(const Handle& handle, std::string& ip, uint16_t& port);
-    // post sync read event.
-    int16_t SyncRead(const Handle& handle);
     // post sync write event.
-    int16_t SyncWrite(const Handle& handle, const char* src, int32_t len);
-
-    // post sync read event with time out
-    int16_t SyncRead(const Handle& handle, int32_t interval);
-    // post sync write event with time out
-    int16_t SyncWrite(const Handle& handle, int32_t interval, const char* src, int32_t len);
-
+    int16_t Write(const Handle& handle, const char* src, int32_t len);
     // post a sync task to io thread
     int16_t PostTask(std::function<void(void)>& func);
 #ifndef __linux__
     // sync connection. 
-    int16_t SyncConnection(const std::string& ip, int16_t port, const char* buf, int32_t buf_len);
+    int16_t Connection(const std::string& ip, int16_t port, const char* buf, int32_t buf_len);
 #endif
-    int16_t SyncConnection(const std::string& ip, int16_t port);
+    int16_t Connection(const std::string& ip, int16_t port);
 
-    int16_t SyncDisconnection(const Handle& handle);
+    int16_t Disconnection(const Handle& handle);
 
     int16_t Close(const Handle& handle);
 ```

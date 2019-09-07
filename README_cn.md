@@ -16,7 +16,12 @@ CppNet是一个封装在Tcp协议上的Proactor模式multi-thread C++11网络库
 
 所有的接口文件都在 [include](/include) 中，其中关于库初始化和定时器的接口定义在 [CppNet](/include/CppNet.h) 中：   
 ```c++
-    void Init(int32_t thread_num, bool log = false, bool per_handl_thread = false);
+    // common
+    // init cppnet library.
+    // thread_num:       the number of running threads.
+    // log:              print log out?
+    // per_handl_thread: every thread with a epoll handle. only useful in linux.
+    void Init(int32_t thread_num, bool log = false, bool per_handl_thread = true);
     void Dealloc();
 
     // thread join
@@ -33,7 +38,7 @@ CppNet是一个封装在Tcp协议上的Proactor模式multi-thread C++11网络库
 
     //server
     void SetAcceptCallback(const connection_call_back& func);
-    bool ListenAndAccept(int16_t port, std::string ip, uint32_t listen_num);
+    bool ListenAndAccept(int16_t port, std::string ip);
 
     //client
     void SetConnectionCallback(const connection_call_back& func);
@@ -44,25 +49,17 @@ CppNet是一个封装在Tcp协议上的Proactor模式multi-thread C++11网络库
 ```c++
     // get socket ip and adress
     int16_t GetIpAddress(const Handle& handle, std::string& ip, uint16_t& port);
-    // post sync read event.
-    int16_t SyncRead(const Handle& handle);
     // post sync write event.
-    int16_t SyncWrite(const Handle& handle, const char* src, int32_t len);
-
-    // post sync read event with time out
-    int16_t SyncRead(const Handle& handle, int32_t interval);
-    // post sync write event with time out
-    int16_t SyncWrite(const Handle& handle, int32_t interval, const char* src, int32_t len);
-
+    int16_t Write(const Handle& handle, const char* src, int32_t len);
     // post a sync task to io thread
     int16_t PostTask(std::function<void(void)>& func);
 #ifndef __linux__
     // sync connection. 
-    int16_t SyncConnection(const std::string& ip, int16_t port, const char* buf, int32_t buf_len);
+    int16_t Connection(const std::string& ip, int16_t port, const char* buf, int32_t buf_len);
 #endif
-    int16_t SyncConnection(const std::string& ip, int16_t port);
+    int16_t Connection(const std::string& ip, int16_t port);
 
-    int16_t SyncDisconnection(const Handle& handle);
+    int16_t Disconnection(const Handle& handle);
 
     int16_t Close(const Handle& handle);
 ```

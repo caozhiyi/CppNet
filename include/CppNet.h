@@ -6,7 +6,7 @@
 
 namespace cppnet {
 
-    //common
+    // common
     // init cppnet library.
     // thread_num:       the number of running threads.
     // log:              print log out?
