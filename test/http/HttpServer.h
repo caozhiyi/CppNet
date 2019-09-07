@@ -26,7 +26,7 @@ class CHttpServer {
         void OnConnection(const cppnet::Handle& handle, uint32_t err);
 
         void OnMessage(const cppnet::Handle& handle, base::CBuffer* data, 
-                          uint32_t len, uint32_t err, bool& continue_read);
+                          uint32_t len, uint32_t err);
       
         void OnMessageSend(const cppnet::Handle& handle, uint32_t len, uint32_t err);
       

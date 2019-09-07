@@ -25,7 +25,7 @@ void CHttpServer::OnConnection(const cppnet::Handle& handle, uint32_t err) {
 }
 
 void CHttpServer::OnMessage(const cppnet::Handle& handle, base::CBuffer* data, 
-                          uint32_t len, uint32_t err, bool& continue_read) {
+                          uint32_t len, uint32_t err) {
 
     _mutex.lock();
     CHttpContext& context = _context_map[handle];

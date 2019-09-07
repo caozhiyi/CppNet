@@ -18,7 +18,7 @@ void WriteFunc(const Handle& handle, uint32_t len, uint32_t error) {
     }
 }
 
-void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t error, bool& continue_read) {
+void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t error) {
 	if (error != CEC_CLOSED && error != CEC_CONNECT_BREAK) {
         std::cout << "[ReadFunc]" << std::endl;
 	    std::cout << *(data) << std::endl;
@@ -28,7 +28,6 @@ void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t 
         auto msg = GetMsg();
 		Write(handle, msg.c_str(), msg.length());
     } else {
-        continue_read = false;
         std::cout << "Close" << std::endl;
     }
 }

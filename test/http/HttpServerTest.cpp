@@ -73,7 +73,7 @@ int main() {
     cppnet::SetAcceptCallback(std::bind(&CHttpServer::OnConnection, &server, std::placeholders::_1, std::placeholders::_2));
     cppnet::SetWriteCallback(std::bind(&CHttpServer::OnMessageSend, &server, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     cppnet::SetReadCallback(std::bind(&CHttpServer::OnMessage, &server, std::placeholders::_1, std::placeholders::_2, 
-                                              std::placeholders::_3, std::placeholders::_4, std::placeholders::_5));
+                                              std::placeholders::_3, std::placeholders::_4));
     cppnet::SetDisconnectionCallback(DisConnectionFunc);
 
     cppnet::ListenAndAccept(8921, "0.0.0.0");

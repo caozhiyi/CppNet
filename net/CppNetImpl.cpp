@@ -314,15 +314,16 @@ void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32
 			err = CEC_SUCCESS;
 		}
 		
-		bool continue_read = true;
-		_read_call_back(handle, socket_ptr->_read_event->_buffer.Get(), socket_ptr->_read_event->_off_set, err, continue_read);
+		// call read back function 
+		_read_call_back(handle, socket_ptr->_read_event->_buffer.Get(), socket_ptr->_read_event->_off_set, err);
+
 		if (err == CEC_CLOSED || err == CEC_CONNECT_BREAK) {
 			std::unique_lock<std::mutex> lock(_mutex);
 			_socket_map.erase(socket_ptr->GetSocket());
 			return;
 		}
 		// post read again
-		if (continue_read) {
+		if (_per_epoll_handle) {
 			socket_ptr->SyncRead();
 		}
 	}
