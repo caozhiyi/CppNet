@@ -5,8 +5,6 @@
 #include "EventActions.h"
 #include "MemaryPool.h"
 
-#include <iostream>
-
 const uint16_t __mem_block_size = 1024;
 const uint16_t __mem_block_add_step = 5;
 
