@@ -132,8 +132,7 @@ void CBuffer::Clear(int len) {
             if (_buffer_write->GetNext()) {
                 _buffer_write = _buffer_write->GetNext();
 
-            }
-            else {
+            } else {
                 _Reset();
             }
         }
