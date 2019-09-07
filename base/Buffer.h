@@ -69,7 +69,6 @@ struct iovec {
 		void _Reset();
     
     public:
-    	int			 _buffer_num;
     	CLoopBuffer* _buffer_read;
     	CLoopBuffer* _buffer_write;
 		CLoopBuffer* _buffer_end;

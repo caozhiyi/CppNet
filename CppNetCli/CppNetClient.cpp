@@ -70,7 +70,7 @@ int main() {
 
     auto msg = GetMsg();
 #ifndef __linux__
-    cppnet::SyncConnection("192.168.1.9", 8921, msg.c_str(), msg.length());
+    cppnet::Connection("192.168.1.9", 8921, msg.c_str(), msg.length());
 #else
     cppnet::Connection("172.21.193.122", 8921);
 #endif // !__linux__

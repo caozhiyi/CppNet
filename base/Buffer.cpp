@@ -7,7 +7,6 @@ using namespace base;
 
 CBuffer::CBuffer(std::shared_ptr<CMemoryPool>& pool) : 
 	_pool(pool), 
-	_buffer_num(0),
 	_buffer_end(nullptr),
 	_buffer_read(nullptr),
 	_buffer_write(nullptr) {
@@ -48,6 +47,7 @@ int CBuffer::Read(char* res, int len) {
 
 	std::unique_lock<std::mutex> lock(_mutex);
 	CLoopBuffer* temp = _buffer_read;
+    CLoopBuffer* del_temp = nullptr;;
 	int cur_len = 0;
 	while (temp) {
 		cur_len += temp->Read(res, len - cur_len);
@@ -55,12 +55,16 @@ int CBuffer::Read(char* res, int len) {
 			break;
 		}
 		if (temp == _buffer_write) {
-			_pool->PoolDelete<CLoopBuffer>(temp);
-			_Reset();
-			break;
+            if (_buffer_write->GetNext()) {
+                _buffer_write = _buffer_write->GetNext();
+
+            } else {
+                _Reset();
+            }
 		}
-		_pool->PoolDelete<CLoopBuffer>(temp);
+        del_temp = temp;
 		temp = temp->GetNext();
+        _pool->PoolDelete<CLoopBuffer>(del_temp);
 	}
 	_buffer_read = temp;
 	return cur_len;
@@ -75,14 +79,15 @@ int CBuffer::Write(const char* str, int len) {
 	CLoopBuffer* temp = _buffer_write;
 	int cur_len = 0;
 	while (1) {
-		if (prv_temp != nullptr) {
-			prv_temp->SetNext(temp);
-		}
 		if (temp == nullptr) {
 			temp = _pool->PoolNew<CLoopBuffer>(_pool);
             // set buffer end to net node
             _buffer_end = temp;
 		}
+        if (prv_temp != nullptr) {
+            prv_temp->SetNext(temp);
+        }
+
 		cur_len += temp->Write(str + cur_len, len - cur_len);
 
         // set buffer read to first
@@ -116,19 +121,25 @@ void CBuffer::Clear(int len) {
 	
 	std::unique_lock<std::mutex> lock(_mutex);
 	CLoopBuffer* temp = _buffer_read;
+    CLoopBuffer* del_temp = nullptr;
 	int cur_len = 0;
 	while (temp) {
 		cur_len += temp->Clear(len - cur_len);
 		if (cur_len >= len) {
 			break;
 		}
-		if (temp == _buffer_write) {
-			_pool->PoolDelete<CLoopBuffer>(temp);
-			_Reset();
-			break;
-		}
-		_pool->PoolDelete<CLoopBuffer>(temp);
-		temp = temp->GetNext();
+        if (temp == _buffer_write) {
+            if (_buffer_write->GetNext()) {
+                _buffer_write = _buffer_write->GetNext();
+
+            }
+            else {
+                _Reset();
+            }
+        }
+        del_temp = temp;
+        temp = temp->GetNext();
+        _pool->PoolDelete<CLoopBuffer>(del_temp);
 	}
 	_buffer_read = temp;
 }
@@ -139,7 +150,7 @@ int CBuffer::MoveWritePt(int len) {
 	int cur_len = 0;
 	while (temp) {
 		cur_len += temp->MoveWritePt(len - cur_len);
-        if (temp == _buffer_end) {
+        if (temp == _buffer_end || len <= cur_len) {
 			break;
 		}
 		temp = temp->GetNext();
@@ -219,12 +230,12 @@ int CBuffer::GetFreeMemoryBlock(std::vector<iovec>& block_vec, int size) {
 	if (size > 0) {
 		std::unique_lock<std::mutex> lock(_mutex);
         while (cur_len < size) {
-		    if (prv_temp != nullptr) {
-			    prv_temp->SetNext(temp);
-		    }
 		    if (temp == nullptr) {
 			    temp = _pool->PoolNew<CLoopBuffer>(_pool);
 		    }
+            if (prv_temp != nullptr) {
+                prv_temp->SetNext(temp);
+            }
 		
 		    temp->GetFreeMemoryBlock(mem_1, mem_len_1, mem_2, mem_len_2);
 		    if (mem_len_1 > 0) {
@@ -246,7 +257,7 @@ int CBuffer::GetFreeMemoryBlock(std::vector<iovec>& block_vec, int size) {
 		    prv_temp = temp;
 		    temp = temp->GetNext();
 	    }
-	    _buffer_end = temp;
+	    _buffer_end = prv_temp;
 
 	} else {
         std::unique_lock<std::mutex> lock(_mutex);
@@ -322,7 +333,6 @@ int CBuffer::FindStr(const char* s, int s_len) const {
 }
 
 void CBuffer::_Reset() {
-	_buffer_num = 0;
 	_buffer_end = nullptr;
 	_buffer_read = nullptr;
 	_buffer_write = nullptr; 
