@@ -26,7 +26,7 @@ void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t 
         // get recv data to send back.
         int size = data->ReadUntil(msg_buf, __buf_len, __buf_spilt, find_len, need_len);
 	    if (error != CEC_CLOSED && error != CEC_CONNECT_BREAK) {
-            SyncWrite(handle, msg_buf, size);
+            Write(handle, msg_buf, size);
 	    }
     }
 }

@@ -20,12 +20,6 @@ namespace cppnet {
         void SyncRead();
         // post sync write event.
         void SyncWrite(const char* src, uint32_t len);
-
-        // post sync read event with time out
-        void SyncRead(uint32_t interval);
-        // post sync write event with time out
-        void SyncWrite(uint32_t interval, const char* src, uint32_t len);
-
         // post a sync task to io thread
         void PostTask(std::function<void(void)>& func);
 #ifndef __linux__

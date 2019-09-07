@@ -111,26 +111,6 @@ void CSocketImpl::SyncDisconnection() {
 	}
 }
 
-void CSocketImpl::SyncRead(uint32_t interval) {
-
-    SyncRead();
-
-	if (_event_actions) {
-		_read_event->_event_flag_set |= EVENT_TIMER;
-		_event_actions->AddTimerEvent(interval, _read_event);
-	}
-}
-
-void CSocketImpl::SyncWrite(uint32_t interval, const char* src, uint32_t len) {
-	
-    SyncWrite(src, len);
-
-	if (_event_actions) {
-		_write_event->_event_flag_set |= EVENT_TIMER;
-		_event_actions->AddTimerEvent(interval, _write_event);
-	}
-}
-
 void CSocketImpl::PostTask(std::function<void(void)>& func) {
 	_event_actions->PostTask(func);
 }

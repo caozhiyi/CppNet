@@ -26,7 +26,7 @@ void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t 
 	    std::cout << "Thread ID : " << std::this_thread::get_id() << std::endl;
 	    std::cout << "Read size : " << len << std::endl << std::endl;
         auto msg = GetMsg();
-		SyncWrite(handle, msg.c_str(), msg.length());
+		Write(handle, msg.c_str(), msg.length());
     } else {
         continue_read = false;
         std::cout << "Close" << std::endl;

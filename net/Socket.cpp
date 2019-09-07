@@ -11,37 +11,10 @@ int16_t cppnet::GetIpAddress(const Handle& handle, std::string& ip, uint16_t& po
         return cppnet::CEC_INVALID_HANDLE;
 }
 
-int16_t cppnet::SyncRead(const Handle& handle) {
-    auto socket = CCppNetImpl::Instance().GetSocket(handle);
-    if (socket) {
-        socket->SyncRead();
-        return cppnet::CEC_SUCCESS;
-    }
-    return cppnet::CEC_INVALID_HANDLE;
-}
-
-int16_t cppnet::SyncWrite(const Handle& handle, const char* src, int32_t len) {
+int16_t cppnet::Write(const Handle& handle, const char* src, int32_t len) {
     auto socket = CCppNetImpl::Instance().GetSocket(handle);
     if (socket) {
         socket->SyncWrite(src, len);
-        return cppnet::CEC_SUCCESS;
-    }
-    return cppnet::CEC_INVALID_HANDLE;
-}
-
-int16_t cppnet::SyncRead(const Handle& handle, int32_t interval) {
-    auto socket = CCppNetImpl::Instance().GetSocket(handle);
-    if (socket) {
-        socket->SyncRead(interval);
-        return cppnet::CEC_SUCCESS;
-    }
-    return cppnet::CEC_INVALID_HANDLE;
-}
-
-int16_t cppnet::SyncWrite(const Handle& handle, int32_t interval, const char* src, int32_t len) {
-    auto socket = CCppNetImpl::Instance().GetSocket(handle);
-    if (socket) {
-        socket->SyncRead(interval);
         return cppnet::CEC_SUCCESS;
     }
     return cppnet::CEC_INVALID_HANDLE;
@@ -53,7 +26,7 @@ int16_t cppnet::PostTask(std::function<void(void)>& func) {
 
 #ifndef __linux__
 // sync connection. 
-int16_t cppnet::SyncConnection(const std::string& ip, int16_t port, const char* buf, int32_t buf_len) {
+int16_t cppnet::Connection(const std::string& ip, int16_t port, const char* buf, int32_t buf_len) {
     if (CCppNetImpl::Instance().Connection(port, ip, buf, buf_len)) {
         return cppnet::CEC_SUCCESS;
     }
@@ -61,7 +34,7 @@ int16_t cppnet::SyncConnection(const std::string& ip, int16_t port, const char* 
 }
 
 #endif
-int16_t cppnet::SyncConnection(const std::string& ip, int16_t port) {
+int16_t cppnet::Connection(const std::string& ip, int16_t port) {
     if (CCppNetImpl::Instance().Connection(port, ip)) {
         return cppnet::CEC_SUCCESS;
     }
@@ -69,7 +42,7 @@ int16_t cppnet::SyncConnection(const std::string& ip, int16_t port) {
 }
 
 
-int16_t cppnet::SyncDisconnection(const Handle& handle)  {
+int16_t cppnet::Disconnection(const Handle& handle)  {
     auto socket = CCppNetImpl::Instance().GetSocket(handle);
     if (socket) {
         socket->SyncDisconnection();

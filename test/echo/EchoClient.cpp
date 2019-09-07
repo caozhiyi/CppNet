@@ -36,7 +36,6 @@ void ConnectFunc(const Handle& handle, uint32_t error) {
         std::cout << "something err while connect : " << error << std::endl;
     } else {
         handle_vec.push_back(handle);
-        cppnet::SyncRead(handle);
     }
 }
 
@@ -59,9 +58,9 @@ int main() {
     for (size_t i = 0; i < 10000; i++) {
 #ifndef __linux__
         std::string msg = GetMsg();
-        cppnet::SyncConnection("192.168.1.9", 8921, msg.c_str(), msg.length());
+        cppnet::Connection("192.168.1.9", 8921, msg.c_str(), msg.length());
 #else
-        cppnet::SyncConnection("192.168.233.128", 8921);
+        cppnet::Connection("192.168.233.128", 8921);
 #endif // !__linux__
     }
 
@@ -73,7 +72,7 @@ int main() {
         for (auto iter = handle_vec.begin(); iter != handle_vec.end(); ++iter) {
             base::CRunnable::Sleep(1);
             std::string msg = GetMsg();
-            cppnet::SyncWrite(*iter, msg.c_str(), msg.length());
+            cppnet::Write(*iter, msg.c_str(), msg.length());
         }
     }
     

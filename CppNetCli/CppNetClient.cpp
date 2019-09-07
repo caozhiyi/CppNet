@@ -28,7 +28,7 @@ void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t 
 	    std::cout << "Read size : " << len << std::endl << std::endl;
         base::CRunnable::Sleep(1000);
         auto msg = GetMsg();
-		SyncWrite(handle, msg.c_str(), msg.length());
+		Write(handle, msg.c_str(), msg.length());
     } else {
         continue_read = false;
         std::cout << "Close" << std::endl;
@@ -39,8 +39,7 @@ void ConnectFunc(const Handle& handle, uint32_t err) {
     if (err == CEC_SUCCESS) {
         std::cout << "[ConnectFunc]" << std::endl;
         auto msg = GetMsg();
-        SyncWrite(handle, msg.c_str(), msg.length());
-        SyncRead(handle);
+        Write(handle, msg.c_str(), msg.length());
 
     } else {
         std::cout << "[ConnectFunc] some thing error : " << err << std::endl;
@@ -64,7 +63,7 @@ int main() {
 #ifndef __linux__
     cppnet::SyncConnection("192.168.1.9", 8921, msg.c_str(), msg.length());
 #else
-    cppnet::SyncConnection("192.168.233.128", 8921);
+    cppnet::Connection("192.168.233.128", 8921);
 #endif // !__linux__
 
     cppnet::Join();

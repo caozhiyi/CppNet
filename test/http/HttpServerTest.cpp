@@ -11,7 +11,7 @@ bool benchmark = true;
 
 std::string GetFile();
 void OnRequest(const CHttpRequest& req, CHttpResponse& resp) {
-    std::cout << "Headers " << req.GetMethodString() << " " << req.GetPath() << std::endl;
+    //std::cout << "Headers " << req.GetMethodString() << " " << req.GetPath() << std::endl;
     if (!benchmark) {
         const std::map<std::string, std::string>& headers = req.GetHeaders();
         for (const auto& header : headers) {
@@ -65,7 +65,7 @@ void DisConnectionFunc(const cppnet::Handle& handle, uint32_t err) {
 }
 
 int main() {
-    cppnet::Init(2, true);
+    cppnet::Init(2);
 
     CHttpServer server;
     server.SetHttpCallback(OnRequest);
