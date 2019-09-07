@@ -207,7 +207,6 @@ bool CEpoll::AddDisconnection(base::CMemSharePtr<CEventHandler>& event) {
 	auto socket_ptr = event->_client_socket.Lock();
 	if (socket_ptr) {
 		if (DelEvent(event)) {
-			close(socket_ptr->GetSocket());
 			socket_ptr->_Recv(socket_ptr->_read_event);
 		}
 	}

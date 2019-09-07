@@ -41,18 +41,10 @@ int16_t cppnet::Connection(const std::string& ip, int16_t port) {
     return cppnet::CEC_FAILED;
 }
 
-
-int16_t cppnet::Disconnection(const Handle& handle)  {
+int16_t cppnet::Close(const Handle& handle) {
     auto socket = CCppNetImpl::Instance().GetSocket(handle);
     if (socket) {
         socket->SyncDisconnection();
-        return cppnet::CEC_SUCCESS;
-    }
-    return cppnet::CEC_INVALID_HANDLE;
-}
-
-int16_t cppnet::Close(const Handle& handle) {
-    if (CCppNetImpl::Instance().RemoveSocket(handle)) {
         return cppnet::CEC_SUCCESS;
     }
     return cppnet::CEC_INVALID_HANDLE;

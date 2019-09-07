@@ -59,8 +59,6 @@ CppNet是一个封装在Tcp协议上的Proactor模式multi-thread C++11网络库
 #endif
     int16_t Connection(const std::string& ip, int16_t port);
 
-    int16_t Disconnection(const Handle& handle);
-
     int16_t Close(const Handle& handle);
 ```
 接口的作用通过声明和注释即可明了。需要关注的是接口返回的错误码，与回调函数的声明一起定义在[CppDefine](/include/CppDefine.h)中：

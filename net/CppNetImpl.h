@@ -39,7 +39,7 @@ namespace cppnet {
 
         //server
         void SetAcceptCallback(const connection_call_back& func);
-        bool ListenAndAccept(uint16_t port, std::string ip);
+        bool ListenAndAccept(const std::string& ip, uint16_t port);
 
         //client
         void SetConnectionCallback(const connection_call_back& func);

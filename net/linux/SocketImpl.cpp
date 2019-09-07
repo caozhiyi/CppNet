@@ -12,8 +12,6 @@
 #include "LinuxFunc.h"
 #include "CppNetImpl.h"
 
-#include <iostream>
-
 using namespace cppnet;
 
 CSocketImpl::CSocketImpl(std::shared_ptr<CEventActions>& event_actions) : CSocketBase(event_actions){
@@ -30,14 +28,9 @@ CSocketImpl::CSocketImpl(std::shared_ptr<CEventActions>& event_actions) : CSocke
 }
 
 CSocketImpl::~CSocketImpl() {
-    base::LOG_DEBUG("delete from epoll, socket : %d, TheadId : %lld", _sock, std::this_thread::get_id());
-	//delete from epoll
-	if (_event_actions) {
-		if (_event_actions->DelEvent(_sock)) {
-			close(_sock);
-		}
-	}
-    // remove from epoll
+    base::LOG_DEBUG("close a socket, socket : %d, TheadId : %lld", _sock, std::this_thread::get_id());
+
+    // release res
 	if (_read_event && _read_event->_data) {
 		epoll_event* temp = (epoll_event*)_read_event->_data;
 		_pool->PoolDelete<epoll_event>(temp);

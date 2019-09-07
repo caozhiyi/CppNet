@@ -34,7 +34,10 @@ void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t 
 
 void ConnectFunc(const Handle& handle, uint32_t err) {
     if (err == CEC_SUCCESS) {
-        std::cout << "[ConnectFunc]" << std::endl;
+        std::string ip;
+        uint16_t port;
+        GetIpAddress(handle, ip, port);
+        std::cout << "[ConnectFunc] : ip : " << ip << "port : " << port << std::endl;
 
     } else {
         std::cout << "[ConnectFunc] some thing error : " << err << std::endl;
@@ -50,7 +53,7 @@ int main() {
     cppnet::SetReadCallback(ReadFunc);
     cppnet::SetDisconnectionCallback(ConnectFunc);
 
-    cppnet::ListenAndAccept(8921, "0.0.0.0");
+    cppnet::ListenAndAccept("0.0.0.0", 8921);
 
     cppnet::Join();
 }

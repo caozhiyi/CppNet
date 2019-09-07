@@ -60,8 +60,6 @@ The interface definition for network IO are in [Socket](/include/Socket.h):
 #endif
     int16_t Connection(const std::string& ip, int16_t port);
 
-    int16_t Disconnection(const Handle& handle);
-
     int16_t Close(const Handle& handle);
 ```
 The function of the interface is evident through declarations and annotations. Attention should be paid to the error code returned by the interface, defined in [CppDefine](/include/CppDefine.h):    

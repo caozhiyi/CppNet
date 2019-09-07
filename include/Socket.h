@@ -18,8 +18,6 @@ namespace cppnet {
 #endif
     int16_t Connection(const std::string& ip, int16_t port);
 
-    int16_t Disconnection(const Handle& handle);
-
     int16_t Close(const Handle& handle);
 }
 
