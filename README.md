@@ -82,7 +82,7 @@ Simple use examples can be seen [CppNetServer](/CppNetSev/CppNetServer.cpp) and 
 Other simples are in [test](/test). [echo](/test/echo): The test program of echo with 10000 connection. [http](/test/http): A simple HTTP server is implemented with reference to muduo.
 ## Efficiency
 Only use apache ab test HTTP echo，comparison with Muduo. The command executed is：ab -kc[1-2000] -n100000 http://127.0.0.1:8000/hello.
-<p align="left"><img width="877" src="./doc/image/mudo_vs_cppnet.png" alt="mudo vs cppnet"></p>
+<p align="left"><img width="896" src="./doc/image/mudo_vs_cppnet.png" alt="mudo vs cppnet"></p>
 
 ## Build(Windows)
 
