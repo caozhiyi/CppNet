@@ -81,7 +81,7 @@ CppNet是一个封装在Tcp协议上的Proactor模式multi-thread C++11网络库
 其他示例在 [test](/test) 目录下，[echo](/test/echo)实现了10000连接量的echo的测试程序，[http](/test/http)参照muduo实现了一个简单的http服务器。
 ## 效率
 目前只用ab做了http echo测试，与muduo做了对比，执行的命令为：ab -kc[1-2000] -n100000 http://127.0.0.1:8000/hello.
-<p align="left"><img width="896" src="./doc/image/mudo_vs_cppnet.png" alt="mudo vs cppnet"></p>
+<p align="left"><img width="896" src="./doc/image/muduo_vs_cppnet.png" alt="mudo vs cppnet"></p>
 
 
 ## 编译(Windows)
