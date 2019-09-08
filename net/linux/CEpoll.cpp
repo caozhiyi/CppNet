@@ -14,7 +14,7 @@
 #include "LinuxFunc.h"
 
 using namespace cppnet;
-            
+ 
 // check socket connect
 bool CheckConnect(const uint64_t& sock) {
     struct pollfd fd;
@@ -132,10 +132,10 @@ bool CEpoll::AddRecvEvent(base::CMemSharePtr<CEventHandler>& event) {
         //if not add to epoll
         if (!(content->events & EPOLLIN)) {
             if (socket_ptr->IsInActions()) {
-                res = _ModifyEvent(event, EPOLLIN, socket_ptr->GetSocket());
+                res = _ModifyEvent(event, EPOLLIN|EPOLLRDHUP, socket_ptr->GetSocket());
 
             } else {
-                res = _AddEvent(event, EPOLLIN, socket_ptr->GetSocket());
+                res = _AddEvent(event, EPOLLIN|EPOLLRDHUP, socket_ptr->GetSocket());
             }
         }
 
@@ -174,7 +174,6 @@ bool CEpoll::AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::
         if (socket_ptr->IsInActions()) {
             return false;
         }
-        socket_ptr->SetInActions(true);
 
         struct sockaddr_in addr;
         addr.sin_family = AF_INET;
@@ -224,6 +223,7 @@ bool CEpoll::DelEvent(base::CMemSharePtr<CEventHandler>& event) {
         base::LOG_ERROR("remove event from epoll faild! error :%d, socket : %d", errno, socket_ptr->GetSocket());
         return false;
     }
+    socket_ptr->SetInActions(false);
     base::LOG_DEBUG("del a socket from epoll, %d", socket_ptr->GetSocket());
     return true;
 }
@@ -330,7 +330,7 @@ bool CEpoll::_AddEvent(base::CMemSharePtr<CAcceptEventHandler>& event, int32_t e
 
 bool CEpoll::_ModifyEvent(base::CMemSharePtr<CEventHandler>& event, int32_t event_flag, uint64_t sock) {
     epoll_event* content = (epoll_event*)event->_data;
-    content->events |= event_flag;
+    content->events |= event_flag|EPOLLET;
     content->data.ptr = (void*)&event->_client_socket;
     int res = epoll_ctl(_epoll_handler, EPOLL_CTL_MOD, sock, content);
     if (res == -1) {
@@ -429,6 +429,10 @@ void CEpoll::_DoEvent(std::vector<epoll_event>& event_vec, int num) {
                 continue;
             }
             if (event_vec[i].events & EPOLLIN) {
+                // close
+                if (event_vec[i].events & EPOLLRDHUP) {
+                    socket_ptr->_read_event->_event_flag_set |= EVENT_DISCONNECT;
+                }
                 socket_ptr->_Recv(socket_ptr->_read_event);
             } 
             if (event_vec[i].events & EPOLLOUT) {

@@ -30,6 +30,10 @@ CSocketImpl::CSocketImpl(std::shared_ptr<CEventActions>& event_actions) : CSocke
 CSocketImpl::~CSocketImpl() {
     base::LOG_DEBUG("close a socket, socket : %d, TheadId : %lld", _sock, std::this_thread::get_id());
 
+    if (IsInActions()) {
+        _event_actions->DelEvent(_sock);
+    }
+    
     // release res
     if (_read_event && _read_event->_data) {
         epoll_event* temp = (epoll_event*)_read_event->_data;

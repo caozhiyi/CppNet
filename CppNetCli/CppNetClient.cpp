@@ -56,7 +56,7 @@ void ConnectFunc(const Handle& handle, uint32_t err) {
 }
 
 void DisConnectionFunc(const Handle& handle, uint32_t err) {
-    std::cout << " [DisConnectionFunc]" << std::endl;
+    std::cout << " [DisConnectionFunc] ：" << handle << std::endl;
 }
 
 int main() {
@@ -72,7 +72,7 @@ int main() {
 #ifndef __linux__
     cppnet::Connection("192.168.1.9", 8921, msg.c_str(), msg.length());
 #else
-    cppnet::Connection("172.21.193.122", 8921);
+    cppnet::Connection("192.168.233.128", 8921);
 #endif // !__linux__
 
     cppnet::Join();

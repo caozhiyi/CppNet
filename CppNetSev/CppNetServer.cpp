@@ -44,6 +44,10 @@ void ConnectFunc(const Handle& handle, uint32_t err) {
     }
 }
 
+void DisConnectionFunc(const Handle& handle, uint32_t err) {
+    std::cout << " [DisConnectionFunc] ：" << handle << std::endl;
+}
+
 int main() {
 
     cppnet::Init(1, true);
@@ -51,7 +55,7 @@ int main() {
     cppnet::SetAcceptCallback(ConnectFunc);
     cppnet::SetWriteCallback(WriteFunc);
     cppnet::SetReadCallback(ReadFunc);
-    cppnet::SetDisconnectionCallback(ConnectFunc);
+    cppnet::SetDisconnectionCallback(DisConnectionFunc);
 
     cppnet::ListenAndAccept("0.0.0.0", 8921);
 
