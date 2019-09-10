@@ -155,10 +155,13 @@ void CSocketImpl::_Recv(base::CMemSharePtr<CEventHandler>& event) {
             event->_off_set = 0;
             //read all data.
             int expand_buff_len = 4096;
-            for (int i = 0;;i++) {
-                if (event->_buffer->GetFreeLength() != 0) {
-                    expand_buff_len *= i;
+            for (;;) {
+                int expand = 0;
+                if (event->_buffer->GetFreeLength() == 0) {
+                    expand = expand_buff_len;
+                    expand_buff_len *= 2;
                 }
+
                 std::vector<base::iovec> io_vec;
                 int buff_len = event->_buffer->GetFreeMemoryBlock(io_vec, expand_buff_len);
                 
@@ -220,10 +223,6 @@ void CSocketImpl::_Send(base::CMemSharePtr<CEventHandler>& event) {
             if (res >= 0) {
                 event->_buffer->Clear(res);
                 event->_off_set += res;
-                // all sended
-                if (res == data_len) {
-                    break;
-                }
 
             } else {
                 if (errno == EWOULDBLOCK || errno == EAGAIN || errno == EINTR) {
@@ -235,10 +234,12 @@ void CSocketImpl::_Send(base::CMemSharePtr<CEventHandler>& event) {
                 } else if (errno == EBADMSG) {
                     err |= ERR_CONNECT_BREAK;
                     base::LOG_ERROR("send filed! %d", errno);
+                    break;
 
                 } else {
                     err |= ERR_CONNECT_CLOSE;
                     base::LOG_ERROR("send filed! %d", errno);
+                    break;
                 }
             }
         }

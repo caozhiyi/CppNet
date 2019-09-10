@@ -9,7 +9,8 @@ CBuffer::CBuffer(std::shared_ptr<CMemoryPool>& pool) :
     _pool(pool), 
     _buffer_end(nullptr),
     _buffer_read(nullptr),
-    _buffer_write(nullptr) {
+    _buffer_write(nullptr),
+    _buff_count(0) {
 
 }
 
@@ -65,6 +66,7 @@ int CBuffer::Read(char* res, int len) {
         del_temp = temp;
         temp = temp->GetNext();
         _pool->PoolDelete<CLoopBuffer>(del_temp);
+        _buff_count--;
     }
     _buffer_read = temp;
     return cur_len;
@@ -81,6 +83,7 @@ int CBuffer::Write(const char* str, int len) {
     while (1) {
         if (temp == nullptr) {
             temp = _pool->PoolNew<CLoopBuffer>(_pool);
+            _buff_count++;
             // set buffer end to net node
             _buffer_end = temp;
         }
@@ -114,6 +117,7 @@ void CBuffer::Clear(int len) {
             cur = temp;
             temp = temp->GetNext();
             _pool->PoolDelete<CLoopBuffer>(cur);
+            _buff_count--;
         }
         _Reset();
         return;
@@ -139,6 +143,7 @@ void CBuffer::Clear(int len) {
         del_temp = temp;
         temp = temp->GetNext();
         _pool->PoolDelete<CLoopBuffer>(del_temp);
+        _buff_count--;
     }
     _buffer_read = temp;
 }
@@ -231,6 +236,7 @@ int CBuffer::GetFreeMemoryBlock(std::vector<iovec>& block_vec, int size) {
         while (cur_len < size) {
             if (temp == nullptr) {
                 temp = _pool->PoolNew<CLoopBuffer>(_pool);
+                _buff_count++;
             }
             if (prv_temp != nullptr) {
                 prv_temp->SetNext(temp);
@@ -279,7 +285,7 @@ int CBuffer::GetFreeMemoryBlock(std::vector<iovec>& block_vec, int size) {
     return cur_len;
 }
 
-int CBuffer::GetUseMemoryBlock(std::vector<iovec>& block_vec) {
+int CBuffer::GetUseMemoryBlock(std::vector<iovec>& block_vec, int max_size) {
     void* mem_1 = nullptr;
     void* mem_2 = nullptr;
     int mem_len_1 = 0;
@@ -299,6 +305,9 @@ int CBuffer::GetUseMemoryBlock(std::vector<iovec>& block_vec) {
             cur_len += mem_len_2;
         }
         if (temp == _buffer_write) {
+            break;
+        }
+        if (cur_len >= max_size) {
             break;
         }
         temp = temp->GetNext();

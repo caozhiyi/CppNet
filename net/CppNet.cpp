@@ -21,10 +21,10 @@ void cppnet::Dealloc() {
 }
 
 void cppnet::Join() {
+    cppnet::CCppNetImpl::Instance().Join();
     if (!base::CLog::Instance().GetStop()) {
         base::CLog::Instance().Join();
     }
-    cppnet::CCppNetImpl::Instance().Join();
 }
 
 void cppnet::SetReadCallback(const read_call_back& func) {

@@ -21,7 +21,7 @@ using namespace cppnet;
 const uint16_t __mem_block_size = 1024;
 const uint16_t __mem_block_add_step = 5;
 
-CCppNetImpl::CCppNetImpl() : _per_epoll_handle(true), _pool(__mem_block_size, __mem_block_add_step) {
+CCppNetImpl::CCppNetImpl() : _per_epoll_handle(true), _pool(__mem_block_size, __mem_block_add_step), _is_join(false) {
 
 }
 
@@ -83,13 +83,16 @@ void CCppNetImpl::Dealloc() {
     for (auto iter = _actions_map.begin(); iter != _actions_map.end(); ++iter) {
         iter->second->Dealloc();
     }
-    Join();
+    if (!_is_join) {
+        Join();
+    }
 #ifndef __linux__
     DeallocSocket();
 #endif // __linux__
 }
 
 void CCppNetImpl::Join() {
+    _is_join = true;
     for (size_t i = 0; i < _thread_vec.size(); ++i) {
         if (_thread_vec[i]) {
             _thread_vec[i]->join();
@@ -186,7 +189,7 @@ Handle CCppNetImpl::Connection(uint16_t port, std::string ip, const char* buf, u
         base::LOG_ERROR("connection call back function is null!, port : %d, ip : %s ", port, ip.c_str());
         return 0;
     }
-    if (!_write_call_back) {
+    if (!_read_call_back) {
         base::LOG_ERROR("read call back function is null!, port : %d, ip : %s ", port, ip.c_str());
         return 0;
     }
@@ -206,7 +209,7 @@ Handle CCppNetImpl::Connection(uint16_t port, std::string ip) {
         base::LOG_ERROR("connection call back function is null!, port : %d, ip : %s ", port, ip.c_str());
         return 0;
     }
-    if (!_write_call_back) {
+    if (!_read_call_back) {
         base::LOG_ERROR("read call back function is null!, port : %d, ip : %s ", port, ip.c_str());
         return 0;
     }

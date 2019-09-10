@@ -28,6 +28,9 @@ int CLoopBuffer::ReadNotClear(char* res, int len) {
 }
 
 int CLoopBuffer::Read(char* res, int len) {
+    if (res == nullptr) {
+        return 0;
+    }
     return _Read(res, len, true);
 }
 
@@ -367,17 +370,17 @@ int CLoopBuffer::_Write(const char* str, int len, bool write) {
                     memcpy(_buffer_start, str + size_end, left);
                 }
                 _write = _buffer_start + left;
-                if (_buffer_start + left == _read) {
+                if (_write == _read) {
                     _can_read = true;
                 }
                 return len;
 
             } else {
                 auto can_save = _read - _buffer_start;
-                if (can_save && write) {
+                if (can_save > 0 && write) {
                     memcpy(_buffer_start, str + size_end, can_save);
                 }
-                _write = _read;
+                _read = _write;
                 _can_read = true;
                 return  (int)(can_save + size_end);
             }
@@ -390,6 +393,9 @@ int CLoopBuffer::_Write(const char* str, int len, bool write) {
                 memcpy(_write, str, len);
             }
             _write += len;
+            if (_write == _read) {
+                _can_read = true;
+            }
             return len;
 
         } else {
@@ -408,6 +414,8 @@ int CLoopBuffer::_Write(const char* str, int len, bool write) {
             return 0;
 
         } else {
+            // reset
+            _read = _write = _buffer_start;
             int size = _total_size;
             if (size <= len) {
                 if (write) {
@@ -415,6 +423,7 @@ int CLoopBuffer::_Write(const char* str, int len, bool write) {
                 }
                 _can_read = true;
                 return size;
+
             } else {
                 if (write) {
                     memcpy(_write, str, len);

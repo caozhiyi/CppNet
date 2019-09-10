@@ -58,7 +58,7 @@ struct iovec {
         // get use memory block, 
         // block_vec: memory block vector.
         // return size of use memory. 
-        int GetUseMemoryBlock(std::vector<iovec>& block_vec);
+        int GetUseMemoryBlock(std::vector<iovec>& block_vec, int max_size = 4096);
 
         // return can read bytes
         int FindStr(const char* s, int s_len) const;
@@ -69,6 +69,7 @@ struct iovec {
         void _Reset();
     
     public:
+        int          _buff_count;
         CLoopBuffer* _buffer_read;
         CLoopBuffer* _buffer_write;
         CLoopBuffer* _buffer_end;
