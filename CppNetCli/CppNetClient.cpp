@@ -56,7 +56,7 @@ void ConnectFunc(const Handle& handle, uint32_t err) {
 }
 
 void DisConnectionFunc(const Handle& handle, uint32_t err) {
-    std::cout << " [DisConnectionFunc] ：" << handle << std::endl;
+    std::cout << " [DisConnectionFunc] : " << err << std::endl;
 }
 
 int main() {

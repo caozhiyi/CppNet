@@ -169,6 +169,10 @@ bool CCppNetImpl::ListenAndAccept(const std::string& ip, uint16_t port) {
         if (!__per_handle_thread) {
             break;
         }
+#ifndef __linux__
+        // only iocp handle on windows.
+        break;
+#endif
     }
     return true;
 }
