@@ -19,6 +19,9 @@ void cppnet::Init(int32_t thread_num) {
 
 void cppnet::Dealloc() {
     cppnet::CCppNetImpl::Instance().Dealloc();
+    if (!base::CLog::Instance().GetStop()) {
+        base::CLog::Instance().Stop();
+    }
 }
 
 void cppnet::Join() {
