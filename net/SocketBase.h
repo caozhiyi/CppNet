@@ -2,8 +2,7 @@
 #define HEADER_NET_CSOCKETBASE
 
 #include <memory>
-
-static const int __addr_str_len = 16;
+#include "CNConfig.h"
 
 #ifndef __linux__
 bool InitScoket();

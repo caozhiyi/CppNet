@@ -53,7 +53,6 @@ namespace cppnet {
     class CAcceptEventHandler : public Cevent {
     public:
         base::CMemSharePtr<CSocketImpl>      _client_socket;
-
         base::CMemSharePtr<CAcceptSocket>    _accept_socket = nullptr;
     };
 }

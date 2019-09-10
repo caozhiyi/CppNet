@@ -1,5 +1,5 @@
 #include <assert.h>
-#include "MemaryPool.h"
+#include "MemoryPool.h"
 #include "Log.h"
 
 using namespace base;
@@ -109,8 +109,8 @@ void* CMemoryPool::ChunkAlloc(int size, int& nums) {
     _pool_start = (char*)malloc(bytes_to_get);
     //malloc failed
     if (0 == _pool_start) {
-        throw std::exception(std::logic_error("There memary is not enough!"));
-        //cout << "There memary is not enough!" << endl;
+        throw std::exception(std::logic_error("There memory is not enough!"));
+        //cout << "There memory is not enough!" << endl;
         return nullptr;
     }
 

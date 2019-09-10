@@ -3,14 +3,13 @@
 #include "SocketBase.h"
 #include "WinExpendFunc.h"
 #include "Log.h"
+#include "CNConfig.h"
+
 using namespace cppnet;
 LPFN_ACCEPTEX                cppnet::__AcceptEx          = nullptr;
 LPFN_CONNECTEX               cppnet::__ConnectEx         = nullptr;
 LPFN_GETACCEPTEXSOCKADDRS    cppnet::__AcceptExScokAddrs = nullptr;
 LPFN_DISCONNECTEX            cppnet::__DisconnectionEx   = nullptr;
-
-const uint16_t __mem_block_size = 1024;
-const uint16_t __mem_block_add_step = 5;
 
 static void* _GetExFunctnion(uint64_t& socket, const GUID& which) {
     void* func = nullptr;

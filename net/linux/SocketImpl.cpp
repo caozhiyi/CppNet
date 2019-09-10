@@ -11,6 +11,7 @@
 #include "Runnable.h"
 #include "LinuxFunc.h"
 #include "CppNetImpl.h"
+#include "CNConfig.h"
 
 using namespace cppnet;
 
@@ -154,7 +155,7 @@ void CSocketImpl::_Recv(base::CMemSharePtr<CEventHandler>& event) {
         if (event->_event_flag_set & EVENT_READ) {
             event->_off_set = 0;
             //read all data.
-            int expand_buff_len = 4096;
+            int expand_buff_len = __linux_read_buff_expand_len_;
             for (;;) {
                 int expand = 0;
                 if (event->_buffer->GetFreeLength() == 0) {
@@ -218,7 +219,7 @@ void CSocketImpl::_Send(base::CMemSharePtr<CEventHandler>& event) {
         event->_off_set = 0;
         while(event->_buffer && event->_buffer->GetCanReadLength() > 0) {
             std::vector<base::iovec> io_vec;
-            int data_len = event->_buffer->GetUseMemoryBlock(io_vec);
+            int data_len = event->_buffer->GetUseMemoryBlock(io_vec, __linux_write_buff_get);
             int res = writev(socket_ptr->GetSocket(), (iovec*)&*io_vec.begin(), io_vec.size());
             if (res >= 0) {
                 event->_buffer->Clear(res);

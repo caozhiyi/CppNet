@@ -255,7 +255,7 @@ bool CIOCP::_PostSend(base::CMemSharePtr<CEventHandler>& event) {
 
     context->Clear();
     context->_event_flag_set = event->_event_flag_set;
-    context->_wsa_buf.len = event->_buffer->Read(context->_lapped_buffer, MAX_BUFFER_LEN);
+    context->_wsa_buf.len = event->_buffer->Read(context->_lapped_buffer, __iocp_buff_size);
     
     OVERLAPPED *lapped = &context->_overlapped;
     auto socket_ptr = event->_client_socket.Lock();

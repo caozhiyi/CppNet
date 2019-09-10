@@ -1,5 +1,5 @@
-#ifndef HEADER_BASE_MMEMARYPOOL
-#define HEADER_BASE_MMEMARYPOOL
+#ifndef HEADER_BASE_MMEMORYPOOL
+#define HEADER_BASE_MMEMORYPOOL
 
 #include <new>
 #include <functional>
@@ -10,7 +10,7 @@
 #include <cstring>        //for memset
 #include <stdexcept>      //for logic_error
 
-#include "BlockMemaryPool.h"
+#include "BlockMemoryPool.h"
 
 namespace base {
 

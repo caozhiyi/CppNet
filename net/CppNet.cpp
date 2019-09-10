@@ -1,19 +1,20 @@
 #include "CppNet.h"
 #include "PoolSharedPtr.h"
 #include "EventHandler.h"
-#include "MemaryPool.h"
+#include "MemoryPool.h"
 #include "Timer.h"
 #include "CppNetImpl.h"
 #include "Log.h"
+#include "CNConfig.h"
 
-void cppnet::Init(int32_t thread_num, bool log, bool per_handl_thread) {
-    if (log) {
-        base::CLog::Instance().SetLogLevel(base::LOG_DEBUG_LEVEL);
-        base::CLog::Instance().SetLogName("CppNet.txt");
+void cppnet::Init(int32_t thread_num) {
+    if (__open_log) {
+        base::CLog::Instance().SetLogLevel(__log_level);
+        base::CLog::Instance().SetLogName(__log_file_name);
         base::CLog::Instance().Start();
     }
     
-    cppnet::CCppNetImpl::Instance().Init(thread_num, per_handl_thread);
+    cppnet::CCppNetImpl::Instance().Init(thread_num);
 }
 
 void cppnet::Dealloc() {

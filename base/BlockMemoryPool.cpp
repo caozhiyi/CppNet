@@ -1,4 +1,4 @@
-#include "BlockMemaryPool.h"
+#include "BlockMemoryPool.h"
 
 using namespace base;
 

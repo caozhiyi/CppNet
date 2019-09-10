@@ -3,10 +3,8 @@
 #include <unistd.h>
 #include "SocketBase.h"
 #include "EventActions.h"
-#include "MemaryPool.h"
-
-const uint16_t __mem_block_size     = 1024;
-const uint16_t __mem_block_add_step = 5;
+#include "MemoryPool.h"
+#include "CNConfig.h"
 
 using namespace cppnet;
 

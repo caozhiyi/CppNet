@@ -49,7 +49,7 @@ void DisConnectionFunc(const Handle& handle, uint32_t err) {
 
 int main() {
 
-    cppnet::Init(1, false);
+    cppnet::Init(1);
 
     cppnet::SetConnectionCallback(ConnectFunc);
     cppnet::SetWriteCallback(WriteFunc);

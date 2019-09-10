@@ -38,7 +38,7 @@ void ConnectFunc(const Handle& handle, uint32_t error) {
 int main() {
 
     // start 4 threads
-    cppnet::Init(4, false);
+    cppnet::Init(4);
 
     cppnet::SetAcceptCallback(ConnectFunc);
     cppnet::SetWriteCallback(WriteFunc);

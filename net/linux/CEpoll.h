@@ -5,8 +5,6 @@
 #include <sys/epoll.h>
 #include "EventActions.h"
 
-#define MAX_BUFFER_LEN        8192
-
 namespace cppnet {
     class Cevent;
     class CEpoll : public CEventActions

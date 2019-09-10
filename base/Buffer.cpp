@@ -1,5 +1,5 @@
 #include "Buffer.h"
-#include "MemaryPool.h"
+#include "MemoryPool.h"
 #include "LoopBuffer.h"
 #include "Log.h"
 

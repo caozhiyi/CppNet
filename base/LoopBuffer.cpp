@@ -2,7 +2,7 @@
 #include <iostream>
 
 #include "LoopBuffer.h"
-#include "MemaryPool.h"
+#include "MemoryPool.h"
 
 using namespace base;
 

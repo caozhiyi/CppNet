@@ -7,12 +7,11 @@
 
 namespace base {
 
-struct iovec {
-    void      *iov_base;      /* starting address of buffer */
-    size_t    iov_len;        /* size of buffer */
-    iovec(void* base, size_t len) : iov_base(base), iov_len(len) {
-    }
-};
+    struct iovec {
+        void      *iov_base;      // starting address of buffer
+        size_t    iov_len;        // size of buffer
+        iovec(void* base, size_t len) : iov_base(base), iov_len(len) {}
+    };
 
     class CLoopBuffer;
     class CMemoryPool;

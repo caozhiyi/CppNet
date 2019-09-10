@@ -9,6 +9,7 @@
 #include "Log.h"
 #include "Runnable.h"
 #include "SocketImpl.h"
+#include "CNConfig.h"
 #ifdef __linux__
 #include "CEpoll.h"
 #include "LinuxFunc.h"
@@ -18,10 +19,7 @@
 
 using namespace cppnet;
 
-const uint16_t __mem_block_size = 1024;
-const uint16_t __mem_block_add_step = 5;
-
-CCppNetImpl::CCppNetImpl() : _per_epoll_handle(true), _pool(__mem_block_size, __mem_block_add_step) {
+CCppNetImpl::CCppNetImpl() : _pool(__mem_block_size, __mem_block_add_step) {
 
 }
 
@@ -32,12 +30,11 @@ CCppNetImpl::~CCppNetImpl() {
     _accept_socket.clear();
 }
 
-void CCppNetImpl::Init(uint32_t thread_num, bool per_handl_thread) {
+void CCppNetImpl::Init(uint32_t thread_num) {
 #ifndef __linux__
     InitScoket();
 #else
     SetCoreFileUnlimit();
-    _per_epoll_handle = per_handl_thread;
 #endif // __linux__
 
     uint32_t cpus = GetCpuNum();
@@ -45,10 +42,10 @@ void CCppNetImpl::Init(uint32_t thread_num, bool per_handl_thread) {
         thread_num = cpus;
     }
 #ifdef __linux__
-    if (per_handl_thread) {
+    if (__per_handle_thread) {
         for (size_t i = 0; i < thread_num; i++) {
             // create a epoll
-            std::shared_ptr<CEventActions> event_actions(new CEpoll(per_handl_thread));
+            std::shared_ptr<CEventActions> event_actions(new CEpoll(__per_handle_thread));
             // start net io thread
             event_actions->Init(thread_num);
             std::shared_ptr<std::thread> thd(new std::thread(std::bind(&CEventActions::ProcessEvent, event_actions)));
@@ -57,7 +54,7 @@ void CCppNetImpl::Init(uint32_t thread_num, bool per_handl_thread) {
         }
     } else {
         // create only one epoll
-        std::shared_ptr<CEventActions> event_actions(new CEpoll(per_handl_thread));
+        std::shared_ptr<CEventActions> event_actions(new CEpoll(__per_handle_thread));
         // start net io thread
         event_actions->Init(thread_num);
         
@@ -169,7 +166,7 @@ bool CCppNetImpl::ListenAndAccept(const std::string& ip, uint16_t port) {
         accept_socket->SyncAccept();
         _accept_socket[accept_socket->GetSocket()] = accept_socket;
         
-        if (!_per_epoll_handle) {
+        if (!__per_handle_thread) {
             break;
         }
     }
@@ -328,7 +325,7 @@ void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32
         // call read back function 
         _read_call_back(handle, socket_ptr->_read_event->_buffer.Get(), socket_ptr->_read_event->_off_set, err);
 
-        if (_per_epoll_handle && err != CEC_CLOSED && err != CEC_CONNECT_BREAK) {
+        if (__per_handle_thread && err != CEC_CLOSED && err != CEC_CONNECT_BREAK) {
             socket_ptr->SyncRead();
         }    
     }

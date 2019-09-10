@@ -8,8 +8,7 @@
 
 #include "EventActions.h"
 #include "PoolSharedPtr.h"
-
-#define MAX_BUFFER_LEN        8192
+#include "CNConfig.h"
 
 namespace cppnet {
     class Cevent;
@@ -17,15 +16,15 @@ namespace cppnet {
         OVERLAPPED  _overlapped;
         WSABUF      _wsa_buf;
         int         _event_flag_set;
-        char        _lapped_buffer[MAX_BUFFER_LEN];
+        char        _lapped_buffer[__iocp_buff_size];
         void*       _event;
 
         EventOverlapped() {
             _event_flag_set = 0;
             memset(&_overlapped, 0, sizeof(_overlapped));
-            memset(_lapped_buffer, 0, MAX_BUFFER_LEN);
+            memset(_lapped_buffer, 0, __iocp_buff_size);
             _wsa_buf.buf = _lapped_buffer;
-            _wsa_buf.len = MAX_BUFFER_LEN;
+            _wsa_buf.len = __iocp_buff_size;
         }
 
         ~EventOverlapped() {
@@ -34,7 +33,7 @@ namespace cppnet {
 
         void Clear() {
             _event_flag_set = 0;
-            memset(_lapped_buffer, 0, MAX_BUFFER_LEN);
+            memset(_lapped_buffer, 0, __iocp_buff_size);
         }
     };
 
