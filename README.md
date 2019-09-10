@@ -19,10 +19,8 @@ All the interface files are in [include](/include). The interface definitions fo
 ```c++
     // common
     // init cppnet library.
-    // thread_num:       the number of running threads.
-    // log:              print log out?
-    // per_handl_thread: every thread with a epoll handle. only useful in linux.
-    void Init(int32_t thread_num, bool log = false, bool per_handl_thread = true);
+    // thread_num: he number of running threads.
+    void Init(int32_t thread_num);
     void Dealloc();
 
     // thread join
