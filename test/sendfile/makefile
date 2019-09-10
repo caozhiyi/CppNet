@@ -6,8 +6,8 @@ CC = g++
 INCLUDES = -I../../base      \
            -I../../include   \
 
-#debug
-CCFLAGS = -lpthread -fPIC -m64 -g -pg -std=c++11 -lstdc++ -pipe 
+#debug -pg
+CCFLAGS = -lpthread -fPIC -m64 -g -std=c++11 -lstdc++ -pipe 
 
 #CCFLAGS = -lpthread -fPIC -m64 -O2 -std=c++11 -lstdc++ -pipe -march=corei7 
 
@@ -17,10 +17,10 @@ CLIBIN = sendfileclient
 
 all:$(SERBIN) $(CLIBIN)
 
-$(SERBIN):$(SER)
+$(SERBIN):$(SER) $(TARGET)
 	$(CC) $(SER) -o $@  $(TARGET)  $(CCFLAGS) $(INCLUDES)
 
-$(CLIBIN):$(CLI)
+$(CLIBIN):$(CLI) $(TARGET)
 	$(CC) $(CLI) -o $@  $(TARGET)  $(CCFLAGS) $(INCLUDES)
 
 clean:

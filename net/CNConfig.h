@@ -25,9 +25,11 @@ static const bool __per_handle_thread      = true;
 #ifdef __linux__
 
 // the start extend size of read buff while buff is't enough. 
-static const uint16_t __linux_read_buff_expand_len_ = 4096;
+static const uint16_t __linux_read_buff_expand_len = 4096;
+// max extend size of read buff while buff is't enough. 
+static const uint32_t __linux_read_buff_expand_max = 65536;
 // max size of buffer will get from buffer. Be careful IOV_MAX.
-static const uint16_t __linux_write_buff_get        = 4096;
+static const uint16_t __linux_write_buff_get       = 4096;
 
 #else
 
