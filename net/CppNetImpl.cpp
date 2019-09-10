@@ -21,11 +21,12 @@ using namespace cppnet;
 const uint16_t __mem_block_size = 1024;
 const uint16_t __mem_block_add_step = 5;
 
-CCppNetImpl::CCppNetImpl() : _per_epoll_handle(true), _pool(__mem_block_size, __mem_block_add_step), _is_join(false) {
+CCppNetImpl::CCppNetImpl() : _per_epoll_handle(true), _pool(__mem_block_size, __mem_block_add_step) {
 
 }
 
 CCppNetImpl::~CCppNetImpl() {
+    Join();
     _thread_vec.clear();
     _actions_map.clear();
     _accept_socket.clear();
@@ -74,7 +75,7 @@ void CCppNetImpl::Init(uint32_t thread_num, bool per_handl_thread) {
     for (size_t i = 0; i < thread_num; i++) {
         std::shared_ptr<std::thread> thd(new std::thread(std::bind(&CEventActions::ProcessEvent, event_actions)));
         _actions_map[thd->get_id()] = event_actions;
-        _thread_vec.push_back(thd);
+        _thread_vec.emplace_back(thd);
     }
 #endif
 }
@@ -83,18 +84,14 @@ void CCppNetImpl::Dealloc() {
     for (auto iter = _actions_map.begin(); iter != _actions_map.end(); ++iter) {
         iter->second->Dealloc();
     }
-    if (!_is_join) {
-        Join();
-    }
 #ifndef __linux__
     DeallocSocket();
 #endif // __linux__
 }
 
 void CCppNetImpl::Join() {
-    _is_join = true;
     for (size_t i = 0; i < _thread_vec.size(); ++i) {
-        if (_thread_vec[i]) {
+        if (_thread_vec[i] && _thread_vec[i]->joinable()) {
             _thread_vec[i]->join();
         }
     }

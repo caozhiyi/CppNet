@@ -70,7 +70,6 @@ namespace cppnet {
         
         base::CMemoryPool       _pool;
         bool                    _per_epoll_handle;
-        bool                    _is_join;
         std::mutex              _mutex;
         std::vector<std::shared_ptr<std::thread>>                                _thread_vec;
         std::unordered_map<uint64_t, base::CMemSharePtr<CAcceptSocket>>          _accept_socket;
