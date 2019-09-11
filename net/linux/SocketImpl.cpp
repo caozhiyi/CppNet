@@ -155,17 +155,18 @@ void CSocketImpl::_Recv(base::CMemSharePtr<CEventHandler>& event) {
         if (event->_event_flag_set & EVENT_READ) {
             event->_off_set = 0;
             //read all data.
-            int expand_buff_len = __linux_read_buff_expand_len_;
+            int expand_buff_len = __linux_read_buff_expand_len;
             for (;;) {
                 int expand = 0;
                 if (event->_buffer->GetFreeLength() == 0) {
                     expand = expand_buff_len;
-                    expand_buff_len *= 2;
+                    if (expand_buff_len < __linux_read_buff_expand_max) {
+                        expand_buff_len *= 2;
+                    }
                 }
 
                 std::vector<base::iovec> io_vec;
                 int buff_len = event->_buffer->GetFreeMemoryBlock(io_vec, expand_buff_len);
-                
                 int recv_len = 0;
                 recv_len = readv(socket_ptr->GetSocket(), (iovec*)&*io_vec.begin(), io_vec.size());
                 if (recv_len < 0) {

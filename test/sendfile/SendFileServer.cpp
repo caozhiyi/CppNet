@@ -15,6 +15,12 @@ struct Content {
     STATUS     _status;
     Content() {
         _status = hello;
+        _file = nullptr;
+    }
+    ~Content() {
+        if (_file) {
+            delete _file;
+        }
     }
     std::fstream* _file;
 };
