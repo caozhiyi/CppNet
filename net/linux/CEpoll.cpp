@@ -262,6 +262,9 @@ void CEpoll::ProcessEvent() {
 
             _DoEvent(event_vec, res);
             _DoTaskList();
+            if (!timer_vec.empty()) {
+                _DoTimeoutEvent(timer_vec);
+            }
 
         } else {
             if (!timer_vec.empty()) {
@@ -292,7 +295,7 @@ void CEpoll::PostTask(std::function<void(void)>& task) {
 }
 
 void CEpoll::WakeUp() {
-    write(_pipe[1], "0", 1);
+    write(_pipe[1], (char*)WEAK_EPOLL, 1);
 }
 
 bool CEpoll::_AddEvent(base::CMemSharePtr<CEventHandler>& event, int32_t event_flag, uint64_t sock) {
