@@ -330,7 +330,7 @@ void CIOCP::_DoTimeoutEvent(std::vector<base::CMemSharePtr<CTimerEvent>>& timer_
             base::CMemSharePtr<CSocketImpl> socket_ptr = event_ptr->_client_socket.Lock();
             if (socket_ptr) {
                 event_ptr->_event_flag_set |= EVENT_TIMER;
-                socket_ptr->_Recv(event_ptr);
+                socket_ptr->Recv(event_ptr);
             }
 
         } else if ((*iter)->_event_flag & EVENT_WRITE) {
@@ -338,7 +338,7 @@ void CIOCP::_DoTimeoutEvent(std::vector<base::CMemSharePtr<CTimerEvent>>& timer_
             base::CMemSharePtr<CSocketImpl> socket_ptr = event_ptr->_client_socket.Lock();
             if (socket_ptr) {
                 event_ptr->_event_flag_set |= EVENT_TIMER;
-                socket_ptr->_Send(event_ptr);
+                socket_ptr->Send(event_ptr);
             }
 
         } else if ((*iter)->_event_flag & EVENT_TIMER) {
@@ -370,13 +370,13 @@ void CIOCP::_DoEvent(EventOverlapped *socket_context, int bytes) {
 
                 auto socket_ptr = (*event)->_client_socket.Lock();
                 if (socket_ptr) {
-                    socket_ptr->_Recv((*event));
+                    socket_ptr->Recv((*event));
                 }
 
             } else if ((*event)->_event_flag_set & EVENT_WRITE) {
                 auto socket_ptr = (*event)->_client_socket.Lock();
                 if (socket_ptr) {
-                    socket_ptr->_Send((*event));
+                    socket_ptr->Send((*event));
                 }
             }
         }

@@ -10,6 +10,9 @@ namespace cppnet {
 static const uint16_t __mem_block_size     = 1024;
 // how many block memory will be add to block memory pool.
 static const uint16_t __mem_block_add_step = 5;
+// max number of blocks in memory pool. If block memory more than this number, will reduce to half.
+ static const uint16_t __max_block_num     = 10;
+
 // address buffer length in socket.
 static const uint16_t __addr_str_len       = 16;
 // log level. 
@@ -19,11 +22,10 @@ static const char* __log_file_name         = "CppNetLog";
 // open log print.
 static const bool __open_log               = false;
 
-// every thread has a epoll handle.
-static const bool __per_handle_thread      = true;
-
 #ifdef __linux__
 
+// every thread has a epoll handle.
+static const bool __per_handle_thread              = true;
 // the start extend size of read buff while buff is't enough. 
 static const uint16_t __linux_read_buff_expand_len = 4096;
 // max extend size of read buff while buff is't enough. 

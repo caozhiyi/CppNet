@@ -41,6 +41,7 @@ void CCppNetImpl::Init(uint32_t thread_num) {
     if (thread_num == 0 || thread_num > cpus * 2) {
         thread_num = cpus;
     }
+
 #ifdef __linux__
     if (__per_handle_thread) {
         for (size_t i = 0; i < thread_num; i++) {
@@ -165,13 +166,13 @@ bool CCppNetImpl::ListenAndAccept(const std::string& ip, uint16_t port) {
 
         accept_socket->SyncAccept();
         _accept_socket[accept_socket->GetSocket()] = accept_socket;
-        
-        if (!__per_handle_thread) {
-            break;
-        }
 #ifndef __linux__
         // only iocp handle on windows.
         break;
+#else
+        if (!__per_handle_thread) {
+            break;
+        }
 #endif
     }
     return true;
@@ -227,7 +228,7 @@ Handle CCppNetImpl::Connection(uint16_t port, std::string ip) {
         base::LOG_ERROR("create socket failed. errno : %d ", errno);
         return 0;
     }
-    sock->_sock = temp_socket;
+    sock->SetSocket(temp_socket);
     {
         std::unique_lock<std::mutex> lock(_mutex);
         _socket_map[sock->GetSocket()] = sock;
@@ -329,9 +330,16 @@ void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32
         // call read back function 
         _read_call_back(handle, socket_ptr->_read_event->_buffer.Get(), socket_ptr->_read_event->_off_set, err);
 
+#ifndef __linux__
+        // post read event every time on windows.
+        if (err != CEC_CLOSED && err != CEC_CONNECT_BREAK) {
+            socket_ptr->SyncRead();
+        } 
+#else
         if (__per_handle_thread && err != CEC_CLOSED && err != CEC_CONNECT_BREAK) {
             socket_ptr->SyncRead();
-        }    
+        }  
+#endif
     }
     if (err == CEC_CLOSED || err == CEC_CONNECT_BREAK) {
         std::unique_lock<std::mutex> lock(_mutex);
@@ -366,6 +374,10 @@ void CCppNetImpl::_WriteFunction(base::CMemSharePtr<CEventHandler>& event, uint3
     if (err == CEC_CLOSED || err == CEC_CONNECT_BREAK) {
         std::unique_lock<std::mutex> lock(_mutex);
         _socket_map.erase(socket_ptr->GetSocket());
+    } else {
+        if (socket_ptr->GetPoolSize() >= __max_block_num) {
+            socket_ptr->ReleasePoolHalf();
+        }
     }
 }
 

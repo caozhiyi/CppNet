@@ -96,7 +96,7 @@ void CAcceptSocket::_Accept(base::CMemSharePtr<CAcceptEventHandler>& event) {
          //create a new socket
         auto client_socket = base::MakeNewSharedPtr<CSocketImpl>(_pool.get(), _event_actions);
     
-        client_socket->_sock = sock;
+        client_socket->SetSocket(sock);
         
         sockaddr_in sock_addr;
         socklen_t len = sizeof(sock_addr);

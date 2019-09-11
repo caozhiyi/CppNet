@@ -15,21 +15,23 @@ namespace base {
 namespace cppnet {
 
     class CEventActions;
-    class CSocketBase
-    {
+    class CSocketBase {
     public:
         CSocketBase();
         CSocketBase(std::shared_ptr<CEventActions>& event_actions);
         virtual  ~CSocketBase();
 
         void SetEventActions(std::shared_ptr<CEventActions>    &actions) { _event_actions = actions; }
+        void SetSocket(const uint64_t& sock) { _sock = sock; }
         uint64_t GetSocket() { return _sock; }
         bool IsInActions() { return _add_event_actions; }
         void SetInActions(bool set) { _add_event_actions = set; }
         const char* GetAddress() const { return _ip; }
         short GetPort() const { return _port; }
+        uint32_t GetPoolSize() {return _pool->GetLargeSize(); }
+        void ReleasePoolHalf() { _pool->ReleaseLargeHalf(); }
 
-    public:
+    protected:
         bool            _add_event_actions;
         uint64_t        _sock;
         short           _port;

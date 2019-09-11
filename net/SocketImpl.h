@@ -30,14 +30,10 @@ namespace cppnet {
 
         void SyncDisconnection();
 
-        friend bool operator>(const CSocketBase& s1, const CSocketBase& s2);
-        friend bool operator<(const CSocketBase& s1, const CSocketBase& s2);
-        friend bool operator==(const CSocketBase& s1, const CSocketBase& s2);
-        friend bool operator!=(const CSocketBase& s1, const CSocketBase& s2);
-
     public:
-        void _Recv(base::CMemSharePtr<CEventHandler>& event);
-        void _Send(base::CMemSharePtr<CEventHandler>& event);
+        friend class CAcceptSocket;
+        void Recv(base::CMemSharePtr<CEventHandler>& event);
+        void Send(base::CMemSharePtr<CEventHandler>& event);
 
     public:
         base::CMemSharePtr<CEventHandler>        _read_event;
@@ -47,10 +43,6 @@ namespace cppnet {
         uint32_t                                 _post_event_num;
 #endif
     };
-    bool operator>(const CSocketBase& s1, const CSocketBase& s2);
-    bool operator<(const CSocketBase& s1, const CSocketBase& s2);
-    bool operator==(const CSocketBase& s1, const CSocketBase& s2);
-    bool operator!=(const CSocketBase& s1, const CSocketBase& s2);
 }
 
 #endif

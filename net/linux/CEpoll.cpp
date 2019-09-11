@@ -183,16 +183,16 @@ bool CEpoll::AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::
         SetSocketNoblocking(socket_ptr->GetSocket());
         int res = connect(socket_ptr->GetSocket(), (sockaddr *)&addr, sizeof(addr));
         if (res == 0) {
-            socket_ptr->_Recv(socket_ptr->_read_event);
+            socket_ptr->Recv(socket_ptr->_read_event);
             return true;
 
         } else if (errno == EINPROGRESS) {
             if (CheckConnect(socket_ptr->GetSocket())) {
-                socket_ptr->_Recv(socket_ptr->_read_event);
+                socket_ptr->Recv(socket_ptr->_read_event);
                 return true;
             }
             socket_ptr->_read_event->_event_flag_set |= ERR_CONNECT_FAILED;
-            socket_ptr->_Recv(socket_ptr->_read_event);
+            socket_ptr->Recv(socket_ptr->_read_event);
         }
 
         base::LOG_WARN("connect event failed! %d", errno);
@@ -206,7 +206,7 @@ bool CEpoll::AddDisconnection(base::CMemSharePtr<CEventHandler>& event) {
     auto socket_ptr = event->_client_socket.Lock();
     if (socket_ptr) {
         if (DelEvent(event)) {
-            socket_ptr->_Recv(socket_ptr->_read_event);
+            socket_ptr->Recv(socket_ptr->_read_event);
         }
     }
     return true;
@@ -374,7 +374,7 @@ void CEpoll::_DoTimeoutEvent(std::vector<base::CMemSharePtr<CTimerEvent>>& timer
             base::CMemSharePtr<CSocketImpl> socket_ptr = event_ptr->_client_socket.Lock();
             if (socket_ptr) {
                 event_ptr->_event_flag_set |= EVENT_TIMER;
-                socket_ptr->_Recv(event_ptr);
+                socket_ptr->Recv(event_ptr);
             }
 
         } else if ((*iter)->_event_flag & EVENT_WRITE) {
@@ -382,7 +382,7 @@ void CEpoll::_DoTimeoutEvent(std::vector<base::CMemSharePtr<CTimerEvent>>& timer
             base::CMemSharePtr<CSocketImpl> socket_ptr = event_ptr->_client_socket.Lock();
             if (socket_ptr) {
                 event_ptr->_event_flag_set |= EVENT_TIMER;
-                socket_ptr->_Send(event_ptr);
+                socket_ptr->Send(event_ptr);
             }
 
         } else if ((*iter)->_event_flag & EVENT_TIMER) {
@@ -433,10 +433,10 @@ void CEpoll::_DoEvent(std::vector<epoll_event>& event_vec, int num) {
                 if (event_vec[i].events & EPOLLRDHUP) {
                     socket_ptr->_read_event->_event_flag_set |= EVENT_DISCONNECT;
                 }
-                socket_ptr->_Recv(socket_ptr->_read_event);
+                socket_ptr->Recv(socket_ptr->_read_event);
             } 
             if (event_vec[i].events & EPOLLOUT) {
-                socket_ptr->_Send(socket_ptr->_write_event);
+                socket_ptr->Send(socket_ptr->_write_event);
             }
         }
     }

@@ -45,14 +45,15 @@ void CBlockMemoryPool::ReleaseHalf() {
     std::unique_lock<std::mutex> lock(_large_mutex);
     size_t size = _free_mem_vec.size();
     size_t hale = size / 2;
-    for (auto iter = _free_mem_vec.begin(); iter != _free_mem_vec.end(); ++iter) {
-        size--;
-        if (size <= hale) {
-            break;
-        }
+    for (auto iter = _free_mem_vec.begin(); iter != _free_mem_vec.end();) {
         void* mem = *iter;
         iter = _free_mem_vec.erase(iter);
         free(mem);
+        
+        size--;
+        if (iter == _free_mem_vec.end() || size <= hale) {
+            break;
+        }
     }
 }
 

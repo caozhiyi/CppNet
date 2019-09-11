@@ -76,7 +76,7 @@ void CSocketImpl::SyncWrite(const char* src, uint32_t len) {
     } else {
         // try send now
         _write_event->_buffer->Write(src, len);
-        _Send(_write_event);
+        Send(_write_event);
     }
 }
 
@@ -113,23 +113,7 @@ void CSocketImpl::PostTask(std::function<void(void)>& func) {
     _event_actions->PostTask(func);
 }
 
-bool cppnet::operator>(const CSocketBase& s1, const CSocketBase& s2) {
-    return s1._sock > s2._sock;
-}
-
-bool cppnet::operator<(const CSocketBase& s1, const CSocketBase& s2) {
-    return s1._sock < s2._sock;
-}
-
-bool cppnet::operator==(const CSocketBase& s1, const CSocketBase& s2) {
-    return s1._sock == s2._sock;
-}
-
-bool cppnet::operator!=(const CSocketBase& s1, const CSocketBase& s2) {
-    return s1._sock != s2._sock;
-}
-
-void CSocketImpl::_Recv(base::CMemSharePtr<CEventHandler>& event) {
+void CSocketImpl::Recv(base::CMemSharePtr<CEventHandler>& event) {
     if (!event->_client_socket) {
         base::LOG_WARN("the event with out socket");
         return;
@@ -200,7 +184,7 @@ void CSocketImpl::_Recv(base::CMemSharePtr<CEventHandler>& event) {
     CCppNetImpl::Instance()._ReadFunction(event, err);
 }
 
-void CSocketImpl::_Send(base::CMemSharePtr<CEventHandler>& event) {
+void CSocketImpl::Send(base::CMemSharePtr<CEventHandler>& event) {
     if (!event->_client_socket) {
         base::LOG_WARN("the event with out socket");
         return;
