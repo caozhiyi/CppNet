@@ -12,3 +12,5 @@
 *32
 *.db
 *vscode
+*DEBUG
+*RELEASE

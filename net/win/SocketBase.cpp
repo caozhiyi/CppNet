@@ -11,7 +11,7 @@ LPFN_CONNECTEX               cppnet::__ConnectEx         = nullptr;
 LPFN_GETACCEPTEXSOCKADDRS    cppnet::__AcceptExScokAddrs = nullptr;
 LPFN_DISCONNECTEX            cppnet::__DisconnectionEx   = nullptr;
 
-static void* _GetExFunctnion(uint64_t& socket, const GUID& which) {
+static void* _GetExFunctnion(const uint64_t& socket, const GUID& which) {
     void* func = nullptr;
     DWORD bytes = 0;
     WSAIoctl(socket, SIO_GET_EXTENSION_FUNCTION_POINTER, (LPVOID)&which,
@@ -22,10 +22,10 @@ static void* _GetExFunctnion(uint64_t& socket, const GUID& which) {
 
 static bool _InitExFunctnion() {
     SOCKET socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
-    __AcceptEx = (LPFN_ACCEPTEX)_GetExFunctnion(socket, WSAID_ACCEPTEX);
-    __ConnectEx = (LPFN_CONNECTEX)_GetExFunctnion(socket, WSAID_CONNECTEX);
-    __AcceptExScokAddrs = (LPFN_GETACCEPTEXSOCKADDRS)_GetExFunctnion(socket, WSAID_GETACCEPTEXSOCKADDRS);
-    __DisconnectionEx = (LPFN_DISCONNECTEX)_GetExFunctnion(socket, WSAID_DISCONNECTEX);
+    __AcceptEx = (LPFN_ACCEPTEX)_GetExFunctnion((uint64_t)socket, WSAID_ACCEPTEX);
+    __ConnectEx = (LPFN_CONNECTEX)_GetExFunctnion((uint64_t)socket, WSAID_CONNECTEX);
+    __AcceptExScokAddrs = (LPFN_GETACCEPTEXSOCKADDRS)_GetExFunctnion((uint64_t)socket, WSAID_GETACCEPTEXSOCKADDRS);
+    __DisconnectionEx = (LPFN_DISCONNECTEX)_GetExFunctnion((uint64_t)socket, WSAID_DISCONNECTEX);
     closesocket(socket);
     if (!__AcceptExScokAddrs || !__ConnectEx || !__AcceptEx || !__DisconnectionEx) {
         base::LOG_FATAL("get expand function failed!");
