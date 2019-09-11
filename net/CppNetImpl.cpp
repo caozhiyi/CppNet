@@ -288,7 +288,7 @@ void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32
     }
     auto socket_ptr = event->_client_socket.Lock();
     Handle handle = socket_ptr->GetSocket();
-    if (err & EVENT_CONNECT && _connection_call_back) {
+    if (err & EVENT_CONNECT) {
         // remote refuse connect
         if (err & ERR_CONNECT_FAILED || err & ERR_CONNECT_CLOSE) {
             err = CEC_CONNECT_REFUSE;
@@ -297,7 +297,10 @@ void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32
             err = CEC_SUCCESS;
 
         }
-        _connection_call_back(handle, err);
+        if (_connection_call_back) {
+            _connection_call_back(handle, err);
+        }
+
         // start read
         if (err == CEC_SUCCESS) {
             socket_ptr->SyncRead();
@@ -307,13 +310,15 @@ void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32
             _socket_map.erase(socket_ptr->GetSocket());
         }
 
-    } else if (err & EVENT_DISCONNECT && _disconnection_call_back) {
+    } else if (err & EVENT_DISCONNECT) {
         err = CEC_SUCCESS;
-        _disconnection_call_back(handle, err);
+        if (_disconnection_call_back) {
+            _disconnection_call_back(handle, err);
+        }
         std::unique_lock<std::mutex> lock(_mutex);
         _socket_map.erase(socket_ptr->GetSocket());
 
-    } else if (err & EVENT_READ && _read_call_back) {
+    } else if (err & EVENT_READ) {
         if (err & ERR_CONNECT_CLOSE) {
             err = CEC_CLOSED;
 
@@ -328,7 +333,9 @@ void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32
         }
 
         // call read back function 
-        _read_call_back(handle, socket_ptr->_read_event->_buffer.Get(), socket_ptr->_read_event->_off_set, err);
+        if (_read_call_back) {
+            _read_call_back(handle, socket_ptr->_read_event->_buffer.Get(), socket_ptr->_read_event->_off_set, err);
+        }
 
 #ifndef __linux__
         // post read event every time on windows.
@@ -355,7 +362,7 @@ void CCppNetImpl::_WriteFunction(base::CMemSharePtr<CEventHandler>& event, uint3
 
     auto socket_ptr = event->_client_socket.Lock();
     Handle handle = socket_ptr->GetSocket();
-    if (err & EVENT_WRITE && _write_call_back) {
+    if (err & EVENT_WRITE) {
         if (err & ERR_CONNECT_CLOSE) {
             err = CEC_CLOSED;
 
@@ -368,7 +375,9 @@ void CCppNetImpl::_WriteFunction(base::CMemSharePtr<CEventHandler>& event, uint3
         } else {
             err = CEC_SUCCESS;
         }
-        _write_call_back(handle, socket_ptr->_read_event->_off_set, err);
+        if (_write_call_back) {
+             _write_call_back(handle, socket_ptr->_read_event->_off_set, err);
+        }
     }
 
     if (err == CEC_CLOSED || err == CEC_CONNECT_BREAK) {
