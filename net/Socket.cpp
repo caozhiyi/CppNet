@@ -20,7 +20,7 @@ int16_t cppnet::Write(const Handle& handle, const char* src, int32_t len) {
     return cppnet::CEC_INVALID_HANDLE;
 }
 
-int16_t cppnet::PostTask(std::function<void(void)>& func) {
+int16_t cppnet::PostTask(std::function<void(void)>&) {
     return cppnet::CEC_INVALID_HANDLE;
 }
 

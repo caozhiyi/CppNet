@@ -2,9 +2,9 @@
 
 using namespace base;
 
-CBlockMemoryPool::CBlockMemoryPool(const int large_sz, const int add_num) : 
-                                  _large_size(large_sz), 
-                                  _number_large_add_nodes(add_num) {
+CBlockMemoryPool::CBlockMemoryPool(const int large_sz, const int add_num) :
+                                  _number_large_add_nodes(add_num),
+                                  _large_size(large_sz){
 
 }
 
@@ -17,11 +17,11 @@ CBlockMemoryPool::~CBlockMemoryPool() {
 }
 
 void* CBlockMemoryPool::PoolLargeMalloc() {
+    std::unique_lock<std::mutex> lock(_large_mutex);
     if (_free_mem_vec.empty()) {
         Expansion();
     }
-    
-    std::unique_lock<std::mutex> lock(_large_mutex);
+
     void* ret = _free_mem_vec.back();
     _free_mem_vec.pop_back();
     return ret;
@@ -62,7 +62,6 @@ void CBlockMemoryPool::Expansion(int num) {
         num = _number_large_add_nodes;
     }
 
-    std::unique_lock<std::mutex> lock(_large_mutex);
     for (int i = 0; i < num; ++i) {
         void* mem = malloc(_large_size);
         // not memset!

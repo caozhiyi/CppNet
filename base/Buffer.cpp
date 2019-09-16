@@ -4,13 +4,16 @@
 #include "Log.h"
 
 using namespace base;
-
-CBuffer::CBuffer(std::shared_ptr<CMemoryPool>& pool) : 
-    _pool(pool), 
-    _buffer_end(nullptr),
+int          _buff_count;
+CLoopBuffer* _buffer_read;
+CLoopBuffer* _buffer_write;
+CLoopBuffer* _buffer_end;
+CBuffer::CBuffer(std::shared_ptr<CMemoryPool>& pool) :
+    _buff_count(0),
     _buffer_read(nullptr),
     _buffer_write(nullptr),
-    _buff_count(0) {
+    _buffer_end(nullptr),
+    _pool(pool){
 
 }
 
@@ -73,9 +76,6 @@ int CBuffer::Read(char* res, int len) {
 }
 
 int CBuffer::Write(const char* str, int len) {
-    int size = 0, current_write_bytes = 0;
-    int left = len;
-
     std::unique_lock<std::mutex> lock(_mutex);
     CLoopBuffer* prv_temp = nullptr;
     CLoopBuffer* temp = _buffer_write;
@@ -323,12 +323,10 @@ int CBuffer::FindStr(const char* s, int s_len) const {
     CLoopBuffer* temp = _buffer_read;
     int cur_len = 0;
     int can_read_bytes = 0;
-    bool find = false;
     while (temp) {
         can_read_bytes = temp->FindStr(s, s_len);
         if (can_read_bytes > 0) {
             cur_len += can_read_bytes;
-            find = true;
             break;
         }
         if (temp == _buffer_write) {

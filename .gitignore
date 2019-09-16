@@ -14,3 +14,6 @@
 *vscode
 *DEBUG
 *RELEASE
+*.pro
+*.user
+*bug

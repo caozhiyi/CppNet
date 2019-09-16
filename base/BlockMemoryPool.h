@@ -31,7 +31,7 @@ namespace base {
         std::mutex                _large_mutex;
         int                       _number_large_add_nodes; //every time add nodes num
         int                       _large_size;             //bulk memory size
-        std::vector<void*>        _free_mem_vec;             //free bulk memory list
+        std::vector<void*>        _free_mem_vec;           //free bulk memory list
     };
 }
 

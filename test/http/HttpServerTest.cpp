@@ -60,7 +60,7 @@ std::string GetFile() {
     return std::move(str);
 }
 
-void DisConnectionFunc(const cppnet::Handle& handle, uint32_t err) {
+void DisConnectionFunc(const cppnet::Handle& , uint32_t ) {
     std::cout << "[DisConnectionFunc]" << std::endl;
 }
 

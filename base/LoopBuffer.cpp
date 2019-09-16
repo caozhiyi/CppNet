@@ -264,7 +264,6 @@ const char* CLoopBuffer::_FindStrInMem(const char* buffer, const char* ch, int b
 
     const char* buff = buffer;
     const char* find = nullptr;
-    int sz = 0;
     int finded = 0;
     while(true) {
         find = (char*)memchr(buff, *ch, buffer_len - finded);

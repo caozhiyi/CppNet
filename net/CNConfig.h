@@ -18,7 +18,7 @@ static const uint16_t __addr_str_len       = 16;
 // log level. 
 static const base::LogLevel __log_level    = base::LOG_DEBUG_LEVEL;
 // log file name .
-static const char* __log_file_name         = "CppNetLog";
+static const std::string __log_file_name   = "CppNetLog";
 // open log print.
 static const bool __open_log               = false;
 

@@ -13,7 +13,7 @@ namespace cppnet {
         CEpoll(bool per_epoll);
         ~CEpoll();
         // thread_num not useful
-        virtual bool Init(uint32_t thread_num = 0);
+        virtual bool Init(uint32_t);
         virtual bool Dealloc();
 
         // timer event
@@ -49,7 +49,7 @@ namespace cppnet {
         std::atomic_bool    _run;
 
         bool                _per_epoll;
-        uint32_t            _epoll_handler;
+        int32_t             _epoll_handler;
         uint32_t            _pipe[2];
         epoll_event         _pipe_content;
 

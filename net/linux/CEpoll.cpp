@@ -50,7 +50,7 @@ CEpoll::~CEpoll() {
 
 }
 
-bool CEpoll::Init(uint32_t thread_num) {
+bool CEpoll::Init(uint32_t) {
     //Disable  SIGPIPE signal
     sigset_t set;
     sigprocmask(SIG_SETMASK, NULL, &set);
@@ -66,8 +66,11 @@ bool CEpoll::Init(uint32_t thread_num) {
         base::LOG_FATAL("pipe init failed! error : %d", errno);
         return false;
     }
-    _pipe_content.events |= EPOLLIN;
-    _pipe_content.data.ptr = (void*)WEAK_EPOLL;
+
+    SetSocketNoblocking(_pipe[1]);
+    SetSocketNoblocking(_pipe[0]);
+    _pipe_content.events = EPOLLIN;
+    _pipe_content.data.fd = _pipe[0];
     int res = epoll_ctl(_epoll_handler, EPOLL_CTL_ADD, _pipe[0], &_pipe_content);
     if (res == -1) {
         base::LOG_ERROR("add pipe handle to epoll faild! error :%d", errno);
@@ -78,9 +81,6 @@ bool CEpoll::Init(uint32_t thread_num) {
 
 bool CEpoll::Dealloc() {
     _run = false;
-    _pipe_content.events |= EPOLLIN;
-    _pipe_content.data.ptr = (void*)EXIT_EPOLL;
-    epoll_ctl(_epoll_handler, EPOLL_CTL_ADD, _pipe[0], &_pipe_content);
     WakeUp();
     return true;
 }
@@ -182,6 +182,7 @@ bool CEpoll::AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::
         //block here in linux
         SetSocketNoblocking(socket_ptr->GetSocket());
         int res = connect(socket_ptr->GetSocket(), (sockaddr *)&addr, sizeof(addr));
+
         if (res == 0) {
             socket_ptr->Recv(socket_ptr->_read_event);
             return true;
@@ -231,7 +232,7 @@ bool CEpoll::DelEvent(base::CMemSharePtr<CEventHandler>& event) {
 bool CEpoll::DelEvent(const uint64_t& sock) {
     int res = epoll_ctl(_epoll_handler, EPOLL_CTL_DEL, sock, nullptr);
     if (res == -1) {
-        //base::LOG_ERROR("remove event from epoll faild! error :%d, socket : %d", errno, sock);
+        base::LOG_ERROR("remove event from epoll faild! error :%d, socket : %d", errno, sock);
         return false;
     }
     base::LOG_DEBUG("del a socket from epoll, %d", sock);
@@ -251,7 +252,6 @@ void CEpoll::ProcessEvent() {
         } else {
             wait_time = wait_time > 0 ? wait_time : 1;
         }
-
         int res = epoll_wait(_epoll_handler, &*event_vec.begin(), (int)(event_vec.size()), wait_time);
         if (res == -1) {
             base::LOG_ERROR("epoll_wait faild! error :%d", errno);
@@ -262,6 +262,9 @@ void CEpoll::ProcessEvent() {
 
             _DoEvent(event_vec, res);
             _DoTaskList();
+            if (!timer_vec.empty()) {
+                _DoTimeoutEvent(timer_vec);
+            }
 
         } else {
             if (!timer_vec.empty()) {
@@ -272,15 +275,15 @@ void CEpoll::ProcessEvent() {
     }
 
     if (close(_epoll_handler) == -1) {
-        //base::LOG_ERROR("epoll close failed! error : %d", errno);
+        base::LOG_ERROR("epoll close failed! error : %d", errno);
     }
     if (close(_pipe[0]) == -1) {
-        //base::LOG_ERROR("_pipe[0] close failed! error : %d", errno);
+        base::LOG_ERROR("_pipe[0] close failed! error : %d", errno);
     }
     if (close(_pipe[1]) == -1) {
-        //base::LOG_ERROR("_pipe[1] close failed! error : %d", errno);
+        base::LOG_ERROR("_pipe[1] close failed! error : %d", errno);
     }
-    //base::LOG_INFO("return the net io thread");
+    base::LOG_INFO("return the net io thread");
 }
 
 void CEpoll::PostTask(std::function<void(void)>& task) {
@@ -292,7 +295,7 @@ void CEpoll::PostTask(std::function<void(void)>& task) {
 }
 
 void CEpoll::WakeUp() {
-    write(_pipe[1], "0", 1);
+    write(_pipe[1], "1", 1);
 }
 
 bool CEpoll::_AddEvent(base::CMemSharePtr<CEventHandler>& event, int32_t event_flag, uint64_t sock) {
@@ -400,17 +403,16 @@ void CEpoll::_DoEvent(std::vector<epoll_event>& event_vec, int num) {
     base::CMemSharePtr<CAcceptSocket>* accept_sock = nullptr;
     void* sock = nullptr;
     for (int i = 0; i < num; i++) {
-        if (&_pipe_content == &event_vec[i] && event_vec[i].data.u32 == EXIT_EPOLL) {
-            _run = false;
-        }
-        sock = event_vec[i].data.ptr;
-        if (sock == (void*)EXIT_EPOLL) {
-            _run = false;
+        if (event_vec[i].data.fd == _pipe[0]) {
+            base::LOG_WARN("weak up the io thread, index : %d", i);
+            char buf[4];
+            read(_pipe[0], buf, 1);
             continue;
         }
+
+        sock = event_vec[i].data.ptr;
         if (!sock) {
             base::LOG_WARN("the event is nullptr, index : %d", i);
-            _run = false;
             continue;
         }
 

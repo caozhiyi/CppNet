@@ -25,7 +25,7 @@ void CHttpServer::OnConnection(const cppnet::Handle& handle, uint32_t err) {
 }
 
 void CHttpServer::OnMessage(const cppnet::Handle& handle, base::CBuffer* data, 
-                          uint32_t len, uint32_t err) {
+                          uint32_t, uint32_t err) {
 
     if (err != CEC_SUCCESS) {
         return;
@@ -47,7 +47,7 @@ void CHttpServer::OnMessage(const cppnet::Handle& handle, base::CBuffer* data,
     }
 }
 
-void CHttpServer::OnMessageSend(const cppnet::Handle& handle, uint32_t len, uint32_t err) {
+void CHttpServer::OnMessageSend(const cppnet::Handle& , uint32_t , uint32_t ) {
     // do nothing.
 }
 

@@ -71,7 +71,7 @@ namespace base {
         }
     }
 
-    inline void EnableShared(const volatile void *, const volatile void *, CMemoryPool* pool = nullptr, int size = 0, MemoryType type = TYPE_NEW) {
+    inline void EnableShared(const volatile void *, const volatile void *, CMemoryPool* = nullptr, int = 0, MemoryType = TYPE_NEW) {
 
     }
 
@@ -140,13 +140,13 @@ namespace base {
         CBasePtr() noexcept : _ptr(nullptr), _ref_count(nullptr), _pool(nullptr) {
             EnableShared(_ptr, _ref_count, _pool);
         }
-        CBasePtr(T* ptr, CRefCount* ref, CMemoryPool* pool, MemoryType type, int large_size = 0) noexcept : _ptr(ptr), _ref_count(ref), _pool(pool), _memory_type(type), _malloc_size(large_size) {
+        CBasePtr(T* ptr, CRefCount* ref, CMemoryPool* pool, MemoryType type, int large_size = 0) noexcept : _ptr(ptr), _ref_count(ref), _pool(pool), _malloc_size(large_size), _memory_type(type) {
             EnableShared(_ptr, _ref_count, _pool, _malloc_size, _memory_type);
         }
 
 
         // construct CBasePtr object that takes resource from _Right
-        CBasePtr(const _BasePtr& r) : _ptr(r._ptr), _ref_count(r._ref_count), _pool(r._pool), _memory_type(r._memory_type), _malloc_size(r._malloc_size) {
+        CBasePtr(const _BasePtr& r) : _ptr(r._ptr), _ref_count(r._ref_count), _pool(r._pool), _malloc_size(r._malloc_size), _memory_type(r._memory_type) {
             if (_ref_count) {
                 _ref_count->IncrefUse();
             }
