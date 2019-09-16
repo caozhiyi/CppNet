@@ -2,8 +2,6 @@ SRCS = $(wildcard ./base/*.cpp ./net/*.cpp ./net/linux/*.cpp)
 
 OBJS = $(patsubst %.cpp, %.o, $(SRCS))
 
-SER = CppNetSev/CppNetServer.cpp
-CLI = CppNetCli/CppNetClient.cpp
 
 CC = g++
 
@@ -19,16 +17,8 @@ INCLUDES = -I.           \
 CCFLAGS = -lpthread -fPIC -m64 -O2 -std=c++11 -lstdc++ -pipe -march=corei7 
 
 TARGET = libcppnet.a
-SERBIN = cppnetser
-CLIBIN = cppnetcli
 
-all:$(TARGET) $(SERBIN) $(CLIBIN)
-
-$(SERBIN):$(SER) $(TARGET)
-	$(CC) $(SER) -o $@  $(TARGET)  $(CCFLAGS) $(INCLUDES)
-
-$(CLIBIN):$(CLI) $(TARGET)
-	$(CC) $(CLI) -o $@  $(TARGET)  $(CCFLAGS) $(INCLUDES)
+all:$(TARGET)
 
 $(TARGET):$(OBJS)
 	ar rcs $@ $^
