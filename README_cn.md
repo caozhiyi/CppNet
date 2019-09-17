@@ -75,8 +75,13 @@ CppNet是一个封装在Tcp协议上的Proactor模式multi-thread C++11网络库
 
 ## 示例
 
-简单使用实例可以看 [CppNetServer](/CppNetSev/CppNetServer.cpp) 和 [CppNetClient](/CppNetCli/CppNetClient.cpp)。   
-其他示例在 [test](/test) 目录下，[echo](/test/echo)实现了10000连接量的echo的测试程序，[http](/test/http)参照muduo实现了一个简单的http服务器。
+所有示例都在 [test](/test) 目录下:   
+[simple](/test/simple)是一个简单的使用示例。   
+[echo](/test/echo)实现了10000连接量的echo的测试程序。   
+[http](/test/http)参照muduo实现了一个简单的http服务器。   
+[sendfile](/test/sendfile)是一个文件发送和接收示例。   
+[pingpong](/test/pingpong)是一个pingpong测试程序。   
+
 ## 效率
 目前只用ab做了http echo测试，与muduo做了对比，执行的命令为：ab -kc[1-2000] -n100000 http://127.0.0.1:8000/hello.
 <p align="left"><img width="896" src="./doc/image/muduo_vs_cppnet.png" alt="mudo vs cppnet"></p>

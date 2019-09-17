@@ -76,8 +76,13 @@ When each interface takes the next action, you should first check the error code
 
 ## Example
 
-Simple use examples can be seen [CppNetServer](/CppNetSev/CppNetServer.cpp) and [CppNetClient](/CppNetCli/CppNetClient.cpp)。   
-Other simples are in [test](/test). [echo](/test/echo): The test program of echo with 10000 connection. [http](/test/http): A simple HTTP server is implemented with reference to muduo.
+All simples are in [test](/test):   
+[simple](/test/simple): A most simple example.   
+[echo](/test/echo): A test program of echo with 10000 connection.   
+[http](/test/http): A simple HTTP server is implemented with reference to muduo.   
+[sendfile](/test/sendfile): An example of sending and receiving files.   
+[pingpong](/test/pingpong): A pingpong test program.   
+
 ## Efficiency
 Only use apache ab test HTTP echo，comparison with Muduo. The command executed is：ab -kc[1-2000] -n100000 http://127.0.0.1:8000/hello.
 <p align="left"><img width="896" src="./doc/image/muduo_vs_cppnet.png" alt="mudo vs cppnet"></p>
