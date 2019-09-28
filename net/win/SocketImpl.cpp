@@ -23,6 +23,7 @@ CSocketImpl::CSocketImpl(std::shared_ptr<CEventActions>& event_actions) : CSocke
 
 CSocketImpl::~CSocketImpl() {
     // remove from iocp
+    base::LOG_DEBUG("close a socket, socket : %d, TheadId : %lld", _sock, std::this_thread::get_id());
     if (_read_event && _read_event->_data) {
         EventOverlapped* temp = (EventOverlapped*)_read_event->_data;
         _pool->PoolDelete<EventOverlapped>(temp);
@@ -48,6 +49,7 @@ void CSocketImpl::SyncRead() {
 
         // something wrong
         }else {
+            _post_event_num--;
             CCppNetImpl::Instance()._ReadFunction(_write_event, _read_event->_event_flag_set | ERR_CONNECT_BREAK);
         }
     }
@@ -68,6 +70,7 @@ void CSocketImpl::SyncWrite(const char* src, uint32_t len) {
 
         // something wrong
         } else {
+            _post_event_num--;
             CCppNetImpl::Instance()._WriteFunction(_write_event, _write_event->_event_flag_set | ERR_CONNECT_BREAK);
         }
     }
@@ -120,7 +123,6 @@ void CSocketImpl::PostTask(std::function<void(void)>& func) {
 
 void CSocketImpl::Recv(base::CMemSharePtr<CEventHandler>& event) {
     EventOverlapped* context = (EventOverlapped*)event->_data;
-
     _post_event_num--;
     int err = event->_event_flag_set;
     if (event->_event_flag_set & EVENT_TIMER) {
@@ -131,13 +133,19 @@ void CSocketImpl::Recv(base::CMemSharePtr<CEventHandler>& event) {
         // do nothing
 
     } else if (event->_event_flag_set & EVENT_DISCONNECT) {
-        // do nothing
-
-    //get 0 bytes means close
-    } else if (!event->_off_set) {
         if (_post_event_num == 0) {
             err |= ERR_CONNECT_CLOSE;
         }
+
+    //get 0 bytes means close
+    } else if (!event->_off_set) {
+        // close when all event return.
+        if (_post_event_num == 0) {
+            err |= ERR_CONNECT_CLOSE;
+            CCppNetImpl::Instance()._ReadFunction(event, err);
+            event->_event_flag_set = 0;
+        }
+        return;
 
     } else {
         event->_buffer->Write(context->_wsa_buf.buf, event->_off_set);

@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 #include <functional>
+#include <atomic>
 
 #include "PoolSharedPtr.h"
 #include "SocketBase.h"
@@ -40,7 +41,7 @@ namespace cppnet {
         base::CMemSharePtr<CEventHandler>        _write_event;
 #ifndef __linux__
         //iocp use it save post event num;
-        uint32_t                                 _post_event_num;
+        std::atomic<int16_t>                     _post_event_num;
 #endif
     };
 }

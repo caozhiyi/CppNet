@@ -47,15 +47,15 @@ namespace cppnet {
         virtual bool Dealloc();
 
         // timer event
-        virtual uint64_t AddTimerEvent(unsigned int interval, const std::function<void(void*)>& call_back, void* param, bool always = false);
-        virtual bool AddTimerEvent(unsigned int interval, base::CMemSharePtr<CEventHandler>& event);
+        virtual uint64_t AddTimerEvent(uint32_t interval, const std::function<void(void*)>& call_back, void* param, bool always = false);
+        virtual bool AddTimerEvent(uint32_t interval, base::CMemSharePtr<CEventHandler>& event);
         virtual bool RemoveTimerEvent(uint64_t timer_id);
 
         // net io event
         virtual bool AddSendEvent(base::CMemSharePtr<CEventHandler>& event);
         virtual bool AddRecvEvent(base::CMemSharePtr<CEventHandler>& event);
         virtual bool AddAcceptEvent(base::CMemSharePtr<CAcceptEventHandler>& event);
-        virtual bool AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, const char* buf, int buf_len);
+        virtual bool AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, const char* buf, uint32_t buf_len);
         virtual bool AddDisconnection(base::CMemSharePtr<CEventHandler>& event);
         virtual bool DelEvent(base::CMemSharePtr<CEventHandler>& event);
 
@@ -70,11 +70,11 @@ namespace cppnet {
         bool _PostRecv(base::CMemSharePtr<CEventHandler>& event);
         bool _PostAccept(base::CMemSharePtr<CAcceptEventHandler>& event);
         bool _PostSend(base::CMemSharePtr<CEventHandler>& event);
-        bool _PostConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, const char* buf, int buf_len);
+        bool _PostConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, const char* buf, uint32_t buf_len);
         bool _PostDisconnection(base::CMemSharePtr<CEventHandler>& event);
 
         void _DoTimeoutEvent(std::vector<base::CMemSharePtr<CTimerEvent>>& timer_vec);
-        void _DoEvent(EventOverlapped *socket_context, int bytes);
+        void _DoEvent(EventOverlapped *socket_context, uint32_t bytes);
         void _DoTaskList();
 
         bool _AddToActions(base::CMemSharePtr<CSocketImpl>& socket);

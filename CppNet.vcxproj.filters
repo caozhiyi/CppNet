@@ -164,6 +164,9 @@
     <ClInclude Include="base\BlockMemoryPool.h">
       <Filter>base</Filter>
     </ClInclude>
+    <ClInclude Include="net\CNConfig.h">
+      <Filter>net</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="net\linux\CEpoll.cpp">

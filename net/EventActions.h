@@ -29,7 +29,7 @@ namespace cppnet {
         virtual bool AddRecvEvent(base::CMemSharePtr<CEventHandler>& event) = 0;
         virtual bool AddAcceptEvent(base::CMemSharePtr<CAcceptEventHandler>& event) = 0;
 #ifndef __linux__
-        virtual bool AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, const char* buf, int buf_len) = 0;
+        virtual bool AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, const char* buf, uint32_t buf_len) = 0;
 #else
         virtual bool AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port) = 0;
         virtual bool DelEvent(const uint64_t& sock) = 0;

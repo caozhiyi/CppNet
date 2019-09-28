@@ -6,7 +6,7 @@ using namespace base;
 
 const static int __log_buf_size = 1024;
 
-CLog::CLog() : _log_level(LOG_ERROR_LEVEL), _cur_date(0), _pool(__log_buf_size, 40){
+CLog::CLog() : _log_level(LOG_ERROR_LEVEL), _cur_date(0), _pool(__log_buf_size, 10){
 
 }
 

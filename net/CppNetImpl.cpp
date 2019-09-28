@@ -311,12 +311,15 @@ void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32
         }
 
     } else if (err & EVENT_DISCONNECT) {
-        err = CEC_SUCCESS;
-        if (_disconnection_call_back) {
-            _disconnection_call_back(handle, err);
+        if (err & ERR_CONNECT_CLOSE) {
+            std::unique_lock<std::mutex> lock(_mutex);
+            _socket_map.erase(socket_ptr->GetSocket());
+
+            err = CEC_SUCCESS;
+            if (_disconnection_call_back) {
+                _disconnection_call_back(handle, err);
+            }
         }
-        std::unique_lock<std::mutex> lock(_mutex);
-        _socket_map.erase(socket_ptr->GetSocket());
 
     } else if (err & EVENT_READ) {
         if (err & ERR_CONNECT_CLOSE) {
@@ -336,22 +339,29 @@ void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32
         if (_read_call_back) {
             _read_call_back(handle, socket_ptr->_read_event->_buffer.Get(), socket_ptr->_read_event->_off_set, err);
         }
-
+        
 #ifndef __linux__
         // post read event every time on windows.
         if (err != CEC_CLOSED && err != CEC_CONNECT_BREAK) {
             socket_ptr->SyncRead();
-        } 
+
+        } else if (err == CEC_CLOSED || err == CEC_CONNECT_BREAK) {
+            socket_ptr->SyncDisconnection();
+            return;
+        }
+    }
 #else
         if (__per_handle_thread && err != CEC_CLOSED && err != CEC_CONNECT_BREAK) {
             socket_ptr->SyncRead();
         }  
-#endif
     }
-    if (err == CEC_CLOSED || err == CEC_CONNECT_BREAK || err == CEC_CONNECT_REFUSE) {
+    if (err == CEC_CLOSED 
+        || err == CEC_CONNECT_BREAK 
+        || err == CEC_CONNECT_REFUSE) {
         std::unique_lock<std::mutex> lock(_mutex);
         _socket_map.erase(socket_ptr->GetSocket());
     }
+#endif
 }
 
 void CCppNetImpl::_WriteFunction(base::CMemSharePtr<CEventHandler>& event, uint32_t err) {
@@ -378,11 +388,19 @@ void CCppNetImpl::_WriteFunction(base::CMemSharePtr<CEventHandler>& event, uint3
         if (_write_call_back) {
              _write_call_back(handle, socket_ptr->_read_event->_off_set, err);
         }
+#ifndef __linux__
+        if (err == CEC_CLOSED || err == CEC_CONNECT_BREAK) {
+            socket_ptr->SyncDisconnection();
+            return;
+        }
+#endif
     }
 
-    if (err == CEC_CLOSED || err == CEC_CONNECT_BREAK) {
+    if (err == CEC_CLOSED
+       || err == CEC_CONNECT_BREAK) {
         std::unique_lock<std::mutex> lock(_mutex);
         _socket_map.erase(socket_ptr->GetSocket());
+
     } else {
         if (socket_ptr->GetPoolSize() >= __max_block_num) {
             socket_ptr->ReleasePoolHalf();

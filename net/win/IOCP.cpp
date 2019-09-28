@@ -43,7 +43,7 @@ bool CIOCP::Dealloc() {
     return true;
 }
 
-uint64_t CIOCP::AddTimerEvent(unsigned int interval, const std::function<void(void*)>& call_back, void* param, bool always) {
+uint64_t CIOCP::AddTimerEvent(uint32_t interval, const std::function<void(void*)>& call_back, void* param, bool always) {
     return _timer.AddTimer(interval, call_back, param, always);
 }
 
@@ -51,7 +51,7 @@ bool CIOCP::RemoveTimerEvent(uint64_t timer_id) {
     return _timer.DelTimer(timer_id);
 }
 
-bool CIOCP::AddTimerEvent(unsigned int interval, base::CMemSharePtr<CEventHandler>& event) {
+bool CIOCP::AddTimerEvent(uint32_t interval, base::CMemSharePtr<CEventHandler>& event) {
     _timer.AddTimer(interval, event);
     return true;
 }
@@ -88,7 +88,7 @@ bool CIOCP::AddAcceptEvent(base::CMemSharePtr<CAcceptEventHandler>& event) {
     return _PostAccept(event);
 }
 
-bool CIOCP::AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, const char* buf, int buf_len) {
+bool CIOCP::AddConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, const char* buf, uint32_t buf_len) {
     auto socket_ptr = event->_client_socket.Lock();
     if (socket_ptr && _AddToActions(socket_ptr)) {
         ((EventOverlapped*)event->_data)->_event = &event;
@@ -118,8 +118,8 @@ bool CIOCP::DelEvent(base::CMemSharePtr<CEventHandler>& event) {
 }
 
 void CIOCP::ProcessEvent() {
-    DWORD                bytes_transfered = 0;
-    EventOverlapped        *socket_context  = nullptr;
+    DWORD               bytes_transfered = 0;
+    EventOverlapped     *socket_context  = nullptr;
     OVERLAPPED          *over_lapped     = nullptr;
     unsigned int        wait_time        = 0;
     std::vector<base::CMemSharePtr<CTimerEvent>> timer_vec;
@@ -138,7 +138,7 @@ void CIOCP::ProcessEvent() {
 
         DWORD dw_err = 0;
         if (res) {
-            dw_err = NO_ERROR;
+            dw_err = GetLastError();
             // exit
             if ((PULONG_PTR)socket_context == (PULONG_PTR)EXIT_IOCP){
                 break;
@@ -162,6 +162,9 @@ void CIOCP::ProcessEvent() {
                 base::LOG_DEBUG("Get a new event : %d", socket_context->_event_flag_set);
                 _DoEvent(socket_context, bytes_transfered);
             }
+            if (!timer_vec.empty()) {
+                _DoTimeoutEvent(timer_vec);
+            }
             _DoTaskList();
 
         } else if (ERROR_CONNECTION_REFUSED == dw_err || ERROR_SEM_TIMEOUT == dw_err) {
@@ -170,6 +173,9 @@ void CIOCP::ProcessEvent() {
                 base::LOG_DEBUG("Get a new event : %d", socket_context->_event_flag_set);
                 socket_context->_event_flag_set |= ERR_CONNECT_CLOSE;
                 _DoEvent(socket_context, bytes_transfered);
+            }
+            if (!timer_vec.empty()) {
+                _DoTimeoutEvent(timer_vec);
             }
             _DoTaskList();
 
@@ -270,7 +276,7 @@ bool CIOCP::_PostSend(base::CMemSharePtr<CEventHandler>& event) {
     return true;
 }
 
-bool CIOCP::_PostConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, const char* buf, int buf_len) {
+bool CIOCP::_PostConnection(base::CMemSharePtr<CEventHandler>& event, const std::string& ip, short port, const char* buf, uint32_t buf_len) {
     EventOverlapped* context = (EventOverlapped*)event->_data;
 
     DWORD dwFlags = 0;
@@ -351,7 +357,7 @@ void CIOCP::_DoTimeoutEvent(std::vector<base::CMemSharePtr<CTimerEvent>>& timer_
     timer_vec.clear();
 }
 
-void CIOCP::_DoEvent(EventOverlapped *socket_context, int bytes) {
+void CIOCP::_DoEvent(EventOverlapped *socket_context, uint32_t bytes) {
     if (socket_context->_event_flag_set & EVENT_ACCEPT) {
         base::CMemSharePtr<CAcceptEventHandler>* event = (base::CMemSharePtr<CAcceptEventHandler>*)socket_context->_event;
         if (event) {
@@ -367,7 +373,6 @@ void CIOCP::_DoEvent(EventOverlapped *socket_context, int bytes) {
             if (socket_context->_event_flag_set & EVENT_READ 
                 || socket_context->_event_flag_set & EVENT_CONNECT 
                 || socket_context->_event_flag_set & EVENT_DISCONNECT) {
-
                 auto socket_ptr = (*event)->_client_socket.Lock();
                 if (socket_ptr) {
                     socket_ptr->Recv((*event));
