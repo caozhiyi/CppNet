@@ -167,7 +167,7 @@ void CIOCP::ProcessEvent() {
             }
             _DoTaskList();
 
-        } else if (ERROR_CONNECTION_REFUSED == dw_err || ERROR_SEM_TIMEOUT == dw_err) {
+        } else if (ERROR_CONNECTION_REFUSED == dw_err || ERROR_SEM_TIMEOUT == dw_err || WSAENOTCONN == dw_err || ERROR_OPERATION_ABORTED == dw_err) {
             if (over_lapped) {
                 socket_context = CONTAINING_RECORD(over_lapped, EventOverlapped, _overlapped);
                 base::LOG_DEBUG("Get a new event : %d", socket_context->_event_flag_set);
@@ -358,6 +358,9 @@ void CIOCP::_DoTimeoutEvent(std::vector<base::CMemSharePtr<CTimerEvent>>& timer_
 }
 
 void CIOCP::_DoEvent(EventOverlapped *socket_context, uint32_t bytes) {
+    if (socket_context->_event_flag_set < EVENT_READ || socket_context->_event_flag_set > EVENT_ERR_MAX) {
+        return;
+    }
     if (socket_context->_event_flag_set & EVENT_ACCEPT) {
         base::CMemSharePtr<CAcceptEventHandler>* event = (base::CMemSharePtr<CAcceptEventHandler>*)socket_context->_event;
         if (event) {
@@ -367,7 +370,7 @@ void CIOCP::_DoEvent(EventOverlapped *socket_context, uint32_t bytes) {
 
     } else {
         base::CMemSharePtr<CEventHandler>* event = (base::CMemSharePtr<CEventHandler>*)socket_context->_event;
-        if (event) {
+        if (event && !event->Expired()) {
             (*event)->_event_flag_set = socket_context->_event_flag_set;
             (*event)->_off_set = bytes;
             if (socket_context->_event_flag_set & EVENT_READ 

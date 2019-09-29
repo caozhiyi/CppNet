@@ -49,8 +49,7 @@ void CSocketImpl::SyncRead() {
 
         // something wrong
         }else {
-            _post_event_num--;
-            CCppNetImpl::Instance()._ReadFunction(_write_event, _read_event->_event_flag_set | ERR_CONNECT_BREAK);
+            CCppNetImpl::Instance()._ReadFunction(_read_event, ERR_CONNECT_CLOSE | EVENT_DISCONNECT);
         }
     }
 }
@@ -70,8 +69,7 @@ void CSocketImpl::SyncWrite(const char* src, uint32_t len) {
 
         // something wrong
         } else {
-            _post_event_num--;
-            CCppNetImpl::Instance()._WriteFunction(_write_event, _write_event->_event_flag_set | ERR_CONNECT_BREAK);
+            CCppNetImpl::Instance()._ReadFunction(_read_event, ERR_CONNECT_CLOSE | EVENT_DISCONNECT);
         }
     }
 }
@@ -113,6 +111,9 @@ void CSocketImpl::SyncDisconnection() {
         _read_event->_event_flag_set |= EVENT_DISCONNECT;
         if (_event_actions->AddDisconnection(_read_event)) {
             _post_event_num++;
+
+        } else {
+            CCppNetImpl::Instance()._WriteFunction(_write_event, _write_event->_event_flag_set | ERR_CONNECT_CLOSE | EVENT_DISCONNECT);
         }
     }
 }
@@ -141,7 +142,7 @@ void CSocketImpl::Recv(base::CMemSharePtr<CEventHandler>& event) {
     } else if (!event->_off_set) {
         // close when all event return.
         if (_post_event_num == 0) {
-            err |= ERR_CONNECT_CLOSE;
+            err = EVENT_DISCONNECT | ERR_CONNECT_CLOSE;
             CCppNetImpl::Instance()._ReadFunction(event, err);
             event->_event_flag_set = 0;
         }

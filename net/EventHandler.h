@@ -25,6 +25,8 @@ namespace cppnet {
         ERR_CONNECT_FAILED  = 0x0100,       //connect faild
         ERR_CONNECT_CLOSE   = 0x0200,       //connect close
         ERR_TIME_OUT        = 0x0400,       //time out
+
+        EVENT_ERR_MAX       = 0x0800        //max event flag define
     };
 
     class Cevent {
