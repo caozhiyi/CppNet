@@ -104,7 +104,7 @@ void CSocketImpl::SyncDisconnection() {
     }
 
     if (_event_actions) {
-        _read_event->_event_flag_set |= EVENT_DISCONNECT;
+        _read_event->_event_flag_set |= (EVENT_DISCONNECT | ERR_CONNECT_CLOSE);
         _event_actions->AddDisconnection(_read_event);
     }
 }

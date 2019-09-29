@@ -27,7 +27,7 @@ bool CIOCP::Init(uint32_t thread_num) {
     if (thread_num == 0) {
         thread_num = CCppNetImpl::Instance().GetThreadNum();
     }
-    //tell iocp the must thread num
+    //tell iocp thread num
     _iocp_handler = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, thread_num);
     if (_iocp_handler == INVALID_HANDLE_VALUE) {
         base::LOG_FATAL("IOCP create io completion port failed!");
@@ -319,10 +319,10 @@ bool CIOCP::_PostDisconnection(base::CMemSharePtr<CEventHandler>& event) {
     OVERLAPPED *lapped = &context->_overlapped;
     auto socket_ptr = event->_client_socket.Lock();
 
-    int res = __DisconnectionEx(socket_ptr->GetSocket(), lapped, 0, 0);
+    int res = __DisconnectionEx(socket_ptr->GetSocket(), lapped, TF_REUSE_SOCKET, 0);
 
     if ((SOCKET_ERROR == res) && (WSA_IO_PENDING != WSAGetLastError())) {
-        base::LOG_FATAL("IOCP post send event failed! error code: %d", WSAGetLastError());
+        base::LOG_FATAL("IOCP post disconnect event failed! error code: %d", WSAGetLastError());
         return false;
     }
     base::LOG_DEBUG("post a new event : %d", context->_event_flag_set);

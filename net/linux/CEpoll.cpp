@@ -433,7 +433,7 @@ void CEpoll::_DoEvent(std::vector<epoll_event>& event_vec, int num) {
             if (event_vec[i].events & EPOLLIN) {
                 // close
                 if (event_vec[i].events & EPOLLRDHUP) {
-                    socket_ptr->_read_event->_event_flag_set |= EVENT_DISCONNECT | ERR_CONNECT_CLOSE;
+                    socket_ptr->_read_event->_event_flag_set |= (EVENT_DISCONNECT | ERR_CONNECT_CLOSE);
                 }
                 socket_ptr->Recv(socket_ptr->_read_event);
             } 

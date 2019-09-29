@@ -79,10 +79,9 @@ bool base::CTimeTool::GetFormatTime(char* res, int len) {
 }
 
 void base::CTimeTool::Now() {
+    std::unique_lock<std::mutex> lock(_mutex);
     _time = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()).time_since_epoch().count();
     time_t it = _time / 1000;
-
-    std::unique_lock<std::mutex> lock(_mutex);
     _tm = *std::gmtime(&it);
 }
 

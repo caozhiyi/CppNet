@@ -314,7 +314,6 @@ void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32
         if (err & ERR_CONNECT_CLOSE) {
             std::unique_lock<std::mutex> lock(_mutex);
             _socket_map.erase(socket_ptr->GetSocket());
-
             err = CEC_SUCCESS;
             if (_disconnection_call_back) {
                 _disconnection_call_back(handle, err);
@@ -392,8 +391,13 @@ void CCppNetImpl::_WriteFunction(base::CMemSharePtr<CEventHandler>& event, uint3
         if (err == CEC_CLOSED || err == CEC_CONNECT_BREAK) {
             socket_ptr->SyncDisconnection();
             return;
+        } else {
+            if (socket_ptr->GetPoolSize() >= __max_block_num) {
+                socket_ptr->ReleasePoolHalf();
+            }
         }
-#endif
+    }
+#else
     }
 
     if (err == CEC_CLOSED
@@ -406,6 +410,7 @@ void CCppNetImpl::_WriteFunction(base::CMemSharePtr<CEventHandler>& event, uint3
             socket_ptr->ReleasePoolHalf();
         }
     }
+#endif
 }
 
 std::shared_ptr<CEventActions>& CCppNetImpl::_RandomGetActions() {

@@ -58,9 +58,9 @@ int main() {
     for (size_t i = 0; i < 10000; i++) {
 #ifndef __linux__
         std::string msg = GetMsg();
-        cppnet::Connection("192.168.1.9", 8921, msg.c_str(), msg.length());
+        cppnet::Connection("127.0.0.1", 8921, msg.c_str(), msg.length());
 #else
-        cppnet::Connection("192.168.233.128", 8921);
+        cppnet::Connection("127.0.0.1", 8921);
 #endif // !__linux__
     }
 
