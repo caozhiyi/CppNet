@@ -61,7 +61,7 @@ void CSocketImpl::SyncRead() {
 
 void CSocketImpl::SyncWrite(const char* src, uint32_t len) {
     if (!_write_event->_client_socket) {
-        _write_event->_client_socket = _read_event->_client_socket;
+        _write_event->_client_socket = memshared_from_this();
     }
 
     _write_event->_event_flag_set |= EVENT_WRITE;
