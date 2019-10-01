@@ -24,10 +24,9 @@ bool CParsePackage::ParseType(char* buf, int len, int& type) {
 		return false;
 	}
 
-	char typec[1];
+	char typec[4] = { 0 };
 	memcpy(typec, buf, 1);
 	type = atoi(typec);
-
 	return true;
 }
 

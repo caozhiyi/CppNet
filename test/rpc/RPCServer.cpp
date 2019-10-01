@@ -6,8 +6,6 @@
 #include "CppNet.h"
 #include "CommonStruct.h"
 
-#include <iostream>
-
 CRPCServer::CRPCServer() : _info_router(new CInfoRouter), _parse_package(new CParsePackage), _pool(1024, 5), _need_mutex(false){
 
 }

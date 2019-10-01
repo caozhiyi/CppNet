@@ -1,10 +1,6 @@
 #ifndef TEST_RPC_RPCCLIENT_HEADER
 #define TEST_RPC_RPCCLIENT_HEADER
 
-#include <memory>
-
-#include <iostream>
-
 #include "CppDefine.h"
 #include "Socket.h"
 #include "CommonStruct.h"
