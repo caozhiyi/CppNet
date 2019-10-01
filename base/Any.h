@@ -34,18 +34,13 @@ namespace base {
             return *this;
         }
 
-        CAny & operator=(CAny rhs) {
-            CAny(rhs).Swap(*this);
-            return *this;
-        }
-
-        CAny & operator=(const CAny& rhs) {
+        CAny& operator=(CAny rhs) {
             CAny(rhs).Swap(*this);
             return *this;
         }
 
         // move assignement
-        CAny & operator=(CAny&& rhs) noexcept {
+        CAny& operator=(CAny&& rhs) noexcept {
             rhs.Swap(*this);
             CAny().Swap(rhs);
             return *this;
@@ -95,7 +90,7 @@ namespace base {
             ValueType _held;
 
         private:
-            CHolder & operator=(const CHolder&);
+            CHolder & operator=(const CHolder&) {}
         };
 
     private: // representation

@@ -55,7 +55,6 @@ bool CRPCClient::CallFunc(const std::string& func_name, Args&&...args) {
 		return false;
 	}
 
-
     std::vector<base::CAny> vec;
 	_parse_package->ParseParam(vec, std::forward<Args>(args)...);
 
@@ -64,8 +63,8 @@ bool CRPCClient::CallFunc(const std::string& func_name, Args&&...args) {
 	if (!_parse_package->PackageFuncCall(buf, len, func_name, _func_map, vec)) {
 		return false;
 	}
-    std::cout << " senf buf : " << buf << " len :" << len << std::endl;
     cppnet::Write(_socket, buf, len);
+    return true;
 }
 
 #endif

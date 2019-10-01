@@ -119,7 +119,7 @@ bool CParsePackage::ParseFuncCall(char* buf, int len, std::string& func_name, co
 	int state = PARSE_NAME;
 	int num = 0;
 	std::string func_str;
-	int index = 0;
+	size_t index = 0;
 	for (;;) {
 		cur = next;
 		if (strcmp(cur, "\r\n\r\n") == 0) {

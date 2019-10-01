@@ -312,8 +312,10 @@ void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32
 
     } else if (err & EVENT_DISCONNECT) {
         if (err & ERR_CONNECT_CLOSE) {
-            std::unique_lock<std::mutex> lock(_mutex);
-            _socket_map.erase(socket_ptr->GetSocket());
+            {
+                std::unique_lock<std::mutex> lock(_mutex);
+                _socket_map.erase(socket_ptr->GetSocket());
+            }
             err = CEC_SUCCESS;
             if (_disconnection_call_back) {
                 _disconnection_call_back(handle, err);

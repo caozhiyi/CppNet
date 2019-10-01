@@ -20,7 +20,7 @@ static const base::LogLevel __log_level    = base::LOG_DEBUG_LEVEL;
 // log file name .
 static const std::string __log_file_name   = "CppNetLog";
 // open log print.
-static const bool __open_log               = true;
+static const bool __open_log               = false;
 
 #ifdef __linux__
 

@@ -23,7 +23,7 @@ void CRPCClient::Start(short port, std::string ip) {
     cppnet::SetReadCallback(std::bind(&CRPCClient::_DoRead, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
     cppnet::SetDisconnectionCallback(std::bind(&CRPCClient::_DoDisConnect, this, std::placeholders::_1, std::placeholders::_2));
 
-    _socket = cppnet::Connection(ip, port);
+    cppnet::Connection(ip, port);
 
 }
 
@@ -95,11 +95,12 @@ void CRPCClient::_DoConnect(const cppnet::Handle& handle, uint32_t err) {
         base::LOG_ERROR("connect failed! err : %d", err);
         return;
     }
+    _socket = handle;
 	_connected = true;
     cppnet::Write(handle, "\r\n\r\n", strlen("\r\n\r\n"));
 }
 
 void CRPCClient::_DoDisConnect(const cppnet::Handle& handle, uint32_t err) {
     base::LOG_ERROR("disconnect with server!");
-    _socket = cppnet::Connection(_ip, _port);
+    cppnet::Connection(_ip, _port);
 }

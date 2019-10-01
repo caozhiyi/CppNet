@@ -72,13 +72,10 @@ void CRPCServer::_DoRead(const cppnet::Handle& handle, base::CBuffer* data,
         base::LOG_ERROR("read data failed! err : %d", err);
 		return;
 	}
-	int get_len = 0;
 	int need_len = 0;
 	for (;;) {
         char recv_buf[4096] = { 0 };
-        std::cout << "buffer : " << *data << "len: " << len << std::endl;
-        int read_len = data->ReadUntil(recv_buf, get_len, "\r\n\r\n", strlen("\r\n\r\n"), need_len);
-        base::LOG_DEBUG("get a buf : %s", recv_buf);
+        int read_len = data->ReadUntil(recv_buf, 4096, "\r\n\r\n", strlen("\r\n\r\n"), need_len);
 		//get a comlete message
 		if (read_len > 0) {
             FuncCallInfo* info = _pool.PoolNew<FuncCallInfo>();
@@ -131,7 +128,7 @@ void CRPCServer::_PackageAndSend(const cppnet::Handle& handle, FuncCallInfo* inf
 		return;
 	}
 	bool send = true;
-	int get_len = 0;
+	int get_len = 65535;
 	int need_len = 0;
     char send_buf[65535] = { 0 };
 	need_len = get_len;
