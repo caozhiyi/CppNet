@@ -81,6 +81,7 @@ CppNet是一个封装在Tcp协议上的Proactor模式multi-thread C++11网络库
 [http](/test/http)参照muduo实现了一个简单的http服务器。   
 [sendfile](/test/sendfile)是一个文件发送和接收示例。   
 [pingpong](/test/pingpong)是一个pingpong测试程序。   
+[rpc](/test/rpc)是一个简单的rpc示例。   
 
 ## 效率
 目前只用ab做了http echo测试，与muduo做了对比，执行的命令为：ab -kc[1-2000] -n100000 http://127.0.0.1:8000/hello.
@@ -96,7 +97,7 @@ CppNet是一个封装在Tcp协议上的Proactor模式multi-thread C++11网络库
 只需要在源码目录下执行make即可编译CppNet库和示例。   
 其他示例则需要在编译完静态库之后，分别在本地目录里执行make。   
 ```
-$ make
+$ make -j4
 ```
 
 ## 协议

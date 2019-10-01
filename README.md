@@ -82,6 +82,7 @@ All simples are in [test](/test):
 [http](/test/http): A simple HTTP server is implemented with reference to muduo.   
 [sendfile](/test/sendfile): An example of sending and receiving files.   
 [pingpong](/test/pingpong): A pingpong test program.   
+[rpc](/test/rpc): A interesting rpc program.   
 
 ## Efficiency
 Only use apache ab test HTTP echo，comparison with Muduo. The command executed is：ab -kc[1-2000] -n100000 http://127.0.0.1:8000/hello.
@@ -96,7 +97,7 @@ You can compile CppNet library and example with vs2017.
 The CppNet library and examples can be compiled simply by executing make in the source directory.     
 Other examples need to make in local directories after compiling static libraries.     
 ```
-$ make
+$ make -j4
 ```
 
 ## Licenses
