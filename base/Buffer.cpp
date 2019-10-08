@@ -84,7 +84,7 @@ int CBuffer::Write(const char* str, int len) {
         if (temp == nullptr) {
             temp = _pool->PoolNew<CLoopBuffer>(_pool);
             _buff_count++;
-            // set buffer end to net node
+            // set buffer end to next node
             _buffer_end = temp;
         }
         if (prv_temp != nullptr) {
@@ -255,7 +255,7 @@ int CBuffer::GetFreeMemoryBlock(std::vector<iovec>& block_vec, int size) {
             if (_buffer_read == nullptr) {
                 _buffer_read = temp;
             }
-            // set buffer read to first
+            // set buffer write to first
             if (_buffer_write == nullptr) {
                 _buffer_write = temp;
             }
