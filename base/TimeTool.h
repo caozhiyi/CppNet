@@ -36,6 +36,15 @@ namespace base {
         bool operator<=(CTimeTool const& t);
 
     private:
+        static time_t mktime64(unsigned int year, unsigned int mon,
+                                   unsigned int day, unsigned int hour,
+                                   unsigned int min, unsigned int sec);
+        static int gmtime64(const time_t *t, std::tm *tp);
+
+        void UpdateTm();
+
+    private:
+        bool          _update_time;  // need update tm struct
         time_t        _time;
         std::tm       _tm;
         std::mutex    _mutex;

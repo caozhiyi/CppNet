@@ -272,13 +272,12 @@ void CCppNetImpl::_AcceptFunction(base::CMemSharePtr<CSocketImpl>& sock, uint32_
         // add socket to map
         std::unique_lock<std::mutex> lock(_mutex);
         _socket_map[handle] = sock;
+        base::LOG_DEBUG("get client num : %d", int(_socket_map.size()));
     }
     err = CEC_SUCCESS;
     if (_accept_call_back) {
         _accept_call_back(handle, err);
     }
-
-    base::LOG_DEBUG("get client num : %d", int(_socket_map.size()));
 }
 
 void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32_t err) {
