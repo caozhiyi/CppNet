@@ -4,10 +4,7 @@
 #include "Log.h"
 
 using namespace base;
-int          _buff_count;
-CLoopBuffer* _buffer_read;
-CLoopBuffer* _buffer_write;
-CLoopBuffer* _buffer_end;
+
 CBuffer::CBuffer(std::shared_ptr<CMemoryPool>& pool) :
     _buff_count(0),
     _buffer_read(nullptr),
