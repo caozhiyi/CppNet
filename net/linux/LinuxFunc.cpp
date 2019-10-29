@@ -1,8 +1,12 @@
 #ifdef __linux__
+#include <sys/socket.h>
 #include <fcntl.h>
 #include <sys/resource.h>
-#include <sys/socket.h>
 #include "LinuxFunc.h"
+
+#ifndef SO_REUSEPORT
+#define SO_REUSEPORT 15
+#endif
 
 int cppnet::SetSocketNoblocking(unsigned int sock) {
     int old_option = fcntl(sock, F_GETFL);

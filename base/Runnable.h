@@ -1,8 +1,9 @@
 #ifndef HEADER_BASE_RUNNABLE
 #define HEADER_BASE_RUNNABLE
 
-#include <thread>
-#include <atomic>
+#include <thread>     // about thread
+#include <atomic>     // for atomic_bool
+#include <functional> // for bind
 
 namespace base {
     class CRunnable

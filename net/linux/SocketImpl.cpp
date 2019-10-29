@@ -2,6 +2,7 @@
 #include <sys/epoll.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <sys/uio.h>
 
 #include "EventHandler.h"
 #include "Buffer.h"
