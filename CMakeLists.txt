@@ -6,14 +6,19 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 aux_source_directory(${CMAKE_SOURCE_DIR}/base BASESOURCE)
 aux_source_directory(${CMAKE_SOURCE_DIR}/net NETSOURCE)
-aux_source_directory(${CMAKE_SOURCE_DIR}/net/linux NETLINUXSOURCE)
+if(UNIX)
+	aux_source_directory(${CMAKE_SOURCE_DIR}/net/linux NETLINUXSOURCE)
+	include_directories(${CMAKE_SOURCE_DIR}/net/linux NETLINUXSOURCE)
+else()
+	aux_source_directory(${CMAKE_SOURCE_DIR}/net/win NETLINUXSOURCE)
+	include_directories(${CMAKE_SOURCE_DIR}/net/win NETLINUXSOURCE)
+endif()
 
 add_library(cppnet STATIC ${BASESOURCE} ${NETSOURCE} ${NETLINUXSOURCE})
 
 target_include_directories(cppnet 
 PUBLIC ${CMAKE_SOURCE_DIR}/base
 PUBLIC ${CMAKE_SOURCE_DIR}/net
-PUBLIC ${CMAKE_SOURCE_DIR}/net/linux
 PUBLIC ${CMAKE_SOURCE_DIR}/include 
 )
 

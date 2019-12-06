@@ -1,5 +1,16 @@
-add_executable(server CppNetServer.cpp)
-target_link_libraries(server PUBLIC cppnet)
+link_directories(${CMAKE_SOURCE_DIR}/../../)
 
+if(UNIX)
+	link_libraries(libcppnet.a)
+	link_libraries(pthread)
+else()
+	link_libraries(cppnet.lib)
+endif()
+
+add_executable(server CppNetServer.cpp)
 add_executable(client CppNetClient.cpp)
-target_link_libraries(client PUBLIC cppnet)
+
+include_directories( 
+PUBLIC ${CMAKE_SOURCE_DIR}/../../base
+PUBLIC ${CMAKE_SOURCE_DIR}/../../include
+)

@@ -4,6 +4,7 @@
 #include <thread>     // about thread
 #include <atomic>     // for atomic_bool
 #include <functional> // for bind
+#include <memory>     // for shared_ptr
 
 namespace base {
     class CRunnable

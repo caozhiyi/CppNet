@@ -1,6 +1,15 @@
+link_directories(${CMAKE_SOURCE_DIR}/../../)
+if(UNIX)
+	link_libraries(libcppnet.a)
+	link_libraries(pthread)
+else()
+	link_libraries(cppnet.lib)
+endif()
 
 add_executable(pingpongserver Server.cpp)
-target_link_libraries(pingpongserver PUBLIC cppnet)
-
 add_executable(pingpongclient Client.cpp)
-target_link_libraries(pingpongclient PUBLIC cppnet)
+
+include_directories( 
+PUBLIC ${CMAKE_SOURCE_DIR}/../../base
+PUBLIC ${CMAKE_SOURCE_DIR}/../../include
+)
