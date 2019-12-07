@@ -28,6 +28,7 @@ PUBLIC
 -pipe
 -fPIC
 -m64
+-O2
 )
 
 target_link_libraries(cppnet
