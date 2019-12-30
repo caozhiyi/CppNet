@@ -9,27 +9,32 @@ namespace cppnet {
     // common
     // init cppnet library.
     // thread_num : the number of running threads.
-    void Init(int32_t thread_num);
-    void Dealloc();
+    Handle Init(int32_t thread_num);
+    void Dealloc(Handle net_handle = 1);
 
     // thread join
-    void Join();
+    // net_handle : cppnet instace handle, if only once, default 1
+    void Join(Handle net_handle = 1);
 
     // must set callback before listen
-    void SetReadCallback(const read_call_back& func);
-    void SetWriteCallback(const write_call_back& func);
-    void SetDisconnectionCallback(const connection_call_back& func);
+    // net_handle : cppnet instace handle, if only once, default 1
+    void SetReadCallback(const read_call_back& func, Handle net_handle = 1);
+    void SetWriteCallback(const write_call_back& func, Handle net_handle = 1);
+    void SetDisconnectionCallback(const connection_call_back& func, Handle net_handle = 1);
 
     //timer
-    uint64_t SetTimer(int32_t interval, const timer_call_back& func, void* param = nullptr, bool always = false);
-    void RemoveTimer(uint64_t timer_id);
+    // net_handle : cppnet instace handle, if only once, default 1
+    uint64_t SetTimer(int32_t interval, const timer_call_back& func, void* param = nullptr, bool always = false, Handle net_handle = 1);
+    void RemoveTimer(uint64_t timer_id, Handle net_handle = 1);
 
     //server
-    void SetAcceptCallback(const connection_call_back& func);
-    bool ListenAndAccept(const std::string& ip, int16_t port);
+    // net_handle : cppnet instace handle, if only once, default 1
+    void SetAcceptCallback(const connection_call_back& func, Handle net_handle = 1);
+    bool ListenAndAccept(const std::string& ip, int16_t port, Handle net_handle = 1);
 
     //client
-    void SetConnectionCallback(const connection_call_back& func);
+    // net_handle : cppnet instace handle, if only once, default 1
+    void SetConnectionCallback(const connection_call_back& func, Handle net_handle = 1);
 }
 
 #endif

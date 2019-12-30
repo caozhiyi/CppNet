@@ -10,7 +10,6 @@
 #include "EventHandler.h"
 #include "MemoryPool.h"
 #include "Timer.h"
-#include "Single.h"
 #include "CppDefine.h"
 
 namespace cppnet {
@@ -18,9 +17,10 @@ namespace cppnet {
     class CEventActions;
     class CSocket;
     class CAcceptSocket;
-    class CCppNetImpl : public base::CSingle<CCppNetImpl> {
+    struct CallBackHandle;
+    class CCppNetImpl {
     public:
-        CCppNetImpl();
+        CCppNetImpl(uint32_t net_index);
         ~CCppNetImpl();
         // common
         void Init(uint32_t thread_num);
@@ -48,8 +48,8 @@ namespace cppnet {
         Handle Connection(uint16_t port, std::string ip);
 
         // get socket
-        base::CMemSharePtr<CSocketImpl> GetSocket(const Handle& handle);
-        bool RemoveSocket(const Handle& handle);
+        base::CMemSharePtr<CSocketImpl> GetSocket(const uint32_t& handle);
+
         // get thread number
         uint32_t GetThreadNum();
 
@@ -60,19 +60,20 @@ namespace cppnet {
         std::shared_ptr<CEventActions>& _RandomGetActions();
 
     private:
-        friend class CSocketImpl;
-        friend class CAcceptSocket;
-        read_call_back          _read_call_back          = nullptr;
-        write_call_back         _write_call_back         = nullptr;
-        connection_call_back    _connection_call_back    = nullptr;
-        connection_call_back    _disconnection_call_back = nullptr;
-        connection_call_back    _accept_call_back        = nullptr;
-        
+        uint32_t                _net_index; // cppnet instance index
         base::CMemoryPool       _pool;
         std::mutex              _mutex;
+        
+        read_call_back          _read_call_back = nullptr;
+        write_call_back         _write_call_back = nullptr;
+        connection_call_back    _connection_call_back = nullptr;
+        connection_call_back    _disconnection_call_back = nullptr;
+        connection_call_back    _accept_call_back = nullptr;
+
+        std::shared_ptr<CallBackHandle>                                          _callback_handle;
         std::vector<std::shared_ptr<std::thread>>                                _thread_vec;
-        std::unordered_map<uint64_t, base::CMemSharePtr<CAcceptSocket>>          _accept_socket;
-        std::unordered_map<uint64_t, base::CMemSharePtr<CSocketImpl>>            _socket_map;
+        std::unordered_map<uint32_t, base::CMemSharePtr<CAcceptSocket>>          _accept_socket;
+        std::unordered_map<uint32_t, base::CMemSharePtr<CSocketImpl>>            _socket_map;
         std::unordered_map<std::thread::id, std::shared_ptr<CEventActions>>      _actions_map;
         std::unordered_map<uint64_t, std::weak_ptr<CEventActions>>               _timer_actions_map;
     };

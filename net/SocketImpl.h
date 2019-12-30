@@ -12,9 +12,10 @@
 
 namespace cppnet {
     class CEventHandler;
+    struct CallBackHandle;
     class CSocketImpl : public CSocketBase, public base::CEnableSharedFromThis<CSocketImpl> {
     public:
-        CSocketImpl(std::shared_ptr<CEventActions>& event_actions);
+        CSocketImpl(std::shared_ptr<CEventActions>& event_actions, uint32_t net_index, std::shared_ptr<CallBackHandle>& call_back_handle);
         ~CSocketImpl();
 
         // post sync read event.

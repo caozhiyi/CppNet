@@ -13,10 +13,12 @@
 #include "LinuxFunc.h"
 #include "CppNetImpl.h"
 #include "CNConfig.h"
+#include "CallBackHandle.h"
 
 using namespace cppnet;
 
-CSocketImpl::CSocketImpl(std::shared_ptr<CEventActions>& event_actions) : CSocketBase(event_actions){
+CSocketImpl::CSocketImpl(std::shared_ptr<CEventActions>& event_actions, uint32_t net_index, std::shared_ptr<CallBackHandle>& call_back_handle) : 
+                CSocketBase(event_actions, net_index, call_back_handle){
     _read_event = base::MakeNewSharedPtr<CEventHandler>(_pool.get());
     _write_event = base::MakeNewSharedPtr<CEventHandler>(_pool.get());
 
@@ -182,7 +184,7 @@ void CSocketImpl::Recv(base::CMemSharePtr<CEventHandler>& event) {
             }
         }
     }
-    CCppNetImpl::Instance()._ReadFunction(event, err);
+    _callback_handle->_read_call_back(event, err);
 }
 
 void CSocketImpl::Send(base::CMemSharePtr<CEventHandler>& event) {
@@ -230,7 +232,7 @@ void CSocketImpl::Send(base::CMemSharePtr<CEventHandler>& event) {
                 }
             }
         }
-        CCppNetImpl::Instance()._WriteFunction(event, err);
+        _callback_handle->_write_call_back(event, err);
     }
 }
 #endif

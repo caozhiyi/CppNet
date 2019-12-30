@@ -7,10 +7,13 @@
 #include "EventActions.h"
 #include "SocketImpl.h"
 #include "CppNetImpl.h"
+#include "CallBackHandle.h"
 
 using namespace cppnet;
 
-CSocketImpl::CSocketImpl(std::shared_ptr<CEventActions>& event_actions) : CSocketBase(event_actions), _post_event_num(0) {
+CSocketImpl::CSocketImpl(std::shared_ptr<CEventActions>& event_actions, uint32_t net_index, std::shared_ptr<CallBackHandle>& call_back_handle) : 
+                CSocketBase(event_actions, net_index, call_back_handle), 
+                _post_event_num(0) {
     _read_event = base::MakeNewSharedPtr<CEventHandler>(_pool.get());
     _write_event = base::MakeNewSharedPtr<CEventHandler>(_pool.get());
 
@@ -49,7 +52,7 @@ void CSocketImpl::SyncRead() {
 
         // something wrong
         }else {
-            CCppNetImpl::Instance()._ReadFunction(_read_event, ERR_CONNECT_CLOSE | EVENT_DISCONNECT);
+            _callback_handle->_read_call_back(_read_event, ERR_CONNECT_CLOSE | EVENT_DISCONNECT);
         }
     }
 }
@@ -69,7 +72,7 @@ void CSocketImpl::SyncWrite(const char* src, uint32_t len) {
 
         // something wrong
         } else {
-            CCppNetImpl::Instance()._ReadFunction(_read_event, ERR_CONNECT_CLOSE | EVENT_DISCONNECT);
+            _callback_handle->_read_call_back(_read_event, ERR_CONNECT_CLOSE | EVENT_DISCONNECT);
         }
     }
 }
@@ -113,7 +116,7 @@ void CSocketImpl::SyncDisconnection() {
             _post_event_num++;
 
         } else {
-            CCppNetImpl::Instance()._WriteFunction(_write_event, _write_event->_event_flag_set | ERR_CONNECT_CLOSE | EVENT_DISCONNECT);
+            _callback_handle->_write_call_back(_write_event, _write_event->_event_flag_set | ERR_CONNECT_CLOSE | EVENT_DISCONNECT);
         }
     }
 }
@@ -143,7 +146,7 @@ void CSocketImpl::Recv(base::CMemSharePtr<CEventHandler>& event) {
         // close when all event return.
         if (_post_event_num == 0) {
             err = EVENT_DISCONNECT | ERR_CONNECT_CLOSE;
-            CCppNetImpl::Instance()._ReadFunction(event, err);
+            _callback_handle->_read_call_back(event, err);
             event->_event_flag_set = 0;
         }
         return;
@@ -152,7 +155,7 @@ void CSocketImpl::Recv(base::CMemSharePtr<CEventHandler>& event) {
         event->_buffer->Write(context->_wsa_buf.buf, event->_off_set);
     }
     if (err > -1) {
-        CCppNetImpl::Instance()._ReadFunction(event, err);
+        _callback_handle->_read_call_back(event, err);
         event->_event_flag_set = 0;
     }
 }
@@ -172,7 +175,7 @@ void CSocketImpl::Send(base::CMemSharePtr<CEventHandler>& event) {
     }
 
     if (err > -1) {
-        CCppNetImpl::Instance()._WriteFunction(event, err);
+        _callback_handle->_write_call_back(event, err);
         event->_event_flag_set = 0;
     }
 }

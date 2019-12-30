@@ -12,7 +12,7 @@ namespace cppnet {
 
     class CAcceptSocket : public CSocketBase, public base::CEnableSharedFromThis<CAcceptSocket> {
     public:
-        CAcceptSocket(std::shared_ptr<CEventActions>& event_actions);
+        CAcceptSocket(std::shared_ptr<CEventActions>& event_actions, uint32_t net_index, std::shared_ptr<CallBackHandle>& call_back_handle);
         ~CAcceptSocket();
 
         bool Bind(uint16_t port, const std::string& ip = "");

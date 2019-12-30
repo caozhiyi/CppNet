@@ -7,10 +7,12 @@
 #include "EventActions.h"
 #include "AcceptSocket.h"
 #include "CppNetImpl.h"
+#include "CallBackHandle.h"
 
 using namespace cppnet;
 
-CAcceptSocket::CAcceptSocket(std::shared_ptr<CEventActions>& event_actions) : CSocketBase(event_actions){
+CAcceptSocket::CAcceptSocket(std::shared_ptr<CEventActions>& event_actions, uint32_t net_index, std::shared_ptr<CallBackHandle>& call_back_handle) : 
+                CSocketBase(event_actions, net_index, call_back_handle) {
     _accept_event = base::MakeNewSharedPtr<CAcceptEventHandler>(_pool.get());
     _accept_event->_data = _pool->PoolNew<EventOverlapped>();
 }
@@ -56,7 +58,7 @@ void CAcceptSocket::SyncAccept() {
     }
 
     if (!_accept_event->_client_socket) {
-        _accept_event->_client_socket = base::MakeNewSharedPtr<CSocketImpl>(_pool.get(), _event_actions);
+        _accept_event->_client_socket = base::MakeNewSharedPtr<CSocketImpl>(_pool.get(), _event_actions, _net_index, _callback_handle);
     }
 
     if (_event_actions) {
@@ -84,14 +86,14 @@ void CAcceptSocket::_Accept(base::CMemSharePtr<CAcceptEventHandler>& event) {
     event->_client_socket->_read_event->_client_socket = event->_client_socket;
 
     //call accept call back function
-    CCppNetImpl::Instance()._AcceptFunction(event->_client_socket, event->_event_flag_set);
+    _callback_handle->_accept_call_back(event->_client_socket, event->_event_flag_set);
 
     //call read call back function
-    CCppNetImpl::Instance()._ReadFunction(event->_client_socket->_read_event, EVENT_READ);
+    _callback_handle->_read_call_back(event->_client_socket->_read_event, EVENT_READ);
 
     //post accept again
     context->Clear();
-    event->_client_socket = base::MakeNewSharedPtr<CSocketImpl>(_pool.get(), _event_actions);
+    event->_client_socket = base::MakeNewSharedPtr<CSocketImpl>(_pool.get(), _event_actions, _net_index, _callback_handle);
     SyncAccept();
 }
 #endif

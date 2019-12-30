@@ -13,10 +13,13 @@
 #include "Socket.h"
 #include "LinuxFunc.h"
 #include "CppNetImpl.h"
+#include "CallBackHandle.h"
 
 using namespace cppnet;
 
-CAcceptSocket::CAcceptSocket(std::shared_ptr<CEventActions>& event_actions) : CSocketBase(event_actions){
+CAcceptSocket::CAcceptSocket(std::shared_ptr<CEventActions>& event_actions, uint32_t net_index, std::shared_ptr<CallBackHandle>& call_back_handle) : 
+                CSocketBase(event_actions, net_index, call_back_handle) {
+
     _sock = socket(PF_INET, SOCK_STREAM, 0);
     SetReusePort(_sock);
 
@@ -94,7 +97,7 @@ void CAcceptSocket::_Accept(base::CMemSharePtr<CAcceptEventHandler>& event) {
         SetSocketNoblocking(sock);
 
          //create a new socket
-        auto client_socket = base::MakeNewSharedPtr<CSocketImpl>(_pool.get(), _event_actions);
+        auto client_socket = base::MakeNewSharedPtr<CSocketImpl>(_pool.get(), _event_actions, _net_index, _callback_handle);
     
         client_socket->SetSocket(sock);
         
@@ -107,7 +110,7 @@ void CAcceptSocket::_Accept(base::CMemSharePtr<CAcceptEventHandler>& event) {
         client_socket->_port = ntohs(sock_addr.sin_port);
 
         //call accept call back function
-        CCppNetImpl::Instance()._AcceptFunction(client_socket, EVENT_ACCEPT);
+        _callback_handle->_accept_call_back(client_socket, EVENT_ACCEPT);
         //start read
         client_socket->SyncRead();
     }
