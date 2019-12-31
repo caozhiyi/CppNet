@@ -16,28 +16,26 @@ CCppNetManager::~CCppNetManager() {
     }
 }
 
-Handle CCppNetManager::Init(uint32_t thread_num) {
+int32_t CCppNetManager::Init(uint32_t thread_num) {
     __cppnet_index++;
     std::shared_ptr<CCppNetImpl> net(new CCppNetImpl(__cppnet_index));
     net->Init(thread_num);
     _cppnet_map[__cppnet_index] = std::move(net);
-    return IndexToHandle(__cppnet_index);
+    return __cppnet_index;
 }
 
-void CCppNetManager::Dealloc(Handle net_handle) {
-    uint32_t index = HandleToIndex(net_handle);
-    if (index > __cppnet_index) {
+void CCppNetManager::Dealloc(int32_t net_handle) {
+    if (net_handle > __cppnet_index) {
         return;
     }
-    _cppnet_map[index]->Dealloc();
+    _cppnet_map[net_handle]->Dealloc();
 }
 
-void CCppNetManager::Join(Handle net_handle) {
-    uint32_t index = HandleToIndex(net_handle);
-    if (index > __cppnet_index) {
+void CCppNetManager::Join(int32_t net_handle) {
+    if (net_handle > __cppnet_index) {
         return;
     }
-    _cppnet_map[index]->Join();
+    _cppnet_map[net_handle]->Join();
 }
 
 void CCppNetManager::AllJoin() {
@@ -46,86 +44,76 @@ void CCppNetManager::AllJoin() {
     }
 }
 
-void CCppNetManager::SetReadCallback(const read_call_back& func, Handle net_handle) {
-    uint32_t index = HandleToIndex(net_handle);
-    if (index > __cppnet_index) {
+void CCppNetManager::SetReadCallback(const read_call_back& func, int32_t net_handle) {
+    if (net_handle > __cppnet_index) {
         return;
     }
-    _cppnet_map[index]->SetReadCallback(func);
+    _cppnet_map[net_handle]->SetReadCallback(func);
 }
 
-void CCppNetManager::SetWriteCallback(const write_call_back& func, Handle net_handle) {
-    uint32_t index = HandleToIndex(net_handle);
-    if (index > __cppnet_index) {
+void CCppNetManager::SetWriteCallback(const write_call_back& func, int32_t net_handle) {
+    if (net_handle > __cppnet_index) {
         return;
     }
-    _cppnet_map[index]->SetWriteCallback(func);
+    _cppnet_map[net_handle]->SetWriteCallback(func);
 }
 
-void CCppNetManager::SetDisconnectionCallback(const connection_call_back& func, Handle net_handle) {
-    uint32_t index = HandleToIndex(net_handle);
-    if (index > __cppnet_index) {
+void CCppNetManager::SetDisconnectionCallback(const connection_call_back& func, int32_t net_handle) {
+    if (net_handle > __cppnet_index) {
         return;
     }
-    _cppnet_map[index]->SetDisconnectionCallback(func);
+    _cppnet_map[net_handle]->SetDisconnectionCallback(func);
 }
 
-uint64_t CCppNetManager::SetTimer(uint32_t interval, const std::function<void(void*)>& func, void* param , bool always, Handle net_handle) {
-    uint32_t index = HandleToIndex(net_handle);
-    if (index > __cppnet_index) {
+uint64_t CCppNetManager::SetTimer(uint32_t interval, const std::function<void(void*)>& func, void* param , bool always, int32_t net_handle) {
+    if (net_handle > __cppnet_index) {
         return 0;
     }
-    return _cppnet_map[index]->SetTimer(interval, func, param, always);
+    return _cppnet_map[net_handle]->SetTimer(interval, func, param, always);
 }
 
-void CCppNetManager::RemoveTimer(uint64_t timer_id, Handle net_handle) {
-    uint32_t index = HandleToIndex(net_handle);
-    if (index > __cppnet_index) {
+void CCppNetManager::RemoveTimer(uint64_t timer_id, int32_t net_handle) {
+    if (net_handle > __cppnet_index) {
         return;
     }
-    _cppnet_map[index]->RemoveTimer(timer_id);
+    _cppnet_map[net_handle]->RemoveTimer(timer_id);
 }
 
-void CCppNetManager::SetAcceptCallback(const connection_call_back& func, Handle net_handle) {
-    uint32_t index = HandleToIndex(net_handle);
-    if (index > __cppnet_index) {
+void CCppNetManager::SetAcceptCallback(const connection_call_back& func, int32_t net_handle) {
+    if (net_handle > __cppnet_index) {
         return;
     }
-    _cppnet_map[index]->SetAcceptCallback(func);
+    _cppnet_map[net_handle]->SetAcceptCallback(func);
 }
 
-bool CCppNetManager::ListenAndAccept(const std::string& ip, uint16_t port, Handle net_handle) {
-    uint32_t index = HandleToIndex(net_handle);
-    if (index > __cppnet_index) {
+bool CCppNetManager::ListenAndAccept(const std::string& ip, uint16_t port, int32_t net_handle) {
+    if (net_handle > __cppnet_index) {
         return false;
     }
-    return _cppnet_map[index]->ListenAndAccept(ip, port);
+    return _cppnet_map[net_handle]->ListenAndAccept(ip, port);
 }
 
-void CCppNetManager::SetConnectionCallback(const connection_call_back& func, Handle net_handle) {
-    uint32_t index = HandleToIndex(net_handle);
-    if (index > __cppnet_index) {
+void CCppNetManager::SetConnectionCallback(const connection_call_back& func, int32_t net_handle) {
+    if (net_handle > __cppnet_index) {
         return;
     }
-    _cppnet_map[index]->SetConnectionCallback(func);
+    _cppnet_map[net_handle]->SetConnectionCallback(func);
 }
 
 #ifndef __linux__
-Handle CCppNetManager::Connection(uint16_t port, std::string ip, const char* buf, uint32_t buf_len, Handle net_handle) {
-    uint32_t index = HandleToIndex(net_handle);
-    if (index > __cppnet_index) {
+Handle CCppNetManager::Connection(uint16_t port, std::string ip, const char* buf, uint32_t buf_len, int32_t net_handle) {
+    if (net_handle > __cppnet_index) {
         return 0;
     }
-    return _cppnet_map[index]->Connection(port, ip, buf, buf_len);
+    return _cppnet_map[net_handle]->Connection(port, ip, buf, buf_len);
 }
 
 #endif
-Handle CCppNetManager::Connection(uint16_t port, std::string ip, Handle net_handle) {
-    uint32_t index = HandleToIndex(net_handle);
-    if (index > __cppnet_index) {
+Handle CCppNetManager::Connection(uint16_t port, std::string ip, int32_t net_handle) {
+    if (net_handle > __cppnet_index) {
         return 0;
     }
-    return _cppnet_map[index]->Connection(port, ip);
+    return _cppnet_map[net_handle]->Connection(port, ip);
 }
 
 base::CMemSharePtr<CSocketImpl> CCppNetManager::GetSocket(const Handle& handle) {

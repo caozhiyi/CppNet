@@ -24,7 +24,7 @@ int16_t cppnet::Write(const Handle& handle, const char* src, int32_t len) {
 
 #ifndef __linux__
 // sync connection. 
-int16_t cppnet::Connection(const std::string& ip, int16_t port, const char* buf, int32_t buf_len, const Handle& handle) {
+int16_t cppnet::Connection(const std::string& ip, int16_t port, const char* buf, int32_t buf_len, int32_t handle) {
     if (CCppNetManager::Instance().Connection(port, ip, buf, buf_len, handle)) {
         return cppnet::CEC_SUCCESS;
     }
@@ -32,7 +32,7 @@ int16_t cppnet::Connection(const std::string& ip, int16_t port, const char* buf,
 }
 
 #endif
-int16_t cppnet::Connection(const std::string& ip, int16_t port, const Handle& handle) {
+int16_t cppnet::Connection(const std::string& ip, int16_t port, int32_t handle) {
     if (CCppNetManager::Instance().Connection(port, ip, handle)) {
         return cppnet::CEC_SUCCESS;
     }

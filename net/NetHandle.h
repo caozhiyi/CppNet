@@ -5,13 +5,12 @@
 
 namespace cppnet {
 
-    struct NetHandle {
-        union Field {
+    union NetHandle {
+        struct Field {
             uint32_t    _socket;
             uint32_t    _cppnet_index;
         } _field;
         uint64_t        _cppnet_handle;
-        NetHandle() : _cppnet_handle(0) {}
     };
 
     static uint32_t HandleToSocket(uint64_t net_handle) {
