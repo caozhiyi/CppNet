@@ -1,18 +1,26 @@
-link_directories(${CMAKE_SOURCE_DIR}/../../)
+SET(COMMONSRCS FuncThread.cpp InfoRouter.cpp ParsePackage.cpp RPCClient.cpp RPCServer.cpp)
 
+project(serrpc)
+add_executable(${PROJECT_NAME} ${COMMONSRCS} TestServer.cpp)
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "test/rpc")
 if(UNIX)
-	link_libraries(libcppnet.a)
-	link_libraries(pthread)
+    target_link_libraries(${PROJECT_NAME} libcppnet.a)
+    target_link_libraries(${PROJECT_NAME} pthread)
 else()
-	link_libraries(cppnet.lib)
+    target_link_libraries(${PROJECT_NAME} ws2_32)
+    target_link_libraries(${PROJECT_NAME} cppnet)
 endif()
 
-SET(SRCS FuncThread.cpp InfoRouter.cpp ParsePackage.cpp RPCClient.cpp RPCServer.cpp)
 
-add_executable(serrpc ${SRCS} TestServer.cpp)
-add_executable(clirpc ${SRCS} TestClient.cpp)
 
-include_directories( 
-PUBLIC ${CMAKE_SOURCE_DIR}/../../base
-PUBLIC ${CMAKE_SOURCE_DIR}/../../include
-)
+project(clirpc)
+add_executable(${PROJECT_NAME} ${COMMONSRCS} TestClient.cpp)
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "test/rpc")
+if(UNIX)
+    target_link_libraries(${PROJECT_NAME} libcppnet.a)
+    target_link_libraries(${PROJECT_NAME} pthread)
+else()
+    target_link_libraries(${PROJECT_NAME} ws2_32)
+    target_link_libraries(${PROJECT_NAME} cppnet)
+endif()
+
