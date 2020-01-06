@@ -1,11 +1,11 @@
 #ifndef TEST_RPC_CINFOROUTER_HEADER
 #define TEST_RPC_CINFOROUTER_HEADER
 
-#include <string>
-#include <vector>
 #include <mutex>
 #include <atomic>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "TaskQueue.h"
 #include "CommonStruct.h"

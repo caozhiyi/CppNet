@@ -1,17 +1,18 @@
 #ifdef __linux__
 #include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
 #include <signal.h>
 #include <sys/poll.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+
+#include "Log.h"
+#include "Timer.h"
 #include "CEpoll.h"
 #include "OSInfo.h"
-#include "Log.h"
-#include "EventHandler.h"
 #include "Buffer.h"
 #include "Socket.h"
-#include "Timer.h"
 #include "LinuxFunc.h"
+#include "EventHandler.h"
 
 using namespace cppnet;
  

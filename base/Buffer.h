@@ -1,9 +1,9 @@
 #ifndef HEADER_BASE_BUFFER
 #define HEADER_BASE_BUFFER
 
+#include <mutex>
 #include <memory>
 #include <vector>
-#include <mutex>
 
 namespace base {
 

@@ -1,10 +1,10 @@
-#include <iostream>
 #include <map>
 #include <fstream>
+#include <iostream>
 
-#include "HttpResponse.h"
 #include "HttpServer.h"
 #include "HttpRequest.h"
+#include "HttpResponse.h"
 
 std::string image;
 bool benchmark = true;

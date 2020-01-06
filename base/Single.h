@@ -1,5 +1,6 @@
 #ifndef HEADER_BASE_SINGLE
 #define HEADER_BASE_SINGLE
+
 #include <mutex>
 
 namespace base {

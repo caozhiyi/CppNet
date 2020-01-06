@@ -1,5 +1,5 @@
-#include <algorithm>
 #include <iostream>
+#include <algorithm>
 
 #include "LoopBuffer.h"
 #include "MemoryPool.h"

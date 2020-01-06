@@ -1,10 +1,9 @@
-#include "OSInfo.h"
-
 #ifdef __linux__
 #include <unistd.h>
 #else 
 #include <sysinfoapi.h>
 #endif
+#include "OSInfo.h"
 
 uint32_t cppnet::GetCpuNum() {
     unsigned count = 1;

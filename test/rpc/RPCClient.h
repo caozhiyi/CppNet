@@ -1,8 +1,8 @@
 #ifndef TEST_RPC_RPCCLIENT_HEADER
 #define TEST_RPC_RPCCLIENT_HEADER
 
-#include "CppDefine.h"
 #include "Socket.h"
+#include "CppDefine.h"
 #include "CommonStruct.h"
 #include "ParsePackage.h"
 

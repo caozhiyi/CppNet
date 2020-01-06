@@ -1,14 +1,13 @@
+#include <atomic>
+#include <memory>
 #include <utility>
 #include <stdio.h>
-//#include <unistd.h>
 #include <iostream>
 #include <functional>
-#include <atomic>
 #include <unordered_map>
-#include <memory>
-#include "Runnable.h"
 
 #include "CppNet.h"
+#include "Runnable.h"
 
 #ifndef __linux__
 #include <winsock2.h>

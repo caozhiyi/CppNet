@@ -1,8 +1,10 @@
-#include <iostream>
 #include <string>
-#include <string.h> // for strlen
 #include <thread>
+#include <string.h> // for strlen
+#include <iostream>
+
 #include "CppNet.h"
+
 using namespace cppnet;
 
 static const int __buf_len = 2048;

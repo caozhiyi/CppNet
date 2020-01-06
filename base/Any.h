@@ -1,8 +1,8 @@
 #ifndef HEADER_BASE_CANY
 #define HEADER_BASE_CANY
 
-#include <algorithm>
 #include <typeinfo>
+#include <algorithm>
 
 namespace base {
     class CAny {

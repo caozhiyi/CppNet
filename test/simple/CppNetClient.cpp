@@ -1,8 +1,10 @@
-#include <iostream>
 #include <string>
+#include <iostream>
+
 #include "CppNet.h"
-#include "Runnable.h"
 #include "Socket.h"
+#include "Runnable.h"
+
 using namespace cppnet;
 
 int index = 0;

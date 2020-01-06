@@ -1,7 +1,9 @@
-#include <iostream>
 #include <string>
 #include <thread>
+#include <iostream>
+
 #include "CppNet.h"
+
 using namespace cppnet;
 
 int index = 0;

@@ -1,6 +1,8 @@
 #ifndef HEADER_NET_NETHANDLE
 #define HEADER_NET_NETHANDLE
 
+#include <utility>
+#include <cstdint>
 #include "Type.h"
 
 namespace cppnet {

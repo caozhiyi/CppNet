@@ -1,6 +1,6 @@
+#include "NetHandle.h"
 #include "NetManager.h"
 #include "CppNetImpl.h"
-#include "NetHandle.h"
 
 using namespace cppnet;
 

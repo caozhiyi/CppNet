@@ -1,9 +1,9 @@
 #ifndef TEST_RPC_CANYFUNC_HEADER
 #define TEST_RPC_CANYFUNC_HEADER
 
-#include <functional>
 #include <vector>
 #include <string>
+#include <functional>
 
 #include "Any.h"
 
