@@ -1,16 +1,24 @@
-link_directories(${CMAKE_SOURCE_DIR}/../../)
-
+project(sendfileserver)
+add_executable(${PROJECT_NAME} SendFileServer.cpp md5.cpp)
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "test/sendfile")
 if(UNIX)
-	link_libraries(libcppnet.a)
-	link_libraries(pthread)
+    target_link_libraries(${PROJECT_NAME} libcppnet.a)
+    target_link_libraries(${PROJECT_NAME} pthread)
 else()
-	link_libraries(cppnet.lib)
+    target_link_libraries(${PROJECT_NAME} ws2_32)
+    target_link_libraries(${PROJECT_NAME} cppnet)
 endif()
 
-add_executable(sendfileserver SendFileServer.cpp md5.cpp)
-add_executable(sendfileclient SendFileClient.cpp md5.cpp)
 
-include_directories( 
-PUBLIC ${CMAKE_SOURCE_DIR}/../../base
-PUBLIC ${CMAKE_SOURCE_DIR}/../../include
-)
+
+project(sendfileclient)
+add_executable(${PROJECT_NAME} SendFileClient.cpp md5.cpp)
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "test/sendfile")
+if(UNIX)
+    target_link_libraries(${PROJECT_NAME} libcppnet.a)
+    target_link_libraries(${PROJECT_NAME} pthread)
+else()
+    target_link_libraries(${PROJECT_NAME} ws2_32)
+    target_link_libraries(${PROJECT_NAME} cppnet)
+endif()
+
