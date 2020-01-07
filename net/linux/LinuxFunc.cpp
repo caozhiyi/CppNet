@@ -1,7 +1,9 @@
 #ifdef __linux__
-#include <sys/socket.h>
+
 #include <fcntl.h>
+#include <sys/socket.h>
 #include <sys/resource.h>
+
 #include "LinuxFunc.h"
 
 #ifndef SO_REUSEPORT

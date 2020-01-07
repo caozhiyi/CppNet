@@ -3,13 +3,14 @@
 #include <sys/socket.h>
 #endif
 
-#include "CppNetImpl.h"
-#include "EventActions.h"
-#include "OSInfo.h"
 #include "Log.h"
+#include "OSInfo.h"
+#include "CNConfig.h"
 #include "Runnable.h"
 #include "SocketImpl.h"
-#include "CNConfig.h"
+#include "CppNetImpl.h"
+#include "EventActions.h"
+
 #ifdef __linux__
 #include "CEpoll.h"
 #include "LinuxFunc.h"

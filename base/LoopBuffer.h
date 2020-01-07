@@ -1,8 +1,8 @@
 #ifndef HEADER_BASE_LOOPBUFFER
 #define HEADER_BASE_LOOPBUFFER
 
-#include <memory>
 #include <mutex>
+#include <memory>
 
 namespace base {
 

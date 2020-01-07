@@ -1,11 +1,13 @@
-#include <fstream>
-#include <iostream>
 #include <string>
+#include <fstream>
 #include <string.h> // for memset
+#include <iostream>
+
+#include "md5.h"
 #include "CppNet.h"
 #include "Socket.h"
-#include "md5.h"
 #include "Common.h"
+
 using namespace cppnet;
 
 class CSendFile {

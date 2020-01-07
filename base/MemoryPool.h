@@ -2,13 +2,13 @@
 #define HEADER_BASE_MMEMORYPOOL
 
 #include <new>
-#include <functional>
-#include <thread>
-#include <mutex>
-#include <vector>
 #include <map>
+#include <mutex>
+#include <thread>
+#include <vector>
 #include <cstring>        //for memset
 #include <stdexcept>      //for logic_error
+#include <functional>
 
 #include "BlockMemoryPool.h"
 

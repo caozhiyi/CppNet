@@ -3,8 +3,8 @@
 
 #include <thread>     // about thread
 #include <atomic>     // for atomic_bool
-#include <functional> // for bind
 #include <memory>     // for shared_ptr
+#include <functional> // for bind
 
 namespace base {
     class CRunnable

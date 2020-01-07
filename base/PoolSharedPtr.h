@@ -1,8 +1,8 @@
 #ifndef HEADER_BASE_CPOOLSHAREDPTR
 #define HEADER_BASE_CPOOLSHAREDPTR
 #include <atomic>
-#include <functional>
 #include <stddef.h>
+#include <functional>
 
 #include "MemoryPool.h"
 

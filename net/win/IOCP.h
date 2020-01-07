@@ -6,9 +6,9 @@
 #include <MSWSock.h>
 #pragma comment(lib,"ws2_32.lib")
 
+#include "CNConfig.h"
 #include "EventActions.h"
 #include "PoolSharedPtr.h"
-#include "CNConfig.h"
 
 namespace cppnet {
     class Cevent;

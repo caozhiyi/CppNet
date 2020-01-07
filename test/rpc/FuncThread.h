@@ -2,8 +2,8 @@
 #define TEST_RPC_CFUNCTHREAD_HEADER
 
 #include <map>
-#include "RunnableAloneTaskList.h"
 #include "CommonStruct.h"
+#include "RunnableAloneTaskList.h"
 
 class CFuncManager;
 class CInfoRouter;

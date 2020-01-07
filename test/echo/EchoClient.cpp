@@ -1,9 +1,11 @@
-#include <iostream>
 #include <string>
+#include <iostream>
 #include <algorithm> // for std::find
+
 #include "CppNet.h"
-#include "Runnable.h"
 #include "Socket.h"
+#include "Runnable.h"
+
 using namespace cppnet;
 
 int index = 0;

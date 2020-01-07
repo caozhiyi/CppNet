@@ -1,10 +1,12 @@
 #ifdef __linux__
-#include <sys/socket.h>
+
 #include <unistd.h>
-#include "SocketBase.h"
-#include "EventActions.h"
-#include "MemoryPool.h"
+#include <sys/socket.h>
+
 #include "CNConfig.h"
+#include "SocketBase.h"
+#include "MemoryPool.h"
+#include "EventActions.h"
 
 using namespace cppnet;
 

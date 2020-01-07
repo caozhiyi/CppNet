@@ -1,12 +1,13 @@
-#include <iostream>
-#include <string>
-#include <string.h>
 #include <map>
+#include <string>
 #include <fstream>
+#include <string.h>
+#include <iostream>
 #include <string.h> // for strlen
+
+#include "md5.h"
 #include "CppNet.h"
 #include "Common.h"
-#include "md5.h"
 
 using namespace cppnet;
 

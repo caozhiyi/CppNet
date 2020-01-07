@@ -2,6 +2,7 @@
 #define HEADER_INCLUDE_CPPNETDEFINE
 
 #include <functional>
+
 #include "Type.h"
 #include "Buffer.h"
 

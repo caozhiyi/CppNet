@@ -1,6 +1,6 @@
+#include "Log.h"
 #include "Timer.h"
 #include "EventHandler.h"
-#include "Log.h"
 
 using namespace cppnet;
 

@@ -1,8 +1,8 @@
 #ifndef HEADER_NET_CNCONFIGE
 #define HEADER_NET_CNCONFIGE
 
-#include "Type.h"
 #include "Log.h"
+#include "Type.h"
 
 namespace cppnet {
 

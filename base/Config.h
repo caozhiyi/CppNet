@@ -1,9 +1,9 @@
 #ifndef HEADER_BASE_CONFIG
 #define HEADER_BASE_CONFIG
 
-#include <string>
 #include <map>
 #include <mutex>
+#include <string>
 
 namespace base {
 

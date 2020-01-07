@@ -3,12 +3,12 @@
 
 #include <string>
 #include <memory>
-#include <functional>
 #include <atomic>
+#include <functional>
 
-#include "PoolSharedPtr.h"
-#include "SocketBase.h"
 #include "Socket.h"
+#include "SocketBase.h"
+#include "PoolSharedPtr.h"
 
 namespace cppnet {
     class CEventHandler;

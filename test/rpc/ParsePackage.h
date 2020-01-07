@@ -30,12 +30,12 @@ type info:
 	vc	vector<char>
 	...
 *********************************************************/
-#include <vector>
 #include <map>
+#include <vector>
 #include <string.h> // for memset
 
-#include "CommonStruct.h"
 #include "Any.h"
+#include "CommonStruct.h"
 
 class CParsePackage
 {

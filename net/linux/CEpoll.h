@@ -2,6 +2,7 @@
 
 #ifndef HEADER_NET_LINUX_CEPOOL
 #define HEADER_NET_LINUX_CEPOOL
+
 #include <sys/epoll.h>
 #include "EventActions.h"
 

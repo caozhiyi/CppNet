@@ -1,8 +1,8 @@
 #ifndef HEADER_INCLUDE_CPPNET
 #define HEADER_INCLUDE_CPPNET
 
-#include "CppDefine.h"
 #include "Socket.h"
+#include "CppDefine.h"
 
 namespace cppnet {
 
