@@ -13,21 +13,21 @@
 
 namespace cppnet {
     enum EVENT_FLAG {
-        EVENT_READ          = 0x0001,        //read event
-        EVENT_WRITE         = 0x0002,        //write event
-        EVENT_ACCEPT        = 0x0004,        //accept event
-        EVENT_TIMER         = 0x0008,        //timer event
-        EVENT_CONNECT       = 0x0010,        //connect event
-        EVENT_DISCONNECT    = 0x0020,        //disconnect event
+        EVENT_READ          = 0x0001,        // read event
+        EVENT_WRITE         = 0x0002,        // write event
+        EVENT_ACCEPT        = 0x0004,        // accept event
+        EVENT_TIMER         = 0x0008,        // timer event
+        EVENT_CONNECT       = 0x0010,        // connect event
+        EVENT_DISCONNECT    = 0x0020,        // disconnect event
 
-        EVENT_TIMER_ALWAYS  = 0x0040,       //timer always check
+        EVENT_TIMER_ALWAYS  = 0x0040,        // timer always check
 
-        ERR_CONNECT_BREAK   = 0x0080,       //connect break
-        ERR_CONNECT_FAILED  = 0x0100,       //connect faild
-        ERR_CONNECT_CLOSE   = 0x0200,       //connect close
-        ERR_TIME_OUT        = 0x0400,       //time out
+        ERR_CONNECT_BREAK   = 0x0080,        // connect break
+        ERR_CONNECT_FAILED  = 0x0100,        // connect faild
+        ERR_CONNECT_CLOSE   = 0x0200,        // connect close
+        ERR_TIME_OUT        = 0x0400,        // time out
 
-        EVENT_ERR_MAX       = 0x0800        //max event flag define
+        EVENT_ERR_MAX       = 0x0800         // max event flag define
     };
 
     class Cevent {
