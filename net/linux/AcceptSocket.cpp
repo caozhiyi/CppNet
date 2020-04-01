@@ -93,7 +93,7 @@ void CAcceptSocket::_Accept(base::CMemSharePtr<CAcceptEventHandler>& event) {
         //set the socket noblocking
         SetSocketNoblocking(sock);
 
-         //create a new socket
+        //create a new socket
         auto client_socket = base::MakeNewSharedPtr<CSocketImpl>(_pool.get(), _event_actions);
     
         client_socket->SetSocket(sock);
