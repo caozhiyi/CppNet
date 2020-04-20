@@ -1,6 +1,7 @@
 #ifndef HEADER_INCLUDE_CPPNETDEFINE
 #define HEADER_INCLUDE_CPPNETDEFINE
 
+#include <memory
 #include <functional>
 
 #include "Type.h"
@@ -8,7 +9,7 @@
 
 namespace cppnet {
     // socket
-    typedef uint64_t    Handle;
+    typedef std::shared_ptr<CNSocket> Handle;
     // call back define
     // param : param is setted when set
     typedef std::function<void(void* param)>                                                               timer_call_back;
