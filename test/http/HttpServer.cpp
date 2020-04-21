@@ -1,3 +1,4 @@
+#include "Socket.h"
 #include "HttpServer.h"
 #include "HttpRequest.h"
 #include "HttpContext.h"
@@ -37,8 +38,8 @@ void CHttpServer::OnMessage(const cppnet::Handle& handle, base::CBuffer* data,
 
     _time_tool.Now();
     if (!context.ParseRequest(data, _time_tool.GetMsec())) {
-        cppnet::Write(handle, "HTTP/1.1 400 Bad Request\r\n\r\n", sizeof("HTTP/1.1 400 Bad Request\r\n\r\n"));
-        cppnet::Close(handle);
+        handle->Write("HTTP/1.1 400 Bad Request\r\n\r\n", sizeof("HTTP/1.1 400 Bad Request\r\n\r\n"));
+        handle->Close();
     }
 
     if (context.IsGotAll()) {
@@ -60,9 +61,9 @@ void CHttpServer::OnRequest(const cppnet::Handle& handle, const CHttpRequest& re
     _http_call_back(req, response);
 
     std::string res = response.GetSendBuffer();
-    cppnet::Write(handle, res.c_str(), res.length());
+    handle->Write(res.c_str(), res.length());
     if (response.GetCloseConnection()) {
-        cppnet::Close(handle);
+        handle->Close();
     }
 }
 

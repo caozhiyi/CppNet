@@ -183,7 +183,10 @@ void CSocketImpl::Recv(base::CMemSharePtr<CEventHandler>& event) {
             }
         }
     }
-    CCppNetImpl::Instance()._ReadFunction(event, err);
+    auto cppnet_ins = GetCppnetInstance();
+    if (cppnet_ins) {
+        cppnet_ins->_ReadFunction(event, err);
+    }
 }
 
 void CSocketImpl::Send(base::CMemSharePtr<CEventHandler>& event) {
@@ -231,7 +234,10 @@ void CSocketImpl::Send(base::CMemSharePtr<CEventHandler>& event) {
                 }
             }
         }
-        CCppNetImpl::Instance()._WriteFunction(event, err);
+        auto cppnet_ins = GetCppnetInstance();
+        if (cppnet_ins) {
+            cppnet_ins->_WriteFunction(event, err);
+        }
     }
 }
 #endif

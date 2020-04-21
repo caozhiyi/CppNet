@@ -14,6 +14,7 @@ namespace base {
 
 namespace cppnet {
 
+    class CCppNetImpl;
     class CEventActions;
     class CSocketBase {
     public:
@@ -30,6 +31,8 @@ namespace cppnet {
         short GetPort() const { return _port; }
         uint32_t GetPoolSize() {return _pool->GetLargeSize(); }
         void ReleasePoolHalf() { _pool->ReleaseLargeHalf(); }
+        void SetCppnetInstance(std::shared_ptr<CCppNetImpl> ins);
+        std::shared_ptr<CCppNetImpl> GetCppnetInstance();
 
     protected:
         bool            _add_event_actions;
@@ -37,6 +40,7 @@ namespace cppnet {
         short           _port;
         char            _ip[__addr_str_len];
 
+        std::weak_ptr<CCppNetImpl>            _cppnet_instance;
         std::shared_ptr<CEventActions>        _event_actions;
         std::shared_ptr<base::CMemoryPool>    _pool;
     };

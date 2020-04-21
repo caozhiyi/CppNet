@@ -93,9 +93,10 @@ void CAcceptSocket::_Accept(base::CMemSharePtr<CAcceptEventHandler>& event) {
         //set the socket noblocking
         SetSocketNoblocking(sock);
 
+        auto cppnet_ins = GetCppnetInstance();
         //create a new socket
         auto client_socket = base::MakeNewSharedPtr<CSocketImpl>(_pool.get(), _event_actions);
-    
+        client_socket->SetCppnetInstance(cppnet_ins);
         client_socket->SetSocket(sock);
         
         sockaddr_in sock_addr;
@@ -107,7 +108,10 @@ void CAcceptSocket::_Accept(base::CMemSharePtr<CAcceptEventHandler>& event) {
         client_socket->_port = ntohs(sock_addr.sin_port);
 
         //call accept call back function
-        CCppNetImpl::Instance()._AcceptFunction(client_socket, EVENT_ACCEPT);
+        if (cppnet_ins) {
+            cppnet_ins->_AcceptFunction(client_socket, EVENT_ACCEPT);
+        }
+
         //start read
         client_socket->SyncRead();
     }

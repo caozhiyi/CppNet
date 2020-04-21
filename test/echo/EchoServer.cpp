@@ -3,6 +3,7 @@
 #include <string.h> // for strlen
 #include <iostream>
 
+#include "Socket.h"
 #include "CppNet.h"
 
 using namespace cppnet;
@@ -27,7 +28,7 @@ void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t 
         int find_len = strlen(__buf_spilt);
         // get recv data to send back.
         int size = data->ReadUntil(msg_buf, __buf_len, __buf_spilt, find_len, need_len);
-        Write(handle, msg_buf, size);
+        handle->Write(msg_buf, size);
     }
 }
 
@@ -40,14 +41,15 @@ void ConnectFunc(const Handle& handle, uint32_t error) {
 int main() {
 
     // start 4 threads
-    cppnet::Init(4);
+    cppnet::CCppNet net;
+    net.Init(4);
 
-    cppnet::SetAcceptCallback(ConnectFunc);
-    cppnet::SetWriteCallback(WriteFunc);
-    cppnet::SetReadCallback(ReadFunc);
-    cppnet::SetDisconnectionCallback(ConnectFunc);
+    net.SetAcceptCallback(ConnectFunc);
+    net.SetWriteCallback(WriteFunc);
+    net.SetReadCallback(ReadFunc);
+    net.SetDisconnectionCallback(ConnectFunc);
 
-    cppnet::ListenAndAccept("0.0.0.0", 8921);
+    net.ListenAndAccept("0.0.0.0", 8921);
 
-    cppnet::Join();
+    net.Join();
 }

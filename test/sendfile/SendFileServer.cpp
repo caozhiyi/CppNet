@@ -7,6 +7,7 @@
 
 #include "md5.h"
 #include "CppNet.h"
+#include "Socket.h"
 #include "Common.h"
 
 using namespace cppnet;
@@ -61,12 +62,12 @@ void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t 
             std::cout << "get file length : " << iter->second._head._length << std::endl;
             std::cout << "get file md5    : " << iter->second._head._md5 << std::endl;
             if (*(iter->second._file)) {
-                Write(handle, "OK", strlen("OK"));
+                handle->Write("OK", strlen("OK"));
                 std::cout << "start to recv. " << std::endl;
                 iter->second._status = sending;
 
             } else {
-                Write(handle, "NO", strlen("NO"));
+                handle->Write("NO", strlen("NO"));
                 std::cout << "refuse to recv. " << std::endl;
             }
 
@@ -83,11 +84,11 @@ void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t 
                     char md5_buf[128] = { 0 };
                     Compute_file_md5(iter->second._head._name, md5_buf);
                     if (strcmp(md5_buf, iter->second._head._md5) == 0) {
-                        Write(handle, "OK", strlen("OK"));
+                        handle->Write("OK", strlen("OK"));
                         std::cout << "recv ok. " << std::endl;
 
                     } else {
-                        Write(handle, "NO", strlen("NO"));
+                        handle->Write("NO", strlen("NO"));
                         std::cout << "recv failed. " << std::endl;
                     }
                 }
@@ -114,14 +115,15 @@ void DisConnectFunc(const Handle& handle, uint32_t error) {
 
 int main() {
 
-    cppnet::Init(1);
+    cppnet::CCppNet net;
+    net.Init(1);
 
-    cppnet::SetAcceptCallback(ConnectFunc);
-    cppnet::SetWriteCallback(WriteFunc);
-    cppnet::SetReadCallback(ReadFunc);
-    cppnet::SetDisconnectionCallback(DisConnectFunc);
+    net.SetAcceptCallback(ConnectFunc);
+    net.SetWriteCallback(WriteFunc);
+    net.SetReadCallback(ReadFunc);
+    net.SetDisconnectionCallback(DisConnectFunc);
 
-    cppnet::ListenAndAccept("0.0.0.0", 8921);
+    net.ListenAndAccept("0.0.0.0", 8921);
 
-    cppnet::Join();
+    net.Join();
 }

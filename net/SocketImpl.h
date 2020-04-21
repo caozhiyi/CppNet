@@ -11,6 +11,7 @@
 #include "PoolSharedPtr.h"
 
 namespace cppnet {
+    class CNSocket;
     class CEventHandler;
     class CSocketImpl : public CSocketBase, public base::CEnableSharedFromThis<CSocketImpl> {
     public:
@@ -39,6 +40,8 @@ namespace cppnet {
     public:
         base::CMemSharePtr<CEventHandler>        _read_event;
         base::CMemSharePtr<CEventHandler>        _write_event;
+        // upper sock
+        std::shared_ptr<CNSocket>                _upper_sock;
 #ifndef __linux__
         //iocp use it save post event num;
         std::atomic<int16_t>                     _post_event_num;

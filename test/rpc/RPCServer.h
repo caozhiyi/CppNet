@@ -5,7 +5,7 @@
 #include <memory>
 #include <atomic>
 
-#include "CppDefine.h"
+#include "CppNet.h"
 #include "MemoryPool.h"
 #include "CommonStruct.h"
 
@@ -36,6 +36,7 @@ private:
 	std::shared_ptr<CInfoRouter>		_info_router;
 	std::shared_ptr<CParsePackage>		_parse_package;
 
+	cppnet::CCppNet						_net;
     base::CMemoryPool                   _pool;
 	std::atomic_bool					_need_mutex;
 	std::mutex							_mutex;

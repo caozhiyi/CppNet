@@ -155,6 +155,7 @@ bool CCppNetImpl::ListenAndAccept(const std::string& ip, uint16_t port) {
 
     for (auto iter = _actions_map.begin(); iter != _actions_map.end(); ++iter) {
         base::CMemSharePtr<CAcceptSocket> accept_socket = base::MakeNewSharedPtr<CAcceptSocket>(&_pool, iter->second);
+        accept_socket->SetCppnetInstance(shared_from_this());
         if (!accept_socket->Bind(port, ip)) {
             base::LOG_ERROR("bind failed. port : %d, ip : %s ", port, ip.c_str());
             return false;
@@ -184,27 +185,28 @@ void CCppNetImpl::SetConnectionCallback(const connection_call_back& func) {
 }
 
 #ifndef __linux__
-Handle CCppNetImpl::Connection(uint16_t port, std::string ip, const char* buf, uint32_t buf_len) {
+bool CCppNetImpl::Connection(const std::string& ip, uint16_t port, const char* buf, uint32_t buf_len) {
     if (!_connection_call_back) {
         base::LOG_ERROR("connection call back function is null!, port : %d, ip : %s ", port, ip.c_str());
-        return 0;
+        return false;
     }
     if (!_read_call_back) {
         base::LOG_ERROR("read call back function is null!, port : %d, ip : %s ", port, ip.c_str());
-        return 0;
+        return false;
     }
 
     auto actions = _RandomGetActions();
     base::CMemSharePtr<CSocketImpl> sock = base::MakeNewSharedPtr<CSocketImpl>(&_pool, actions);
+    sock->SetCppnetInstance(shared_from_this());
     sock->SyncConnection(ip, port, buf, buf_len);
 
     std::unique_lock<std::mutex> lock(_mutex);
     _socket_map[sock->GetSocket()] = sock;
-    return sock->GetSocket();
+    return true;
 }
 #endif
 
-Handle CCppNetImpl::Connection(uint16_t port, std::string ip) {
+bool CCppNetImpl::Connection(const std::string& ip, uint16_t port) {
     if (!_connection_call_back) {
         base::LOG_ERROR("connection call back function is null!, port : %d, ip : %s ", port, ip.c_str());
         return 0;
@@ -216,6 +218,7 @@ Handle CCppNetImpl::Connection(uint16_t port, std::string ip) {
 
     auto actions = _RandomGetActions();
     base::CMemSharePtr<CSocketImpl> sock = base::MakeNewSharedPtr<CSocketImpl>(&_pool, actions);
+    sock->SetCppnetInstance(shared_from_this());
 #ifndef __linux__
     {
         std::unique_lock<std::mutex> lock(_mutex);
@@ -239,7 +242,7 @@ Handle CCppNetImpl::Connection(uint16_t port, std::string ip) {
     return sock->GetSocket();
 }
 
-base::CMemSharePtr<CSocketImpl> CCppNetImpl::GetSocket(const Handle& handle) {
+base::CMemSharePtr<CSocketImpl> CCppNetImpl::GetSocket(uint64_t handle) {
     std::unique_lock<std::mutex> lock(_mutex);
     auto iter = _socket_map.find(handle);
     if (iter != _socket_map.end()) {
@@ -248,7 +251,7 @@ base::CMemSharePtr<CSocketImpl> CCppNetImpl::GetSocket(const Handle& handle) {
     return nullptr;
 }
 
-bool CCppNetImpl::RemoveSocket(const Handle& handle) {
+bool CCppNetImpl::RemoveSocket(uint64_t handle) {
     std::unique_lock<std::mutex> lock(_mutex);
     auto iter = _socket_map.find(handle);
     if (iter != _socket_map.end()) {
@@ -268,7 +271,12 @@ void CCppNetImpl::_AcceptFunction(base::CMemSharePtr<CSocketImpl>& sock, uint32_
         return;
     }
     
-    Handle handle = sock->GetSocket();
+    uint64_t handle = sock->GetSocket();
+    // create upper socket
+    std::shared_ptr<CNSocket> cn_sock(new CNSocket());
+    cn_sock->_cppnet_instance = shared_from_this();
+    cn_sock->_socket_handle   = handle;
+    sock->_upper_sock = cn_sock;
     {
         // add socket to map
         std::unique_lock<std::mutex> lock(_mutex);
@@ -277,7 +285,7 @@ void CCppNetImpl::_AcceptFunction(base::CMemSharePtr<CSocketImpl>& sock, uint32_
     }
     err = CEC_SUCCESS;
     if (_accept_call_back) {
-        _accept_call_back(handle, err);
+        _accept_call_back(cn_sock, err);
     }
 }
 
@@ -287,7 +295,7 @@ void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32
         return;
     }
     auto socket_ptr = event->_client_socket.Lock();
-    Handle handle = socket_ptr->GetSocket();
+    uint64_t handle = socket_ptr->GetSocket();
     if (err & EVENT_CONNECT) {
         // remote refuse connect
         if (err & ERR_CONNECT_FAILED || err & ERR_CONNECT_CLOSE) {
@@ -298,7 +306,7 @@ void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32
 
         }
         if (_connection_call_back) {
-            _connection_call_back(handle, err);
+            _connection_call_back(socket_ptr->_upper_sock, err);
         }
 
         // start read
@@ -312,14 +320,12 @@ void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32
 
     } else if (err & EVENT_DISCONNECT) {
         if (err & ERR_CONNECT_CLOSE) {
-            {
-                std::unique_lock<std::mutex> lock(_mutex);
-                _socket_map.erase(socket_ptr->GetSocket());
-            }
             err = CEC_SUCCESS;
             if (_disconnection_call_back) {
-                _disconnection_call_back(handle, err);
+                _disconnection_call_back(socket_ptr->_upper_sock, err);
             }
+            std::unique_lock<std::mutex> lock(_mutex);
+            _socket_map.erase(socket_ptr->GetSocket());
         }
 
     } else if (err & EVENT_READ) {
@@ -338,7 +344,7 @@ void CCppNetImpl::_ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32
 
         // call read back function 
         if (_read_call_back) {
-            _read_call_back(handle, socket_ptr->_read_event->_buffer.Get(), socket_ptr->_read_event->_off_set, err);
+            _read_call_back(socket_ptr->_upper_sock, socket_ptr->_read_event->_buffer.Get(), socket_ptr->_read_event->_off_set, err);
         }
         
 #ifndef __linux__
@@ -372,7 +378,7 @@ void CCppNetImpl::_WriteFunction(base::CMemSharePtr<CEventHandler>& event, uint3
     }
 
     auto socket_ptr = event->_client_socket.Lock();
-    Handle handle = socket_ptr->GetSocket();
+    uint64_t handle = socket_ptr->GetSocket();
     if (err & EVENT_WRITE) {
         if (err & ERR_CONNECT_CLOSE) {
             err = CEC_CLOSED;
@@ -387,7 +393,7 @@ void CCppNetImpl::_WriteFunction(base::CMemSharePtr<CEventHandler>& event, uint3
             err = CEC_SUCCESS;
         }
         if (_write_call_back) {
-             _write_call_back(handle, socket_ptr->_read_event->_off_set, err);
+            _write_call_back(socket_ptr->_upper_sock, socket_ptr->_read_event->_off_set, err);
         }
 #ifndef __linux__
         if (err == CEC_CLOSED || err == CEC_CONNECT_BREAK) {

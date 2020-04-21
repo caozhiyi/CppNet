@@ -51,18 +51,19 @@ void DisConnectionFunc(const Handle& handle, uint32_t err) {
 
 int main() {
 
-    cppnet::Init(1);
+    cppnet::CCppNet net;
+    net.Init(1);
 
-    cppnet::SetConnectionCallback(ConnectFunc);
-    cppnet::SetWriteCallback(WriteFunc);
-    cppnet::SetReadCallback(ReadFunc);
-    cppnet::SetDisconnectionCallback(DisConnectionFunc);
+    net.SetConnectionCallback(ConnectFunc);
+    net.SetWriteCallback(WriteFunc);
+    net.SetReadCallback(ReadFunc);
+    net.SetDisconnectionCallback(DisConnectionFunc);
     for (size_t i = 0; i < 10000; i++) {
 #ifndef __linux__
         std::string msg = GetMsg();
-        cppnet::Connection("127.0.0.1", 8921, msg.c_str(), msg.length());
+        net.Connection("127.0.0.1", 8921, msg.c_str(), msg.length());
 #else
-        cppnet::Connection("127.0.0.1", 8921);
+        net.Connection("127.0.0.1", 8921);
 #endif // !__linux__
     }
 
@@ -74,9 +75,9 @@ int main() {
         for (auto iter = handle_vec.begin(); iter != handle_vec.end(); ++iter) {
             base::CRunnable::Sleep(1);
             std::string msg = GetMsg();
-            cppnet::Write(*iter, msg.c_str(), msg.length());
+            (*iter)->Write(msg.c_str(), msg.length());
         }
     }
     
-    cppnet::Join();
+    net.Join();
 }

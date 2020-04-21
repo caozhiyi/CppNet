@@ -1,7 +1,7 @@
 #ifndef HEADER_INCLUDE_CPPNETDEFINE
 #define HEADER_INCLUDE_CPPNETDEFINE
 
-#include <memory
+#include <memory>
 #include <functional>
 
 #include "Type.h"
@@ -9,6 +9,7 @@
 
 namespace cppnet {
     // socket
+    class CNSocket;
     typedef std::shared_ptr<CNSocket> Handle;
     // call back define
     // param : param is setted when set

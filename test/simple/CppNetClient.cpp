@@ -31,12 +31,12 @@ void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t 
         base::CRunnable::Sleep(1000);
 
         if (index > 5) {
-            Close(handle);
+            handle->Close();
             return;
         }
         
         auto msg = GetMsg();
-        Write(handle, msg.c_str(), msg.length());
+        handle->Write(msg.c_str(), msg.length());
 
     } else {
         std::cout << "Close" << std::endl;
@@ -47,10 +47,10 @@ void ConnectFunc(const Handle& handle, uint32_t err) {
     if (err == CEC_SUCCESS) {
         std::string ip;
         uint16_t port;
-        GetIpAddress(handle, ip, port);
+        handle->GetAddress(ip, port);
         std::cout << " [ConnectFunc] : ip : " << ip << "port : " << port << std::endl;
         auto msg = GetMsg();
-        Write(handle, msg.c_str(), msg.length());
+        handle->Write(msg.c_str(), msg.length());
 
     } else {
         std::cout << " [ConnectFunc] some thing error : " << err << std::endl;
@@ -63,19 +63,19 @@ void DisConnectionFunc(const Handle& handle, uint32_t err) {
 
 int main() {
 
-    cppnet::Init(1);
-
-    cppnet::SetConnectionCallback(ConnectFunc);
-    cppnet::SetWriteCallback(WriteFunc);
-    cppnet::SetReadCallback(ReadFunc);
-    cppnet::SetDisconnectionCallback(DisConnectionFunc);
+    cppnet::CCppNet net;
+    net.Init(1);
+    net.SetConnectionCallback(ConnectFunc);
+    net.SetWriteCallback(WriteFunc);
+    net.SetReadCallback(ReadFunc);
+    net.SetDisconnectionCallback(DisConnectionFunc);
 
     auto msg = GetMsg();
 #ifndef __linux__
-    cppnet::Connection("127.0.0.1", 8921, msg.c_str(), msg.length());
+    net.Connection("127.0.0.1", 8921, msg.c_str(), msg.length());
 #else
-    cppnet::Connection("127.0.0.1", 8921);
+    net.Connection("127.0.0.1", 8921);
 #endif // !__linux__
 
-    cppnet::Join();
+    net.Join();
 }

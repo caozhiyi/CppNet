@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "CppNet.h"
+#include "Socket.h"
 
 using namespace cppnet;
 
@@ -28,7 +29,7 @@ void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t 
         std::cout << "Thread ID : " << std::this_thread::get_id() << std::endl;
         std::cout << "Read size : " << len << std::endl << std::endl;
         auto msg = GetMsg();
-        Write(handle, msg.c_str(), msg.length());
+        handle->Write(msg.c_str(), msg.length());
     } else {
         std::cout << "Close" << std::endl;
     }
@@ -38,7 +39,7 @@ void ConnectFunc(const Handle& handle, uint32_t err) {
     if (err == CEC_SUCCESS) {
         std::string ip;
         uint16_t port;
-        GetIpAddress(handle, ip, port);
+        handle->GetAddress(ip, port);
         std::cout << "[ConnectFunc] : ip : " << ip << "port : " << port << std::endl;
 
     } else {
@@ -52,14 +53,15 @@ void DisConnectionFunc(const Handle& handle, uint32_t err) {
 
 int main() {
 
-    cppnet::Init(1);
+    cppnet::CCppNet net;
+    net.Init(1);
 
-    cppnet::SetAcceptCallback(ConnectFunc);
-    cppnet::SetWriteCallback(WriteFunc);
-    cppnet::SetReadCallback(ReadFunc);
-    cppnet::SetDisconnectionCallback(DisConnectionFunc);
+    net.SetAcceptCallback(ConnectFunc);
+    net.SetWriteCallback(WriteFunc);
+    net.SetReadCallback(ReadFunc);
+    net.SetDisconnectionCallback(DisConnectionFunc);
 
-    cppnet::ListenAndAccept("0.0.0.0", 8921);
+    net.ListenAndAccept("0.0.0.0", 8921);
 
-    cppnet::Join();
+    net.Join();
 }

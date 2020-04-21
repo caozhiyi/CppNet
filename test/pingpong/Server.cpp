@@ -1,5 +1,7 @@
 #include <atomic>
 #include <iostream>
+
+#include "Socket.h"
 #include "CppNet.h"
 
 using namespace cppnet;
@@ -27,7 +29,7 @@ void OnConnection(const Handle& handle, uint32_t error) {
     count++;
     if (error == CEC_SUCCESS) {
         std::cout << " accept a socket. count: " << count << std::endl;
-        SetNoDelay(handle);
+        //SetNoDelay(handle);
     }
 }
 
@@ -36,7 +38,7 @@ void OnMessage(const Handle& handle, base::CBuffer* data, uint32_t, uint32_t err
     if (error == CEC_SUCCESS) {
         while (data->GetCanReadLength()) {
            int ret = data->Read(buff, 65535);
-           Write(handle, buff, ret);
+           handle->Write(buff, ret);
         }
 
     } else {
@@ -45,14 +47,14 @@ void OnMessage(const Handle& handle, base::CBuffer* data, uint32_t, uint32_t err
 }
 
 int main() {
-    count = 0;
-    cppnet::Init(4);
+    cppnet::CCppNet net;
+    net.Init(4);
 
-    cppnet::SetAcceptCallback(OnConnection);
-    cppnet::SetReadCallback(OnMessage);
+    net.SetAcceptCallback(OnConnection);
+    net.SetReadCallback(OnMessage);
 
-    cppnet::ListenAndAccept("0.0.0.0", 8921);
+    net.ListenAndAccept("0.0.0.0", 8921);
 
-    cppnet::Join();
+    net.Join();
 }
 

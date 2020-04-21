@@ -25,9 +25,6 @@ CIOCP::~CIOCP() {
 }
 
 bool CIOCP::Init(uint32_t thread_num) {
-    if (thread_num == 0) {
-        thread_num = CCppNetImpl::Instance().GetThreadNum();
-    }
     //tell iocp thread num
     _iocp_handler = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, thread_num);
     if (_iocp_handler == INVALID_HANDLE_VALUE) {

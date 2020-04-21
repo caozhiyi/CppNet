@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 #include "CppNet.h"
+#include "Socket.h"
 #include "Runnable.h"
 
 #ifndef __linux__
@@ -54,7 +55,7 @@ class Session {
        _bytes_read += len_get;
        while (data->GetCanReadLength()) {
            int ret = data->Read(buff, 65535);
-           Write(handle, buff, ret);
+           handle->Write(buff, ret);
        }
     }
 
@@ -65,9 +66,9 @@ class Session {
 
 class Client {
 public:
-    Client(int block_size, int session_count, int timeout, const std::string& ip, int port) : 
+    Client(int block_size, int session_count, int timeout, const std::string& ip, int port, cppnet::CCppNet* net) : 
                              _ip(ip), _port(port), _session_count(session_count), _timeout(timeout),
-                             _block_size(block_size) {
+                             _block_size(block_size), _net(net) {
         _num_connected = 0;
         for (int i = 0; i < _block_size; ++i) {
             _message.push_back(static_cast<char>(i % 128));
@@ -75,10 +76,10 @@ public:
     }
 
     void Start() {
-        SetTimer(_timeout, std::bind(&Client::HandleTimeout, this, std::placeholders::_1), nullptr);
+        _net->SetTimer(_timeout, std::bind(&Client::HandleTimeout, this, std::placeholders::_1), nullptr);
 
         for (int i = 0; i < _session_count; ++i) {
-            Connection(_ip, _port);
+            _net->Connection(_ip, _port);
         }
     }
 
@@ -134,7 +135,7 @@ public:
           std::cout << static_cast<double>(totalBytesRead) / ((_timeout / 1000) * 1024 * 1024)
                     << " MiB/s throughput" << std::endl;
 
-          Dealloc();
+          delete _net;
       }
   }
 
@@ -143,7 +144,7 @@ private:
     void HandleTimeout(void*) {
         std::cout << "stop" << std::endl;;
         for (auto& session : _sessions) {
-            Close(session.first);
+            session.first->Close();
         }
     }
 
@@ -154,13 +155,14 @@ private:
     int          _block_size;
     std::string       _message;
     std::atomic_uint  _num_connected;
+    cppnet::CCppNet*  _net;
     std::unordered_map<Handle, std::unique_ptr<Session>> _sessions;
 };
 
 void Session::OnConnection(const Handle& handle) {
-    SetNoDelay(handle);
+    //SetNoDelay(handle);
     auto msg = _owner->Message();
-    Write(handle, msg.c_str(), msg.length());
+    handle->Write(msg.c_str(), msg.length());
 }
 
 int main(int argc, char* argv[]) {
@@ -177,18 +179,19 @@ int main(int argc, char* argv[]) {
     int session_count = atoi(argv[5]);
     int timeout       = atoi(argv[6]);
 
-    cppnet::Init(threadCount);
+    cppnet::CCppNet* net = new cppnet::CCppNet;
+    net->Init(threadCount);
 
-    Client client(block_size, session_count, timeout, ip, port);
+    Client client(block_size, session_count, timeout, ip, port, net);
 
-    cppnet::SetConnectionCallback(std::bind(&Client::OnConnect, &client, std::placeholders::_1, std::placeholders::_2));
-    cppnet::SetReadCallback(std::bind(&Client::OnMessage, &client, std::placeholders::_1, std::placeholders::_2,
+    net->SetConnectionCallback(std::bind(&Client::OnConnect, &client, std::placeholders::_1, std::placeholders::_2));
+    net->SetReadCallback(std::bind(&Client::OnMessage, &client, std::placeholders::_1, std::placeholders::_2,
                                    std::placeholders::_3, std::placeholders::_4));
-    cppnet::SetDisconnectionCallback(std::bind(&Client::OnDisconnect, &client, std::placeholders::_1, std::placeholders::_2));
+    net->SetDisconnectionCallback(std::bind(&Client::OnDisconnect, &client, std::placeholders::_1, std::placeholders::_2));
 
     client.Start();
 
-    cppnet::Join();
+    net->Join();
 
     return 0;
 }

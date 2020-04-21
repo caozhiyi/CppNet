@@ -1,5 +1,4 @@
 #include "Log.h"
-#include "CppNet.h"
 #include "RPCServer.h"
 #include "InfoRouter.h"
 #include "FuncThread.h"
@@ -26,13 +25,13 @@ void CRPCServer::Destroy() {
 }
 
 void CRPCServer::Start(short port, std::string ip) {
-    cppnet::Init(2);
+    _net.Init(2);
 
-    cppnet::SetAcceptCallback(std::bind(&CRPCServer::_DoAccept, this, std::placeholders::_1, std::placeholders::_2));
-    cppnet::SetWriteCallback(std::bind(&CRPCServer::_DoWrite, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-    cppnet::SetReadCallback(std::bind(&CRPCServer::_DoRead, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
+    _net.SetAcceptCallback(std::bind(&CRPCServer::_DoAccept, this, std::placeholders::_1, std::placeholders::_2));
+    _net.SetWriteCallback(std::bind(&CRPCServer::_DoWrite, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    _net.SetReadCallback(std::bind(&CRPCServer::_DoRead, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 
-    cppnet::ListenAndAccept(ip, port);
+    _net.ListenAndAccept(ip, port);
 
 	for (;;) {
 		auto info = _info_router->GetRet();
@@ -41,7 +40,7 @@ void CRPCServer::Start(short port, std::string ip) {
 		}
 	}
 
-    cppnet::Join();
+    _net.Join();
 }
 
 bool CRPCServer::RegisterFunc(std::string name, std::string func_str, const CommonFunc& func) {
@@ -117,7 +116,7 @@ void CRPCServer::_DoAccept(const cppnet::Handle& handle, uint32_t) {
         abort();
     }
     base::LOG_DEBUG("send to %d, buf : %s", handle, buf);
-    cppnet::Write(handle, buf, len);
+    handle->Write(buf, len);
 }
 
 void CRPCServer::_PackageAndSend(const cppnet::Handle& handle, FuncCallInfo* info, int code) {
@@ -135,6 +134,6 @@ void CRPCServer::_PackageAndSend(const cppnet::Handle& handle, FuncCallInfo* inf
         send = false;
 	}
 	if (send) {
-        cppnet::Write(handle, send_buf, need_len);
+        handle->Write(send_buf, need_len);
     }
 }

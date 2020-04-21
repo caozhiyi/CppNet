@@ -4,6 +4,7 @@
 
 #include "Log.h"
 #include "CNConfig.h"
+#include "CppNetImpl.h"
 #include "SocketBase.h"
 #include "WinExpendFunc.h"
 
@@ -90,4 +91,13 @@ CSocketBase::CSocketBase(std::shared_ptr<CEventActions>& event_actions) : _add_e
 CSocketBase::~CSocketBase() {
     closesocket(_sock);
 }
+
+void CSocketBase::SetCppnetInstance(std::shared_ptr<CCppNetImpl> ins) {
+    _cppnet_instance = ins;
+}
+
+std::shared_ptr<CCppNetImpl> CSocketBase::GetCppnetInstance() {
+    return _cppnet_instance.lock();
+}
+
 #endif

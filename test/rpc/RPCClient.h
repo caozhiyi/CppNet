@@ -2,7 +2,7 @@
 #define TEST_RPC_RPCCLIENT_HEADER
 
 #include "Socket.h"
-#include "CppDefine.h"
+#include "CppNet.h"
 #include "CommonStruct.h"
 #include "ParsePackage.h"
 
@@ -32,6 +32,7 @@ private:
 	std::shared_ptr<CInfoRouter>		_info_router;
 	std::shared_ptr<CParsePackage>		_parse_package;
 
+	cppnet::CCppNet						_net;
     std::string                         _ip;
     int                                 _port;
     cppnet::Handle                      _socket;
@@ -59,7 +60,7 @@ bool CRPCClient::CallFunc(const std::string& func_name, Args&&...args) {
 	if (!_parse_package->PackageFuncCall(buf, len, func_name, _func_map, vec)) {
 		return false;
 	}
-    cppnet::Write(_socket, buf, len);
+    _socket->Write(buf, len);
     return true;
 }
 

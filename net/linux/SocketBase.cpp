@@ -6,6 +6,7 @@
 #include "CNConfig.h"
 #include "SocketBase.h"
 #include "MemoryPool.h"
+#include "CppNetImpl.h"
 #include "EventActions.h"
 
 using namespace cppnet;
@@ -23,4 +24,13 @@ CSocketBase::CSocketBase(std::shared_ptr<CEventActions>& event_actions) : _add_e
 CSocketBase::~CSocketBase() {
     close(_sock);
 }
+
+void CSocketBase::SetCppnetInstance(std::shared_ptr<CCppNetImpl> ins) { 
+    _cppnet_instance = ins; 
+}
+
+std::shared_ptr<CCppNetImpl> CSocketBase::GetCppnetInstance() { 
+    return _cppnet_instance.lock();
+}
+
 #endif // __linux__

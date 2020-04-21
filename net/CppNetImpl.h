@@ -4,6 +4,7 @@
 #include <mutex>
 #include <string>
 #include <thread>
+#include <memory>
 #include <unordered_map>
 
 #include "Timer.h"
@@ -15,10 +16,10 @@
 
 namespace cppnet {
 
-    class CEventActions;
     class CSocket;
+    class CEventActions;
     class CAcceptSocket;
-    class CCppNetImpl : public base::CSingle<CCppNetImpl> {
+    class CCppNetImpl : public std::enable_shared_from_this<CCppNetImpl> {
     public:
         CCppNetImpl();
         ~CCppNetImpl();
@@ -43,13 +44,13 @@ namespace cppnet {
         //client
         void SetConnectionCallback(const connection_call_back& func);
 #ifndef __linux__
-        Handle Connection(uint16_t port, std::string ip, const char* buf, uint32_t buf_len);
+        bool Connection(const std::string& ip, uint16_t port, const char* buf, uint32_t buf_len);
 #endif
-        Handle Connection(uint16_t port, std::string ip);
+        bool Connection(const std::string& ip, uint16_t port);
 
         // get socket
-        base::CMemSharePtr<CSocketImpl> GetSocket(const Handle& handle);
-        bool RemoveSocket(const Handle& handle);
+        base::CMemSharePtr<CSocketImpl> GetSocket(uint64_t handle);
+        bool RemoveSocket(uint64_t handle);
         // get thread number
         uint32_t GetThreadNum();
 

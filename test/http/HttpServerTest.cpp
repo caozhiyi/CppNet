@@ -1,4 +1,5 @@
 #include <map>
+#include <string>
 #include <fstream>
 #include <iostream>
 
@@ -65,18 +66,19 @@ void DisConnectionFunc(const cppnet::Handle& , uint32_t ) {
 }
 
 int main() {
-    cppnet::Init(2);
+    cppnet::CCppNet net;
+    net.Init(2);
 
     CHttpServer server;
     server.SetHttpCallback(OnRequest);
 
-    cppnet::SetAcceptCallback(std::bind(&CHttpServer::OnConnection, &server, std::placeholders::_1, std::placeholders::_2));
-    cppnet::SetWriteCallback(std::bind(&CHttpServer::OnMessageSend, &server, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-    cppnet::SetReadCallback(std::bind(&CHttpServer::OnMessage, &server, std::placeholders::_1, std::placeholders::_2, 
+    net.SetAcceptCallback(std::bind(&CHttpServer::OnConnection, &server, std::placeholders::_1, std::placeholders::_2));
+    net.SetWriteCallback(std::bind(&CHttpServer::OnMessageSend, &server, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    net.SetReadCallback(std::bind(&CHttpServer::OnMessage, &server, std::placeholders::_1, std::placeholders::_2, 
                                               std::placeholders::_3, std::placeholders::_4));
-    cppnet::SetDisconnectionCallback(DisConnectionFunc);
+    net.SetDisconnectionCallback(DisConnectionFunc);
 
-    cppnet::ListenAndAccept("0.0.0.0", 8921);
+    net.ListenAndAccept("0.0.0.0", 8921);
 
-    cppnet::Join();
+    net.Join();
 }

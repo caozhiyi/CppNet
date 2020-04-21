@@ -85,14 +85,16 @@ void CAcceptSocket::_Accept(base::CMemSharePtr<CAcceptEventHandler>& event) {
     event->_client_socket->_read_event->_client_socket = event->_client_socket;
 
     //call accept call back function
-    CCppNetImpl::Instance()._AcceptFunction(event->_client_socket, event->_event_flag_set);
-
-    //call read call back function
-    CCppNetImpl::Instance()._ReadFunction(event->_client_socket->_read_event, EVENT_READ);
+    auto cppnet_ins = GetCppnetInstance();
+    if (cppnet_ins) {
+        cppnet_ins->_AcceptFunction(event->_client_socket, event->_event_flag_set);
+        cppnet_ins->_ReadFunction(event->_client_socket->_read_event, EVENT_READ);
+    }
 
     //post accept again
     context->Clear();
     event->_client_socket = base::MakeNewSharedPtr<CSocketImpl>(_pool.get(), _event_actions);
+    event->_client_socket->SetCppnetInstance(cppnet_ins);
     SyncAccept();
 }
 #endif

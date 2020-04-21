@@ -1,12 +1,14 @@
 #ifndef __linux__
-#include "EventHandler.h"
-#include "Buffer.h"
-#include "WinExpendFunc.h"
+
 #include "Log.h"
 #include "IOCP.h"
-#include "EventActions.h"
+#include "Buffer.h"
+#include "Socket.h"
 #include "SocketImpl.h"
 #include "CppNetImpl.h"
+#include "EventActions.h"
+#include "EventHandler.h"
+#include "WinExpendFunc.h"
 
 using namespace cppnet;
 
@@ -49,7 +51,10 @@ void CSocketImpl::SyncRead() {
 
         // something wrong
         }else {
-            CCppNetImpl::Instance()._ReadFunction(_read_event, ERR_CONNECT_CLOSE | EVENT_DISCONNECT);
+            auto cppnet_ins = GetCppnetInstance();
+            if (cppnet_ins) {
+                cppnet_ins->_ReadFunction(_read_event, ERR_CONNECT_CLOSE | EVENT_DISCONNECT);
+            }
         }
     }
 }
@@ -69,7 +74,10 @@ void CSocketImpl::SyncWrite(const char* src, uint32_t len) {
 
         // something wrong
         } else {
-            CCppNetImpl::Instance()._ReadFunction(_read_event, ERR_CONNECT_CLOSE | EVENT_DISCONNECT);
+            auto cppnet_ins = GetCppnetInstance();
+            if (cppnet_ins) {
+                cppnet_ins->_ReadFunction(_read_event, ERR_CONNECT_CLOSE | EVENT_DISCONNECT);
+            }
         }
     }
 }
@@ -113,7 +121,10 @@ void CSocketImpl::SyncDisconnection() {
             _post_event_num++;
 
         } else {
-            CCppNetImpl::Instance()._WriteFunction(_write_event, _write_event->_event_flag_set | ERR_CONNECT_CLOSE | EVENT_DISCONNECT);
+            auto cppnet_ins = GetCppnetInstance();
+            if (cppnet_ins) {
+                cppnet_ins->_WriteFunction(_write_event, _write_event->_event_flag_set | ERR_CONNECT_CLOSE | EVENT_DISCONNECT);
+            }
         }
     }
 }
@@ -143,7 +154,10 @@ void CSocketImpl::Recv(base::CMemSharePtr<CEventHandler>& event) {
         // close when all event return.
         if (_post_event_num == 0) {
             err = EVENT_DISCONNECT | ERR_CONNECT_CLOSE;
-            CCppNetImpl::Instance()._ReadFunction(event, err);
+            auto cppnet_ins = GetCppnetInstance();
+            if (cppnet_ins) {
+                cppnet_ins->_ReadFunction(event, err);
+            }
             event->_event_flag_set = 0;
         }
         return;
@@ -152,7 +166,10 @@ void CSocketImpl::Recv(base::CMemSharePtr<CEventHandler>& event) {
         event->_buffer->Write(context->_wsa_buf.buf, event->_off_set);
     }
     if (err > -1) {
-        CCppNetImpl::Instance()._ReadFunction(event, err);
+        auto cppnet_ins = GetCppnetInstance();
+        if (cppnet_ins) {
+            cppnet_ins->_ReadFunction(event, err);
+        }
         event->_event_flag_set = 0;
     }
 }
@@ -172,7 +189,10 @@ void CSocketImpl::Send(base::CMemSharePtr<CEventHandler>& event) {
     }
 
     if (err > -1) {
-        CCppNetImpl::Instance()._WriteFunction(event, err);
+        auto cppnet_ins = GetCppnetInstance();
+        if (cppnet_ins) {
+            cppnet_ins->_WriteFunction(event, err);
+        }
         event->_event_flag_set = 0;
     }
 }

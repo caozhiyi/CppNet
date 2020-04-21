@@ -12,8 +12,8 @@ using namespace cppnet;
 
 class CSendFile {
 public:
-    CSendFile(const std::string& file) : _status(hello),
-                                         _file_name(file) {
+    CSendFile(const std::string& file, cppnet::CCppNet* net) : _status(hello),
+            _file_name(file), _net(net) {
     }
 
     ~CSendFile() {
@@ -54,8 +54,8 @@ public:
                 std::cout << "something error while sending!" << std::endl;
             }
 
-            Close(handle);
-            Dealloc();
+            handle->Close();
+            delete _net;
         }
     }
 
@@ -66,7 +66,7 @@ public:
             std::cout << "get file name   : " << _header._name << std::endl;
             std::cout << "get file length : " << _header._length << std::endl;
             std::cout << "get file md5    : " << _header._md5 << std::endl;
-            Write(handle, (char*)&_header, sizeof(_header));
+            handle->Write((char*)&_header, sizeof(_header));
 
         } else {
             std::cout << "connect to server failed." << std::endl;
@@ -94,7 +94,7 @@ private:
         while (!_file.eof()) {
             _file.read(buf, __read_len);
             int len =  _file.gcount();
-            cppnet::Write(handle, buf, len);
+            handle->Write(buf, len);
         }
         _file.close();
     }
@@ -104,6 +104,7 @@ private:
     FileHeader   _header;
     STATUS       _status;
     std::string  _file_name;
+    cppnet::CCppNet* _net;
 };
 
 int main(int argc, char *argv[]) {
@@ -114,15 +115,18 @@ int main(int argc, char *argv[]) {
     }
 
     std::string file_name = argv[1];
-    CSendFile file(file_name);
+   
+    cppnet::CCppNet* net(new cppnet::CCppNet());
 
-    cppnet::Init(1);
-    cppnet::SetConnectionCallback(std::bind(&CSendFile::OnConnect, &file, std::placeholders::_1, std::placeholders::_2));
-    cppnet::SetReadCallback(std::bind(&CSendFile::OnRecv, &file, std::placeholders::_1, std::placeholders::_2,
+    CSendFile file(file_name, net);
+
+    net->Init(1);
+    net->SetConnectionCallback(std::bind(&CSendFile::OnConnect, &file, std::placeholders::_1, std::placeholders::_2));
+    net->SetReadCallback(std::bind(&CSendFile::OnRecv, &file, std::placeholders::_1, std::placeholders::_2,
                                       std::placeholders::_3, std::placeholders::_4));
 
-    cppnet::Connection("127.0.0.1", 8921);
+    net->Connection("127.0.0.1", 8921);
     
-    cppnet::Join();
+    net->Join();
     return 0;
 }

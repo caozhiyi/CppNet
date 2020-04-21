@@ -16,14 +16,14 @@ CRPCClient::~CRPCClient() {
 void CRPCClient::Start(short port, std::string ip) {
     _ip = ip;
     _port = port;
-    cppnet::Init(1);
+    _net.Init(1);
 
-    cppnet::SetConnectionCallback(std::bind(&CRPCClient::_DoConnect, this, std::placeholders::_1, std::placeholders::_2));
-    cppnet::SetWriteCallback(std::bind(&CRPCClient::_DoWrite, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-    cppnet::SetReadCallback(std::bind(&CRPCClient::_DoRead, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
-    cppnet::SetDisconnectionCallback(std::bind(&CRPCClient::_DoDisConnect, this, std::placeholders::_1, std::placeholders::_2));
+    _net.SetConnectionCallback(std::bind(&CRPCClient::_DoConnect, this, std::placeholders::_1, std::placeholders::_2));
+    _net.SetWriteCallback(std::bind(&CRPCClient::_DoWrite, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    _net.SetReadCallback(std::bind(&CRPCClient::_DoRead, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
+    _net.SetDisconnectionCallback(std::bind(&CRPCClient::_DoDisConnect, this, std::placeholders::_1, std::placeholders::_2));
 
-    cppnet::Connection(ip, port);
+    _net.Connection(ip, port);
 
 }
 
@@ -97,10 +97,10 @@ void CRPCClient::_DoConnect(const cppnet::Handle& handle, uint32_t err) {
     }
     _socket = handle;
 	_connected = true;
-    cppnet::Write(handle, "\r\n\r\n", strlen("\r\n\r\n"));
+    handle->Write("\r\n\r\n", strlen("\r\n\r\n"));
 }
 
 void CRPCClient::_DoDisConnect(const cppnet::Handle& handle, uint32_t err) {
     base::LOG_ERROR("disconnect with server!");
-    cppnet::Connection(_ip, _port);
+    _net.Connection(_ip, _port);
 }
