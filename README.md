@@ -6,6 +6,7 @@
 </p> 
 
 See [chinese](/README_cn.md) 
+See the details in chinese [Wiki](https://github.com/caozhiyi/CppNet/wiki)
 ## Introduction
 
 CppNet is a proactor mode and multithreaded network with C++11 on tcp.   
@@ -17,48 +18,52 @@ CppNet is a proactor mode and multithreaded network with C++11 on tcp.
 
 All the interface files are in [include](/include). The interface definitions for library initialization and timer are in [CppNet](/include/CppNet.h):    
 ```c++
-    // common
-    // init cppnet library.
-    // thread_num: he number of running threads.
-    void Init(int32_t thread_num);
-    void Dealloc();
+    class CCppNet {
+    public:
+        // common
+        // init cppnet library.
+        // thread_num : the number of running threads.
+        void Init(int32_t thread_num);
 
-    // thread join
-    void Join();
+        // thread join
+        void Join();
 
-    // must set callback before listen
-    void SetReadCallback(const read_call_back& func);
-    void SetWriteCallback(const write_call_back& func);
-    void SetDisconnectionCallback(const connection_call_back& func);
+        // must set callback before listen
+        void SetReadCallback(const read_call_back& func);
+        void SetWriteCallback(const write_call_back& func);
+        void SetDisconnectionCallback(const connection_call_back& func);
 
-    //timer
-    uint64_t SetTimer(int32_t interval, const timer_call_back& func, void* param = nullptr, bool always = false);
-    void RemoveTimer(uint64_t timer_id);
+        //timer
+        uint64_t SetTimer(int32_t interval, const timer_call_back& func, void* param = nullptr, bool always = false);
+        void RemoveTimer(uint64_t timer_id);
 
-    //server
-    void SetAcceptCallback(const connection_call_back& func);
-    bool ListenAndAccept(int16_t port, std::string ip);
+        //server
+        void SetAcceptCallback(const connection_call_back& func);
+        bool ListenAndAccept(const std::string& ip, int16_t port);
 
-    //client
-    void SetConnectionCallback(const connection_call_back& func);
+        //client
+        void SetConnectionCallback(const connection_call_back& func);
+
+#ifndef __linux__
+        // sync connection. 
+        bool Connection(const std::string& ip, int16_t port, const char* buf, int32_t buf_len);
+#endif
+        bool Connection(const std::string& ip, int16_t port);
+    };
 ```
 Since all network IO interfaces are defined as callback notification modes, callback functions for each call need to be set when initializing the library.     
 By setting callbacks instead of providing virtual function inheritance, we hope to be as simple as possible, reduce the inheritance relationship of classes, and increase the flexibility of callbacks. You can set callbacks to any function.         
 The interface definition for network IO are in [Socket](/include/Socket.h):      
 ```c++
-    // get socket ip and adress
-    int16_t GetIpAddress(const Handle& handle, std::string& ip, uint16_t& port);
-    // post sync write event.
-    int16_t Write(const Handle& handle, const char* src, int32_t len);
-    // post a sync task to io thread
-    int16_t PostTask(std::function<void(void)>& func);
-#ifndef __linux__
-    // sync connection. 
-    int16_t Connection(const std::string& ip, int16_t port, const char* buf, int32_t buf_len);
-#endif
-    int16_t Connection(const std::string& ip, int16_t port);
-
-    int16_t Close(const Handle& handle);
+    class CNSocket {
+    public:
+        // get socket ip and adress
+        int16_t GetAddress(std::string& ip, uint16_t& port);
+        // post sync write event.
+        int16_t Write(const char* src, int32_t len);
+        // close the connect
+        int16_t Close();
+    };
 ```
 The function of the interface is evident through declarations and annotations. Attention should be paid to the error code returned by the interface, defined in [CppDefine](/include/CppDefine.h):    
 ```c++

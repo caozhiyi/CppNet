@@ -5,6 +5,8 @@
     <a href="https://opensource.org/licenses/BSD-3-Clause"><img src="https://img.shields.io/badge/license-bsd-orange.svg" alt="Licenses"></a>
 </p> 
 
+查看更多细节 [Wiki](https://github.com/caozhiyi/CppNet/wiki)
+
 ## 简介
 
 CppNet是一个封装在Tcp协议上的Proactor模式multi-thread C++11网络库，目前支持在windows和linux上编译使用。     
@@ -16,48 +18,52 @@ CppNet是一个封装在Tcp协议上的Proactor模式multi-thread C++11网络库
 
 所有的接口文件都在 [include](/include) 中，其中关于库初始化和定时器的接口定义在 [CppNet](/include/CppNet.h) 中：   
 ```c++
-    // common
-    // init cppnet library.
-    // thread_num: the number of running threads.
-    void Init(int32_t thread_num);
-    void Dealloc();
+   class CCppNet {
+    public:
+        // common
+        // init cppnet library.
+        // thread_num : the number of running threads.
+        void Init(int32_t thread_num);
 
-    // thread join
-    void Join();
+        // thread join
+        void Join();
 
-    // must set callback before listen
-    void SetReadCallback(const read_call_back& func);
-    void SetWriteCallback(const write_call_back& func);
-    void SetDisconnectionCallback(const connection_call_back& func);
+        // must set callback before listen
+        void SetReadCallback(const read_call_back& func);
+        void SetWriteCallback(const write_call_back& func);
+        void SetDisconnectionCallback(const connection_call_back& func);
 
-    //timer
-    uint64_t SetTimer(int32_t interval, const timer_call_back& func, void* param = nullptr, bool always = false);
-    void RemoveTimer(uint64_t timer_id);
+        //timer
+        uint64_t SetTimer(int32_t interval, const timer_call_back& func, void* param = nullptr, bool always = false);
+        void RemoveTimer(uint64_t timer_id);
 
-    //server
-    void SetAcceptCallback(const connection_call_back& func);
-    bool ListenAndAccept(int16_t port, std::string ip);
+        //server
+        void SetAcceptCallback(const connection_call_back& func);
+        bool ListenAndAccept(const std::string& ip, int16_t port);
 
-    //client
-    void SetConnectionCallback(const connection_call_back& func);
+        //client
+        void SetConnectionCallback(const connection_call_back& func);
+
+#ifndef __linux__
+        // sync connection. 
+        bool Connection(const std::string& ip, int16_t port, const char* buf, int32_t buf_len);
+#endif
+        bool Connection(const std::string& ip, int16_t port);
+    };
 ```
 因为所有的网络IO接口都被定义为回调通知的模式，所以初始化库的时候需要设置各个调用的回调函数。     
 这里通过设置回调而不是提供虚函数继承的方式，是希望尽量的简单，减少类的继承关系，增加回调的灵活性，你可以将回调设置为任意一个函数。      
 关于网络IO的接口定义在[Socket](/include/Socket.h)中：   
 ```c++
-    // get socket ip and adress
-    int16_t GetIpAddress(const Handle& handle, std::string& ip, uint16_t& port);
-    // post sync write event.
-    int16_t Write(const Handle& handle, const char* src, int32_t len);
-    // post a sync task to io thread
-    int16_t PostTask(std::function<void(void)>& func);
-#ifndef __linux__
-    // sync connection. 
-    int16_t Connection(const std::string& ip, int16_t port, const char* buf, int32_t buf_len);
-#endif
-    int16_t Connection(const std::string& ip, int16_t port);
-
-    int16_t Close(const Handle& handle);
+    class CNSocket {
+    public:
+        // get socket ip and adress
+        int16_t GetAddress(std::string& ip, uint16_t& port);
+        // post sync write event.
+        int16_t Write(const char* src, int32_t len);
+        // close the connect
+        int16_t Close();
+    };
 ```
 接口的作用通过声明和注释即可明了。需要关注的是接口返回的错误码，与回调函数的声明一起定义在[CppDefine](/include/CppDefine.h)中：
 ```c++
