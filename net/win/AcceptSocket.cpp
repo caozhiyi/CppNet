@@ -81,20 +81,21 @@ void CAcceptSocket::_Accept(base::CMemSharePtr<CAcceptEventHandler>& event) {
     memcpy(event->_client_socket->_ip, inet_ntoa(client_addr->sin_addr), __addr_str_len);
     event->_client_socket->_port = client_addr->sin_port;
     event->_client_socket->_read_event->_buffer->Write(context->_lapped_buffer, event->_client_socket->_read_event->_off_set);
-    //get client socket
+    // get client socket
     event->_client_socket->_read_event->_client_socket = event->_client_socket;
 
-    //call accept call back function
+    // call accept call back function
     auto cppnet_ins = GetCppnetInstance();
     if (cppnet_ins) {
         cppnet_ins->_AcceptFunction(event->_client_socket, event->_event_flag_set);
         cppnet_ins->_ReadFunction(event->_client_socket->_read_event, EVENT_READ);
     }
 
-    //post accept again
     context->Clear();
+    // get a new client socket.windows create a new socket here. 
     event->_client_socket = base::MakeNewSharedPtr<CSocketImpl>(_pool.get(), _event_actions);
     event->_client_socket->SetCppnetInstance(cppnet_ins);
+    //post accept again
     SyncAccept();
 }
 #endif
