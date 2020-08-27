@@ -41,7 +41,7 @@ namespace cppnet {
         bool _AddEvent(base::CMemSharePtr<CEventHandler>& event, int32_t event_flag, uint64_t sock);
         bool _AddEvent(base::CMemSharePtr<CAcceptEventHandler>& event, int32_t event_flag, uint64_t sock);
         bool _ModifyEvent(base::CMemSharePtr<CEventHandler>& event, int32_t event_flag, uint64_t sock);
-        bool _ReserOneShot(base::CMemSharePtr<CEventHandler>& event, int32_t event_flag, uint64_t sock);
+        bool _ResetOneShot(base::CMemSharePtr<CEventHandler>& event, int32_t event_flag, uint64_t sock);
 
         void _DoTimeoutEvent(std::vector<base::CMemSharePtr<CTimerEvent>>& timer_vec);
         void _DoEvent(std::vector<epoll_event>& event_vec, int32_t num);

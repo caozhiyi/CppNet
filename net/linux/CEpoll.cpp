@@ -116,7 +116,7 @@ bool CEpoll::AddSendEvent(base::CMemSharePtr<CEventHandler>& event) {
         }
 
         //reset one shot flag
-        res = _ReserOneShot(event, EPOLLOUT, socket_ptr->GetSocket());
+        res = _ResetOneShot(event, EPOLLOUT, socket_ptr->GetSocket());
         socket_ptr->SetInActions(true);
         return res;
 
@@ -141,7 +141,7 @@ bool CEpoll::AddRecvEvent(base::CMemSharePtr<CEventHandler>& event) {
         }
 
         //reset one shot flag
-        res = _ReserOneShot(event, EPOLLIN, socket_ptr->GetSocket());
+        res = _ResetOneShot(event, EPOLLIN, socket_ptr->GetSocket());
         if (res) {
             socket_ptr->SetInActions(true);
         }
@@ -350,7 +350,7 @@ bool CEpoll::_ModifyEvent(base::CMemSharePtr<CEventHandler>& event, int32_t even
     return true;
 }
 
-bool CEpoll::_ReserOneShot(base::CMemSharePtr<CEventHandler>& event, int32_t event_flag, uint64_t sock) {
+bool CEpoll::_ResetOneShot(base::CMemSharePtr<CEventHandler>& event, int32_t event_flag, uint64_t sock) {
     // if per epoll handle, do nothing. 
     if (_per_epoll) {
         return true;
