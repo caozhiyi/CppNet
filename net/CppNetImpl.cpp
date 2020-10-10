@@ -199,6 +199,7 @@ bool CCppNetImpl::Connection(const std::string& ip, uint16_t port, const char* b
     base::CMemSharePtr<CSocketImpl> sock = base::MakeNewSharedPtr<CSocketImpl>(&_pool, actions);
     sock->SetCppnetInstance(shared_from_this());
     sock->SyncConnection(ip, port, buf, buf_len);
+    sock->_upper_sock = _MakeUpperSocket(sock->GetSocket());
 
     std::unique_lock<std::mutex> lock(_mutex);
     _socket_map[sock->GetSocket()] = sock;
@@ -224,6 +225,7 @@ bool CCppNetImpl::Connection(const std::string& ip, uint16_t port) {
         std::unique_lock<std::mutex> lock(_mutex);
         _socket_map[sock->GetSocket()] = sock;
     }
+    sock->_upper_sock = _MakeUpperSocket(sock->GetSocket());
     sock->SyncConnection(ip, port, "", 0);
 #else
     //create socket
@@ -237,6 +239,7 @@ bool CCppNetImpl::Connection(const std::string& ip, uint16_t port) {
         std::unique_lock<std::mutex> lock(_mutex);
         _socket_map[sock->GetSocket()] = sock;
     }
+    sock->_upper_sock = _MakeUpperSocket(temp_socket);
     sock->SyncConnection(ip, port);
 #endif
     return sock->GetSocket();
@@ -430,4 +433,11 @@ std::shared_ptr<CEventActions>& CCppNetImpl::_RandomGetActions() {
         iter++;
     }
     return iter->second;
+}
+
+std::shared_ptr<CNSocket> CCppNetImpl::_MakeUpperSocket(uint64_t sock) {
+    std::shared_ptr<CNSocket> cn_sock(new CNSocket());
+    cn_sock->_cppnet_instance = shared_from_this();
+    cn_sock->_socket_handle   = sock;
+    return cn_sock;
 }

@@ -59,6 +59,8 @@ namespace cppnet {
         void _ReadFunction(base::CMemSharePtr<CEventHandler>& event, uint32_t err);
         void _WriteFunction(base::CMemSharePtr<CEventHandler>& event, uint32_t err);
         std::shared_ptr<CEventActions>& _RandomGetActions();
+        // create a cn socket
+        std::shared_ptr<CNSocket> _MakeUpperSocket(uint64_t sock);
 
     private:
         friend class CSocketImpl;
