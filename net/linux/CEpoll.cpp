@@ -43,12 +43,15 @@ enum EPOLL_CODE {
     WEAK_EPOLL = 0
 };
 
-CEpoll::CEpoll(bool per_epoll) : _run(true), _per_epoll(per_epoll) {
+CEpoll::CEpoll(bool per_epoll) : _run(true), _per_epoll(per_epoll), _epoll_handler(-1) {
 
 }
 
 CEpoll::~CEpoll() {
-
+    if (_epoll_handler > 0) {
+        close(_epoll_handler);
+    }
+    
 }
 
 bool CEpoll::Init(uint32_t) {
