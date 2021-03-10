@@ -2,21 +2,21 @@
 
 #include "Log.h"
 
-using namespace base;
+namespace cppnet {
 
 const static int __log_buf_size = 1024;
 
-CLog::CLog() : _log_level(LOG_ERROR_LEVEL), _cur_date(0), _pool(__log_buf_size, 10){
+Log::Log() : _log_level(LOG_ERROR_LEVEL), _cur_date(0), _pool(__log_buf_size, 10){
 
 }
 
-CLog::~CLog() {
+Log::~Log() {
     Stop();
     Join();
     _log_file.close();
 }
 
-void CLog::Run() {
+void Log::Run() {
     while (!_stop) {
         char* log = _Pop();
         if (log) {
@@ -32,28 +32,28 @@ void CLog::Run() {
     }
 }
 
-void CLog::Stop() {
+void Log::Stop() {
     _stop = true;
     Push(nullptr);
 }
 
-void CLog::SetLogName(const std::string& file_name) {
+void Log::SetLogName(const std::string& file_name) {
     _file_name = file_name;
 }
 
-std::string CLog::GetLogName() {
+std::string Log::GetLogName() {
     return _file_name;
 }
 
-void CLog::SetLogLevel(LogLevel level) {
+void Log::SetLogLevel(LogLevel level) {
     _log_level = level;
 }
 
-LogLevel CLog::GetLogLevel() {
+LogLevel Log::GetLogLevel() {
     return (LogLevel)_log_level;
 }
 
-void CLog::LogDebug(const char* file, int line, const char* log...) {
+void Log::LogDebug(const char* file, int line, const char* log...) {
     if (_stop) {
         return;
     }
@@ -65,7 +65,7 @@ void CLog::LogDebug(const char* file, int line, const char* log...) {
     }
 }
 
-void CLog::LogInfo(const char* file, int line, const char* log...) {
+void Log::LogInfo(const char* file, int line, const char* log...) {
     if (_stop) {
         return;
     }
@@ -77,7 +77,7 @@ void CLog::LogInfo(const char* file, int line, const char* log...) {
     }
 }
 
-void CLog::LogWarn(const char* file, int line, const char* log...) {
+void Log::LogWarn(const char* file, int line, const char* log...) {
     if (_stop) {
         return;
     }
@@ -89,7 +89,7 @@ void CLog::LogWarn(const char* file, int line, const char* log...) {
     }
 }
 
-void CLog::LogError(const char* file, int line, const char* log...) {
+void Log::LogError(const char* file, int line, const char* log...) {
     if (_stop) {
         return;
     }
@@ -101,7 +101,7 @@ void CLog::LogError(const char* file, int line, const char* log...) {
     }
 }
 
-void CLog::LogFatal(const char* file, int line, const char* log...) {
+void Log::LogFatal(const char* file, int line, const char* log...) {
     if (_stop) {
         return;
     }
@@ -113,7 +113,7 @@ void CLog::LogFatal(const char* file, int line, const char* log...) {
     }
 }
 
-void CLog::_PushFormatLog(const char* file, int line, const char* level, const char* log, va_list list) {
+void Log::_PushFormatLog(const char* file, int line, const char* level, const char* log, va_list list) {
     _time.Now();
 
     char* time = _pool.PoolMalloc<char>(32);
@@ -131,7 +131,7 @@ void CLog::_PushFormatLog(const char* file, int line, const char* level, const c
     Push(log_str);
 }
 
-void CLog::_CheckDateFile() {
+void Log::_CheckDateFile() {
     if (_cur_date != _time.GetDate()) {
         _cur_date = _time.GetDate();
         if (_log_file.is_open()) {
@@ -144,4 +144,6 @@ void CLog::_CheckDateFile() {
 
         _log_file.open(file_name.c_str(), std::ios::app | std::ios::out);
     }
+}
+
 }

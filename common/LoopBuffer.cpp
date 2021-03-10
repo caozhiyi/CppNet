@@ -4,9 +4,9 @@
 #include "LoopBuffer.h"
 #include "MemoryPool.h"
 
-using namespace base;
+namespace cppnet {
 
-CLoopBuffer::CLoopBuffer(std::shared_ptr<CMemoryPool>& pool) : 
+LoopBuffer::LoopBuffer(std::shared_ptr<CMemoryPool>& pool) : 
     _can_read(false), 
     _next(nullptr), 
     _pool(pool) {
@@ -17,31 +17,31 @@ CLoopBuffer::CLoopBuffer(std::shared_ptr<CMemoryPool>& pool) :
     _read = _write = _buffer_start;
 }
 
-CLoopBuffer::~CLoopBuffer() {
+LoopBuffer::~LoopBuffer() {
     if (_buffer_start) {
         _pool->PoolLargeFree<char>(_buffer_start);
     }
 }
 
-int CLoopBuffer::ReadNotClear(char* res, int len) {
+int LoopBuffer::ReadNotClear(char* res, int len) {
     return _Read(res, len, false);
 }
 
-int CLoopBuffer::Read(char* res, int len) {
+int LoopBuffer::Read(char* res, int len) {
     if (res == nullptr) {
         return 0;
     }
     return _Read(res, len, true);
 }
 
-int CLoopBuffer::Write(const char* str, int len) {
+int LoopBuffer::Write(const char* str, int len) {
     if (str == nullptr) {
         return 0;
     }
     return _Write(str, len, true);
 }
 
-int CLoopBuffer::Clear(int len) {
+int LoopBuffer::Clear(int len) {
     if (len == 0) {
         std::unique_lock<std::mutex> lock(_mutex);
         _write = _read = _buffer_start;
@@ -95,11 +95,11 @@ int CLoopBuffer::Clear(int len) {
     } 
 }
 
-int CLoopBuffer::MoveWritePt(int len) {
+int LoopBuffer::MoveWritePt(int len) {
     return _Write(nullptr, len, false);
 }
 
-int CLoopBuffer::ReadUntil(char* res, int len) {
+int LoopBuffer::ReadUntil(char* res, int len) {
     if (GetCanReadLength() < len) {
         return 0;
     
@@ -108,7 +108,7 @@ int CLoopBuffer::ReadUntil(char* res, int len) {
     }
 }
 
-int CLoopBuffer::ReadUntil(char* res, int len, const char* find, int find_len, int& need_len) {
+int LoopBuffer::ReadUntil(char* res, int len, const char* find, int find_len, int& need_len) {
     int size = FindStr(find, find_len);
     if (size) {
         if (size <= len) {
@@ -123,7 +123,7 @@ int CLoopBuffer::ReadUntil(char* res, int len, const char* find, int find_len, i
     return 0;
 }
 
-int CLoopBuffer::GetFreeLength() {
+int LoopBuffer::GetFreeLength() {
     std::unique_lock<std::mutex> lock(_mutex);
     if (_write > _read) {
         return (int)((_buffer_end - _write) + (_read - _buffer_start));
@@ -141,7 +141,7 @@ int CLoopBuffer::GetFreeLength() {
     }
 }
 
-int CLoopBuffer::GetCanReadLength() {
+int LoopBuffer::GetCanReadLength() {
     std::unique_lock<std::mutex> lock(_mutex);
     if (_write > _read) {
         return (int)(_write - _read);
@@ -159,7 +159,7 @@ int CLoopBuffer::GetCanReadLength() {
     }
 }
 
-bool CLoopBuffer::GetFreeMemoryBlock(void*& res1, int& len1, void*& res2, int& len2) {
+bool LoopBuffer::GetFreeMemoryBlock(void*& res1, int& len1, void*& res2, int& len2) {
     res1 = res2 = nullptr;
     len1 = len2 = 0;
 
@@ -184,7 +184,7 @@ bool CLoopBuffer::GetFreeMemoryBlock(void*& res1, int& len1, void*& res2, int& l
     }
 }
 
-bool CLoopBuffer::GetUseMemoryBlock(void*& res1, int& len1, void*& res2, int& len2) {
+bool LoopBuffer::GetUseMemoryBlock(void*& res1, int& len1, void*& res2, int& len2) {
     res1 = res2 = nullptr;
     len1 = len2 = 0;
 
@@ -209,7 +209,7 @@ bool CLoopBuffer::GetUseMemoryBlock(void*& res1, int& len1, void*& res2, int& le
     }
 }
 
-int CLoopBuffer::FindStr(const char* s, int s_len) {
+int LoopBuffer::FindStr(const char* s, int s_len) {
     std::unique_lock<std::mutex> lock(_mutex);
     if (_write > _read) {
         const char* find = _FindStrInMem(_read, s, _write - _read, s_len);
@@ -247,17 +247,17 @@ int CLoopBuffer::FindStr(const char* s, int s_len) {
     }
 }
 
-CLoopBuffer* CLoopBuffer::GetNext() {
+LoopBuffer* LoopBuffer::GetNext() {
     std::unique_lock<std::mutex> lock(_mutex);
     return _next;
 }
 
-void CLoopBuffer::SetNext(CLoopBuffer* next) {
+void LoopBuffer::SetNext(LoopBuffer* next) {
     std::unique_lock<std::mutex> lock(_mutex);
     _next = next;
 }
 
-const char* CLoopBuffer::_FindStrInMem(const char* buffer, const char* ch, int buffer_len, int ch_len) const {
+const char* LoopBuffer::_FindStrInMem(const char* buffer, const char* ch, int buffer_len, int ch_len) const {
     if (!buffer) {
         return nullptr;
     }
@@ -282,7 +282,7 @@ const char* CLoopBuffer::_FindStrInMem(const char* buffer, const char* ch, int b
     return nullptr;
 }
 
-int CLoopBuffer::_Read(char* res, int len, bool clear) {
+int LoopBuffer::_Read(char* res, int len, bool clear) {
     std::unique_lock<std::mutex> lock(_mutex);
     if (!_buffer_start) {
         return 0;
@@ -347,7 +347,7 @@ int CLoopBuffer::_Read(char* res, int len, bool clear) {
     } 
 }
 
-int CLoopBuffer::_Write(const char* str, int len, bool write) {
+int LoopBuffer::_Write(const char* str, int len, bool write) {
     std::unique_lock<std::mutex> lock(_mutex);
     if (_read < _write) {
         if (_write + len <= _buffer_end) {
@@ -434,7 +434,7 @@ int CLoopBuffer::_Write(const char* str, int len, bool write) {
     }
 }
 
-std::ostream& base::operator<< (std::ostream &out, const base::CLoopBuffer &obj) {
+std::ostream& base::operator<< (std::ostream &out, const base::LoopBuffer &obj) {
     if (obj._read < obj._write) {
         out.write(obj._read, obj._write - obj._read);
     } else if (obj._read >= obj._write) {
@@ -442,4 +442,6 @@ std::ostream& base::operator<< (std::ostream &out, const base::CLoopBuffer &obj)
         out.write(obj._buffer_start, obj._write - obj._buffer_start);
     } 
     return out;
+}
+ 
 }

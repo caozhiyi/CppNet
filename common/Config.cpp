@@ -3,17 +3,17 @@
 #include "Log.h"
 #include "Config.h"
 
-using namespace base;
+namespace cppnet {
 
-void CConfig::SetFilePath(const std::string& path) {
+void Config::SetFilePath(const std::string& path) {
     _file = path;
 }
 
-bool CConfig::ReLoadFile() {
+bool Config::ReLoadFile() {
     return LoadFile(_file);
 }
 
-bool CConfig::LoadFile(const std::string& path) {
+bool Config::LoadFile(const std::string& path) {
     SetFilePath(path);
     std::fstream file(path);
     if (!file) {
@@ -49,7 +49,7 @@ bool CConfig::LoadFile(const std::string& path) {
     return true;
 }
 
-int CConfig::GetIntValue(const std::string& key) {
+int Config::GetIntValue(const std::string& key) {
     try {
         std::unique_lock<std::mutex> lock(_mutex);
         auto iter = _config_map.find(key);
@@ -64,7 +64,7 @@ int CConfig::GetIntValue(const std::string& key) {
     }
 }
 
-std::string CConfig::GetStringValue(const std::string& key) {
+std::string Config::GetStringValue(const std::string& key) {
     try {
         std::unique_lock<std::mutex> lock(_mutex);
         auto iter = _config_map.find(key);
@@ -79,7 +79,7 @@ std::string CConfig::GetStringValue(const std::string& key) {
     }
 }
 
-double CConfig::GetDoubleValue(const std::string& key) {
+double Config::GetDoubleValue(const std::string& key) {
     try {
         std::unique_lock<std::mutex> lock(_mutex);
         auto iter = _config_map.find(key);
@@ -94,7 +94,7 @@ double CConfig::GetDoubleValue(const std::string& key) {
     }
 }
 
-bool CConfig::GetBoolValue(const std::string& key) {
+bool Config::GetBoolValue(const std::string& key) {
     try {
         std::unique_lock<std::mutex> lock(_mutex);
         auto iter = _config_map.find(key);
@@ -109,10 +109,12 @@ bool CConfig::GetBoolValue(const std::string& key) {
     }
 }
 
-void CConfig::_Trim(std::string& line) {
+void Config::_Trim(std::string& line) {
     if (line.empty()) {
         return;
     }
     line.erase(0, line.find_first_not_of(" "));
     line.erase(line.find_last_not_of(" ") + 1);
+}
+ 
 }

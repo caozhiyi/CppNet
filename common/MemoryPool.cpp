@@ -1,10 +1,10 @@
 #include <assert.h>
-#include "MemoryPool.h"
 #include "Log.h"
+#include "MemoryPool.h"
 
-using namespace base;
+namespace cppnet {
 
-CMemoryPool::CMemoryPool(const int large_sz, const int add_num) : _block_pool(RoundUp(large_sz), add_num) {
+MemoryPool::MemoryPool(const int large_sz, const int add_num) : _block_pool(RoundUp(large_sz), add_num) {
     for (int i = 0; i < __number_of_free_lists; i++) {
         _free_list[i] = nullptr;
     }
@@ -13,7 +13,7 @@ CMemoryPool::CMemoryPool(const int large_sz, const int add_num) : _block_pool(Ro
     _create_thread_id = std::this_thread::get_id();
 }
 
-CMemoryPool::~CMemoryPool() {
+MemoryPool::~MemoryPool() {
     //assert(_create_thread_id == std::this_thread::get_id());
     for (auto iter = _malloc_vec.begin(); iter != _malloc_vec.end(); ++iter) {
         if (*iter) {
@@ -22,27 +22,27 @@ CMemoryPool::~CMemoryPool() {
     }
 }
 
-std::thread::id CMemoryPool::GetCreateThreadId() {
+std::thread::id MemoryPool::GetCreateThreadId() {
     return _create_thread_id;
 }
 
-int CMemoryPool::GetLargeSize() {
+int MemoryPool::GetLargeSize() {
     return _block_pool.GetSize();
 }
 
-int CMemoryPool::GetLargeBlockLength() {
+int MemoryPool::GetLargeBlockLength() {
     return _block_pool.GetBlockLength();
 }
 
-void CMemoryPool::ReleaseLargeHalf() {
+void MemoryPool::ReleaseLargeHalf() {
     _block_pool.ReleaseHalf();
 }
 
-void CMemoryPool::ExpansionLarge(int num) {
+void MemoryPool::ExpansionLarge(int num) {
     _block_pool.Expansion(num);
 }
 
-void* CMemoryPool::ReFill(int size, int num) {
+void* MemoryPool::ReFill(int size, int num) {
     int nums = num;
 
     char* chunk = nullptr;
@@ -79,7 +79,7 @@ void* CMemoryPool::ReFill(int size, int num) {
     return res;
 }
 
-void* CMemoryPool::ChunkAlloc(int size, int& nums) {
+void* MemoryPool::ChunkAlloc(int size, int& nums) {
     char* res;
     int need_bytes = size * nums;
     int left_bytes = _pool_end - _pool_start;
@@ -117,4 +117,6 @@ void* CMemoryPool::ChunkAlloc(int size, int& nums) {
     _malloc_vec.push_back(_pool_start);
     _pool_end = _pool_start + bytes_to_get;
     return ChunkAlloc(size, nums);
+}
+
 }

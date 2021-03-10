@@ -1,20 +1,20 @@
+#include "Log.h"
 #include "Buffer.h"
 #include "MemoryPool.h"
 #include "LoopBuffer.h"
-#include "Log.h"
 
-using namespace base;
+namespace cppnet {
 
-CBuffer::CBuffer(std::shared_ptr<CMemoryPool>& pool) :
+Buffer::Buffer(std::shared_ptr<CMemoryPool>& pool):
     _buff_count(0),
     _buffer_read(nullptr),
     _buffer_write(nullptr),
     _buffer_end(nullptr),
-    _pool(pool){
+    _pool(pool) {
 
 }
 
-CBuffer::~CBuffer() {
+Buffer::~Buffer() {
     CLoopBuffer* temp = _buffer_read;
     while (temp) {
         _buffer_read = _buffer_read->GetNext();
@@ -23,7 +23,7 @@ CBuffer::~CBuffer() {
     }
 }
 
-int CBuffer::ReadNotClear(char* res, int len) {
+int Buffer::ReadNotClear(char* res, int len) {
     if (!_buffer_read) {
         return 0;
     }
@@ -41,7 +41,7 @@ int CBuffer::ReadNotClear(char* res, int len) {
     return cur_len;
 }
 
-int CBuffer::Read(char* res, int len) {
+int Buffer::Read(char* res, int len) {
     if (!_buffer_read) {
         return 0;
     }
@@ -72,7 +72,7 @@ int CBuffer::Read(char* res, int len) {
     return cur_len;
 }
 
-int CBuffer::Write(const char* str, int len) {
+int Buffer::Write(const char* str, int len) {
     std::unique_lock<std::mutex> lock(_mutex);
     CLoopBuffer* prv_temp = nullptr;
     CLoopBuffer* temp = _buffer_write;
@@ -105,7 +105,7 @@ int CBuffer::Write(const char* str, int len) {
     return cur_len;
 }
 
-void CBuffer::Clear(int len) {
+void Buffer::Clear(int len) {
     if (len == 0) {
         std::unique_lock<std::mutex> lock(_mutex);
         CLoopBuffer* temp = _buffer_read;
@@ -145,7 +145,7 @@ void CBuffer::Clear(int len) {
     _buffer_read = temp;
 }
 
-int CBuffer::MoveWritePt(int len) {
+int Buffer::MoveWritePt(int len) {
     std::unique_lock<std::mutex> lock(_mutex);
     CLoopBuffer* temp = _buffer_write;
     int cur_len = 0;
@@ -160,7 +160,7 @@ int CBuffer::MoveWritePt(int len) {
     return cur_len;
 }
 
-int CBuffer::ReadUntil(char* res, int len) {
+int Buffer::ReadUntil(char* res, int len) {
     if (GetCanReadLength() < len) {
         return 0;
 
@@ -169,7 +169,7 @@ int CBuffer::ReadUntil(char* res, int len) {
     }
 }
 
-int CBuffer::ReadUntil(char* res, int len, const char* find, int find_len, int& need_len) {
+int Buffer::ReadUntil(char* res, int len, const char* find, int find_len, int& need_len) {
     int size = FindStr(find, find_len);
     if (size) {
         if (size <= len) {
@@ -183,7 +183,7 @@ int CBuffer::ReadUntil(char* res, int len, const char* find, int find_len, int& 
     return 0;
 }
 
-int CBuffer::GetFreeLength() {
+int Buffer::GetFreeLength() {
     if (!_buffer_write) {
         return 0;
     }
@@ -201,7 +201,7 @@ int CBuffer::GetFreeLength() {
     return cur_len;
 }
 
-int CBuffer::GetCanReadLength() {
+int Buffer::GetCanReadLength() {
     if (!_buffer_read) {
         return 0;
     }
@@ -219,7 +219,7 @@ int CBuffer::GetCanReadLength() {
     return cur_len;
 }
 
-int CBuffer::GetFreeMemoryBlock(std::vector<iovec>& block_vec, int size) {
+int Buffer::GetFreeMemoryBlock(std::vector<Iovec>& block_vec, int size) {
     void* mem_1 = nullptr;
     void* mem_2 = nullptr;
     int mem_len_1 = 0;
@@ -241,11 +241,11 @@ int CBuffer::GetFreeMemoryBlock(std::vector<iovec>& block_vec, int size) {
         
             temp->GetFreeMemoryBlock(mem_1, mem_len_1, mem_2, mem_len_2);
             if (mem_len_1 > 0) {
-                block_vec.push_back(iovec(mem_1, mem_len_1));
+                block_vec.push_back(Iovec(mem_1, mem_len_1));
                 cur_len += mem_len_1;
             }
             if (mem_len_2 > 0) {
-                block_vec.push_back(iovec(mem_2, mem_len_2));
+                block_vec.push_back(Iovec(mem_2, mem_len_2));
                 cur_len += mem_len_2;
             }
             // set buffer read to first
@@ -266,11 +266,11 @@ int CBuffer::GetFreeMemoryBlock(std::vector<iovec>& block_vec, int size) {
         while (temp) {
             temp->GetFreeMemoryBlock(mem_1, mem_len_1, mem_2, mem_len_2);
             if (mem_len_1 > 0) {
-                block_vec.push_back(iovec(mem_1, mem_len_1));
+                block_vec.push_back(Iovec(mem_1, mem_len_1));
                 cur_len += mem_len_1;
             }
             if (mem_len_2 > 0) {
-                block_vec.push_back(iovec(mem_2, mem_len_2));
+                block_vec.push_back(Iovec(mem_2, mem_len_2));
                 cur_len += mem_len_2;
             }
             if (temp == _buffer_end) {
@@ -282,7 +282,7 @@ int CBuffer::GetFreeMemoryBlock(std::vector<iovec>& block_vec, int size) {
     return cur_len;
 }
 
-int CBuffer::GetUseMemoryBlock(std::vector<iovec>& block_vec, int max_size) {
+int Buffer::GetUseMemoryBlock(std::vector<Iovec>& block_vec, int max_size) {
     void* mem_1 = nullptr;
     void* mem_2 = nullptr;
     int mem_len_1 = 0;
@@ -294,11 +294,11 @@ int CBuffer::GetUseMemoryBlock(std::vector<iovec>& block_vec, int max_size) {
     while (temp) {
         temp->GetUseMemoryBlock(mem_1, mem_len_1, mem_2, mem_len_2);
         if (mem_len_1 > 0) {
-            block_vec.push_back(iovec(mem_1, mem_len_1));
+            block_vec.push_back(Iovec(mem_1, mem_len_1));
             cur_len += mem_len_1;
         }
         if (mem_len_2 > 0) {
-            block_vec.push_back(iovec(mem_2, mem_len_2));
+            block_vec.push_back(Iovec(mem_2, mem_len_2));
             cur_len += mem_len_2;
         }
         if (temp == _buffer_write) {
@@ -312,7 +312,7 @@ int CBuffer::GetUseMemoryBlock(std::vector<iovec>& block_vec, int max_size) {
     return cur_len;
 }
 
-int CBuffer::FindStr(const char* s, int s_len) const {
+int Buffer::FindStr(const char* s, int s_len) const {
     if (!_buffer_read) {
         return 0;
     }
@@ -335,13 +335,13 @@ int CBuffer::FindStr(const char* s, int s_len) const {
     return cur_len;
 }
 
-void CBuffer::_Reset() {
+void Buffer::_Reset() {
     _buffer_end = nullptr;
     _buffer_read = nullptr;
     _buffer_write = nullptr; 
 }
 
-std::ostream& base::operator<< (std::ostream &out, const CBuffer &obj) {
+std::ostream& base::operator<< (std::ostream &out, const Buffer &obj) {
     if (!obj._buffer_read) {
         return out;
     }
@@ -354,4 +354,6 @@ std::ostream& base::operator<< (std::ostream &out, const CBuffer &obj) {
         temp = temp->GetNext();
     }
     return out;
+}
+
 }
