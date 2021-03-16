@@ -1,5 +1,5 @@
-#ifndef HEADER_INCLUDE_CSOCKET
-#define HEADER_INCLUDE_CSOCKET
+#ifndef INCLUDE_CSOCKET
+#define INCLUDE_CSOCKET
 
 #include <memory>
 #include <string>

@@ -1,5 +1,5 @@
-#ifndef HEADER_INCLUDE_CPPNET
-#define HEADER_INCLUDE_CPPNET
+#ifndef INCLUDE_CPPNET
+#define INCLUDE_CPPNET
 
 #include <memory>
 #include "CppDefine.h"

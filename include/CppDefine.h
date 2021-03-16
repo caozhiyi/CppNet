@@ -1,11 +1,11 @@
-#ifndef HEADER_INCLUDE_CPPNETDEFINE
-#define HEADER_INCLUDE_CPPNETDEFINE
+#ifndef INCLUDE_CPPNETDEFINE
+#define INCLUDE_CPPNETDEFINE
 
 #include <memory>
+#include <cstdint>
 #include <functional>
 
-#include "Type.h"
-#include "Buffer.h"
+#include "common/buffer/buffer_interface.h"
 
 namespace cppnet {
     // socket
@@ -29,7 +29,7 @@ namespace cppnet {
     // len    : recv data len
     // err    : error code
     // continue_read : continue post read event
-    typedef std::function<void(const Handle& handle, base::CBuffer* data, 
+    typedef std::function<void(const Handle& handle, std::share_ptr<CBuffer> data, 
                         uint32_t len, uint32_t err)>                                                       read_call_back;
     
     // error code
