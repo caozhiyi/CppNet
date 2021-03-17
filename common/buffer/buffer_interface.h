@@ -48,6 +48,7 @@ public:
     // return block memory pool
     virtual std::shared_ptr<BlockMemoryPool> GetBlockMemoryPool() = 0;
 };
+
 }
 
 #endif

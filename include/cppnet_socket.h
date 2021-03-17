@@ -1,13 +1,13 @@
-#ifndef INCLUDE_CSOCKET
-#define INCLUDE_CSOCKET
+#ifndef INCLUDE_SOCKET
+#define INCLUDE_SOCKET
 
 #include <memory>
 #include <string>
-#include "CppDefine.h"
+#include "cppnet_type.h"
 
 namespace cppnet {
 
-    class CCppNetImpl;
+    class Socket;
     // cpp net socket instance
     class CNSocket {
     public:
@@ -19,10 +19,6 @@ namespace cppnet {
         int16_t Write(const char* src, int32_t len);
         // close the connect
         int16_t Close();
-    private:
-        friend class CCppNetImpl;
-        std::weak_ptr<CCppNetImpl> _cppnet_instance;
-        uint64_t                   _socket_handle;
     };
 }
 

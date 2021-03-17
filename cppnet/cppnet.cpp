@@ -2,16 +2,16 @@
 #define INCLUDE_CPPNET
 
 #include <memory>
-#include "CppDefine.h"
+#include "cppnet_type.h"
 
 namespace cppnet {
 
-    class CCppNetImpl;
+    class CppNetBase;
     // cppnet instace
-    class CCppNet {
+    class CppNet {
     public:
-        CCppNet();
-        ~CCppNet();
+        CppNet();
+        ~CppNet();
         // common
         // init cppnet library.
         // thread_num : the number of running threads.
@@ -35,14 +35,10 @@ namespace cppnet {
 
         //client
         void SetConnectionCallback(const connection_call_back& func);
-
-#ifndef __linux__
-        // sync connection. 
-        bool Connection(const std::string& ip, int16_t port, const char* buf, int32_t buf_len);
-#endif
         bool Connection(const std::string& ip, int16_t port);
+
     private:
-        std::shared_ptr<CCppNetImpl> _cppnet_instance;
+        std::shared_ptr<CppNetBase> _cppnet_base;
     };
 }
 
