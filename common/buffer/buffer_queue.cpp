@@ -1,7 +1,7 @@
 #include "buffer_queue.h"
 #include "buffer_block.h"
-#include "alloter/pool_block.h"
-#include "alloter/alloter_interface.h"
+#include "common/alloter/pool_block.h"
+#include "common/alloter/alloter_interface.h"
 
 namespace cppnet {
 

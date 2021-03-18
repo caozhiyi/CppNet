@@ -2,27 +2,38 @@
 #define NET_SOCKET_READ_WRITE_SOCKET
 
 #include "socket_interface.h"
+#include "include/cppnet_socket.h"
 
 namespace cppnet {
 
 class Event;
+class Dispatcher;
 class BufferQueue;
 class AlloterWrap;
 class BlockMemoryPool;
 
 class RWSocket:
     public Socket, 
+    public CNSocket,
     public std::enable_shared_from_this<RWSocket> { 
 
 public:
     RWSocket(std::shared_ptr<AlloterWrap> alloter);
-    ~RWSocket();
+    virtual ~RWSocket();
+
+    bool GetAddress(std::string& ip, uint16_t& port);
+
+    bool Close();
 
     void Read();
-    void Write(const char* src, uint32_t len);
+    bool Write(const char* src, uint32_t len);
     void Connect(const std::string& ip, uint16_t port);
     void Disconnect();
 
+    uint64_t AddTimer(uint32_t interval, bool always = false);
+    void StopTimer(uint64_t timer_id);
+
+    void OnTimer();
     void OnRead(uint32_t len = 0);
     void OnWrite(uint32_t len = 0);
     void OnConnect(uint16_t err);
@@ -30,9 +41,11 @@ public:
 
     std::shared_ptr<AlloterWrap> GetAlocter() { return _alloter; }
 
+    std::shared_ptr<BufferQueue> GetReadBuffer() { return _read_buffer; }
+
 private:
-    void Recv();
-    void Send();
+    bool Recv();
+    bool Send();
     
 private:
     std::shared_ptr<Event>  _event;

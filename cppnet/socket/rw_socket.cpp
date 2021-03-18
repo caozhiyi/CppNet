@@ -1,7 +1,12 @@
+#include <errno.h>
+
 #include "rw_socket.h"
+#include "common/log/log.h"
+#include "cppnet/dispatcher.h"
 #include "cppnet/cppnet_base.h"
 #include "include/cppnet_type.h"
 #include "cppnet/cppnet_config.h"
+#include "common/network/address.h"
 #include "common/network/io_handle.h"
 #include "common/alloter/pool_block.h"
 #include "common/buffer/buffer_queue.h"
@@ -13,55 +18,172 @@ namespace cppnet {
 
 RWSocket::RWSocket(std::shared_ptr<AlloterWrap> alloter):
     _alloter(alloter) {
+
     _block_pool = _alloter->PoolNewSharePtr<BlockMemoryPool>(__mem_block_size, __mem_block_add_step);
+    _write_buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
+    _read_buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
 }
 
 RWSocket::~RWSocket() {
+    if (!_event) {
+        _event = _alloter->PoolNewSharePtr<Event>();
+        _event->SetSocket(shared_from_this());
+    }
+    
+    auto actions = GetEventActions();
+    if (actions) {
+        actions->DelEvent(_event);
+    }
+}
 
+bool RWSocket::GetAddress(std::string& ip, uint16_t& port) {
+    if (!_addr) {
+        return false;
+    }
+    
+    ip = _addr->GetIp();
+    port = _addr->GetPort();
+
+    return true;
+}
+
+bool RWSocket::Close() {
+    __all_socket_map.erase(_sock);
+    return true;
 }
 
 void RWSocket::Read() {
     if (!_event) {
         _event = _alloter->PoolNewSharePtr<Event>();
+        _event->SetSocket(shared_from_this());
     }
 
-    _event->AddType(ET_READ);
-    _event_actions->AddAcceptEvent(_event);
+    auto actions = GetEventActions();
+    if (actions) {
+        actions->AddRecvEvent(_event);
+    }
 }
 
-void RWSocket::Write(const char* src, uint32_t len) {
+bool RWSocket::Write(const char* src, uint32_t len) {
     if (!_event) {
         _event = _alloter->PoolNewSharePtr<Event>();
+        _event->SetSocket(shared_from_this());
     }
 
-    _event->AddType(ET_READ);
-    _event_actions->AddAcceptEvent(_event);
+    //can't send now
+    if (_write_buffer->GetCanReadLength() > 0) {
+        _write_buffer->Write(src, len);
+        auto actions = GetEventActions();
+        if (actions) {
+            return actions->AddSendEvent(_event);
+        }
+        return false;
+
+    } else {
+        _write_buffer->Write(src, len);
+        return Send();
+    }
 }
 
 void RWSocket::Connect(const std::string& ip, uint16_t port) {
+    if (!_event) {
+        _event = _alloter->PoolNewSharePtr<Event>();
+        _event->SetSocket(shared_from_this());
+    }
 
+    if (_sock == 0) {
+        auto ret = OsHandle::TcpSocket();
+        if (ret._return_value < 0) {
+            LOG_ERROR("create socket failed. error:%d", ret._errno);
+            return;
+        }
+        _sock = ret._return_value;
+    }
+
+    if (!_addr) {
+        _addr = _alloter->PoolNewSharePtr<Address>(AT_IPV4, ip, port);
+
+    } else {
+        _addr->SetIp(ip);
+        _addr->SetPort(port);
+    }
+
+    auto actions = GetEventActions();
+    if (actions) {
+        actions->AddConnection(_event, *_addr);
+    }
 }
 
 void RWSocket::Disconnect() {
+    if (!_event) {
+        _event = _alloter->PoolNewSharePtr<Event>();
+        _event->SetSocket(shared_from_this());
+    }
 
+    auto actions = GetEventActions();
+    if (actions) {
+        actions->AddDisconnection(_event);
+    }
+}
+
+void RWSocket::OnTimer() {
+    auto cppnet_base = _cppnet_base.lock();
+    if (!cppnet_base) {
+        return;
+    }
+    cppnet_base->OnTimer(shared_from_this());
+}
+
+uint64_t RWSocket::AddTimer(uint32_t interval, bool always) {
+    auto dispatcher = GetDispatcher();
+    if (dispatcher) {
+        return dispatcher->AddTimer(shared_from_this(), interval, always);
+    }
+    return 0;
+}
+
+void RWSocket::StopTimer(uint64_t timer_id) {
+    auto dispatcher = GetDispatcher();
+    if (dispatcher) {
+        dispatcher->StopTimer(timer_id);
+    }
 }
 
 void RWSocket::OnRead(uint32_t len) {
-
+    Recv();
 }
 
 void RWSocket::OnWrite(uint32_t len) {
-
+    Send();
 }
 
 void RWSocket::OnConnect(uint16_t err) {
-
+    auto sock = shared_from_this();
+    if (err == CEC_SUCCESS) {
+        __all_socket_map[_sock] = sock;
+        Read();
+    }
+    
+    auto cppnet_base = _cppnet_base.lock();
+    if (cppnet_base) {
+        cppnet_base->OnConnect(sock, err);
+    }
 }
 
-void RWSocket::Recv() {
-    auto base = _cppnet_base.lock();
-    if (!base) {
-        return;
+void RWSocket::OnDisConnect(uint16_t err) {
+    auto sock = shared_from_this();
+    __all_socket_map.erase(_sock);
+    
+    auto cppnet_base = _cppnet_base.lock();
+    if (cppnet_base) {
+        cppnet_base->OnDisConnect(sock, err);
+    }
+}
+
+bool RWSocket::Recv() {
+    auto cppnet_base = _cppnet_base.lock();
+    if (!cppnet_base) {
+        return false;
     }
 
     uint32_t off_set = 0;
@@ -81,13 +203,17 @@ void RWSocket::Recv() {
         auto ret = OsHandle::Readv(_sock, &*io_vec.begin(), io_vec.size());
         if (ret._return_value < 0) {
             if (errno == EWOULDBLOCK || errno == EAGAIN || errno == EINTR) {
+                _read_buffer->MoveWritePt(ret._return_value);
+                off_set += ret._return_value;
                 break;
 
             } else if (errno == EBADMSG || errno == ECONNRESET) {
-                base->OnDisConnect(shared_from_this(), CEC_CONNECT_BREAK);
+                cppnet_base->OnDisConnect(shared_from_this(), CEC_CONNECT_BREAK);
+                return false;
 
             } else {
-                base->OnDisConnect(shared_from_this(), CEC_CLOSED);
+                cppnet_base->OnDisConnect(shared_from_this(), CEC_CLOSED);
+                return false;
             }
 
         } else {
@@ -99,13 +225,14 @@ void RWSocket::Recv() {
             }
         }
     }
-    base->OnRead(shared_from_this(), off_set);
+    cppnet_base->OnRead(shared_from_this(), off_set);
+    return true;
 }
 
-void RWSocket::Send() {
-    auto base = _cppnet_base.lock();
-    if (!base) {
-        return;
+bool RWSocket::Send() {
+    auto cppnet_base = _cppnet_base.lock();
+    if (!cppnet_base) {
+        return false;
     }
 
     uint32_t off_set = 0;
@@ -121,21 +248,25 @@ void RWSocket::Send() {
             if (errno == EWOULDBLOCK || errno == EAGAIN || errno == EINTR) {
                 //can't send complete
                 if (ret._return_value < data_len) {
-                    _event->AddType(ET_READ);
-                    _event_actions->AddAcceptEvent(_event);
+                    auto actions = GetEventActions();
+                    if (actions) {
+                        return actions->AddSendEvent(_event);
+                    }
+                    return false;
                 }
 
             } else if (errno == EBADMSG) {
-                base->OnDisConnect(shared_from_this(), CEC_CONNECT_BREAK);
-                break;
+                cppnet_base->OnDisConnect(shared_from_this(), CEC_CONNECT_BREAK);
+                return false;
 
             } else {
-                base->OnDisConnect(shared_from_this(), CEC_CLOSED);
-                break;
+                cppnet_base->OnDisConnect(shared_from_this(), CEC_CLOSED);
+                return false;
             }
         }
     }
-    base->OnWrite(shared_from_this(), off_set);
+    cppnet_base->OnWrite(shared_from_this(), off_set);
+    return true;
 }
 
 }

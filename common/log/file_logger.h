@@ -6,7 +6,7 @@
 #include <fstream>
 
 #include "logger_interface.h"
-#include "thread/thread_with_queue.h"
+#include "common/thread/thread_with_queue.h"
 
 namespace cppnet {
 

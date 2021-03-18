@@ -1,13 +1,15 @@
 #ifndef CPPNET_CPPNET_BASE
 #define CPPNET_CPPNET_BASE
 
+#include <vector>
 #include <memory>
 #include "include/cppnet_type.h"
 
 namespace cppnet {
 
-class Socket;
-class EventActions;
+class RWSocket;
+class Dispatcher;
+class RangeRandom;
 
 class CppNetBase: public std::enable_shared_from_this<CppNetBase> {
 public:
@@ -19,42 +21,41 @@ public:
     void Join();
 
     // set call back
-    void SetReadCallback(const read_call_back& cb) { _read_call_back = cb; }
-    void SetWriteCallback(const write_call_back& cb) { _write_call_back = cb; }
-    void SetDisconnectionCallback(const connect_call_back& cb) { _disconnec_call_back = cb; }
+    void SetReadCallback(const read_call_back& cb) { _read_cb = cb; }
+    void SetWriteCallback(const write_call_back& cb) { _write_cb = cb; }
+    void SetDisconnectionCallback(const connect_call_back& cb) { _disconnect_cb = cb; }
+    void SetTimerCallback(const timer_call_back& cb) { _timer_cb = cb; }
 
     // about timer
-    uint64_t SetTimer(uint32_t interval, const std::function<void(void*)>& func, void* param = nullptr, bool always = false);
+    uint64_t AddTimer(uint32_t interval, const user_timer_call_back& cb, void* param = nullptr, bool always = false);
     void RemoveTimer(uint64_t timer_id);
 
     //server
-    void SetAcceptCallback(const connect_call_back& cb) { _accept_call_back = cb; }
+    void SetAcceptCallback(const connect_call_back& cb) { _accept_cb = cb; }
     bool ListenAndAccept(const std::string& ip, uint16_t port);
 
     //client
-    void SetConnectionCallback(const connect_call_back& cb) { _connec_call_back = cb; }
+    void SetConnectionCallback(const connect_call_back& cb) { _connect_cb = cb; }
     bool Connection(const std::string& ip, uint16_t port);
 
     // call back
-    void OnAccept(std::shared_ptr<Socket> sock);
-    void OnRead(std::shared_ptr<Socket> sock, uint32_t len);
-    void OnWrite(std::shared_ptr<Socket> sock, uint32_t len);
-    void OnConnect(std::shared_ptr<Socket> sock, uint16_t err);
-    void OnDisConnect(std::shared_ptr<Socket> sock, uint16_t err);
+    void OnTimer(std::shared_ptr<RWSocket> sock);
+    void OnAccept(std::shared_ptr<RWSocket> sock);
+    void OnRead(std::shared_ptr<RWSocket> sock, uint32_t len);
+    void OnWrite(std::shared_ptr<RWSocket> sock, uint32_t len);
+    void OnConnect(std::shared_ptr<RWSocket> sock, uint16_t err);
+    void OnDisConnect(std::shared_ptr<RWSocket> sock, uint16_t err);
 
 private:
-    read_call_back     _read_call_back;
-    write_call_back    _write_call_back;
-    connect_call_back  _connec_call_back;
-    connect_call_back  _disconnec_call_back;
-    connect_call_back  _accept_call_back;
+    timer_call_back    _timer_cb;
+    read_call_back     _read_cb;
+    write_call_back    _write_cb;
+    connect_call_back  _connect_cb;
+    connect_call_back  _disconnect_cb;
+    connect_call_back  _accept_cb;
 
-    /*
-    std::mutex              _mutex;
-    std::vector<std::shared_ptr<std::thread>>                                _thread_vec;
-    std::unordered_map<uint64_t, base::CMemSharePtr<CAcceptSocket>>          _accept_socket;
-    std::unordered_map<std::thread::id, std::shared_ptr<CEventActions>>      _actions_map;
-    */
+    std::shared_ptr<RangeRandom> _random;
+    std::vector<std::shared_ptr<Dispatcher>> _dispatchers;
 };
 
 }

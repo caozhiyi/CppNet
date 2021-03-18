@@ -32,12 +32,6 @@ CCppNetImpl::~CCppNetImpl() {
 }
 
 void CCppNetImpl::Init(uint32_t thread_num) {
-#ifndef __linux__
-    InitScoket();
-#else
-    SetCoreFileUnlimit();
-#endif // __linux__
-
     uint32_t cpus = GetCpuNum();
     if (thread_num == 0 || thread_num > cpus * 2) {
         thread_num = cpus;

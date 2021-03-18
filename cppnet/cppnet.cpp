@@ -1,45 +1,67 @@
-#ifndef INCLUDE_CPPNET
-#define INCLUDE_CPPNET
-
-#include <memory>
-#include "cppnet_type.h"
+#include "cppnet_base.h"
+#include "include/cppnet.h"
+#include "common/log/log.h"
+#include "common/log/file_logger.h"
+#include "common/log/stdout_logger.h"
 
 namespace cppnet {
 
-    class CppNetBase;
-    // cppnet instace
-    class CppNet {
-    public:
-        CppNet();
-        ~CppNet();
-        // common
-        // init cppnet library.
-        // thread_num : the number of running threads.
-        void Init(int32_t thread_num);
-
-        // thread join
-        void Join();
-
-        // must set callback before listen
-        void SetReadCallback(const read_call_back& func);
-        void SetWriteCallback(const write_call_back& func);
-        void SetDisconnectionCallback(const connection_call_back& func);
-
-        //timer
-        uint64_t SetTimer(int32_t interval, const timer_call_back& func, void* param = nullptr, bool always = false);
-        void RemoveTimer(uint64_t timer_id);
-
-        //server
-        void SetAcceptCallback(const connection_call_back& func);
-        bool ListenAndAccept(const std::string& ip, int16_t port);
-
-        //client
-        void SetConnectionCallback(const connection_call_back& func);
-        bool Connection(const std::string& ip, int16_t port);
-
-    private:
-        std::shared_ptr<CppNetBase> _cppnet_base;
-    };
+CppNet::CppNet() {
+    _cppnet_base = std::make_shared<CppNetBase>();
 }
 
-#endif
+CppNet::~CppNet() {
+
+}
+
+void CppNet::Init(int32_t thread_num) {
+    _cppnet_base->Init(thread_num);
+
+    std::shared_ptr<Logger> file_log = std::make_shared<FileLogger>();
+    std::shared_ptr<Logger> std_log = std::make_shared<StdoutLogger>();
+    file_log->SetLogger(std_log);
+    LOG_SET(file_log);
+    LOG_SET_LEVEL(LL_DEBUG);
+}
+
+void CppNet::Join() {
+    _cppnet_base->Join();
+}
+
+void CppNet::SetReadCallback(const read_call_back& cb) {
+    _cppnet_base->SetReadCallback(cb);
+}
+
+void CppNet::SetWriteCallback(const write_call_back& cb) {
+    _cppnet_base->SetWriteCallback(cb);
+}
+
+void CppNet::SetDisconnectionCallback(const connect_call_back& cb) {
+    _cppnet_base->SetDisconnectionCallback(cb);
+}
+
+uint64_t CppNet::AddTimer(int32_t interval, const user_timer_call_back& cb, void* param, bool always) {
+    return _cppnet_base->AddTimer(interval, cb, param, always);
+}
+
+void CppNet::RemoveTimer(uint64_t timer_id) {
+    _cppnet_base->RemoveTimer(timer_id);
+}
+
+void CppNet::SetAcceptCallback(const connect_call_back& cb) {
+    _cppnet_base->SetAcceptCallback(cb);
+}
+
+bool CppNet::ListenAndAccept(const std::string& ip, int16_t port) {
+    return _cppnet_base->ListenAndAccept(ip, port);
+}
+
+void CppNet::SetConnectionCallback(const connect_call_back& cb) {
+    _cppnet_base->SetConnectionCallback(cb);
+}
+
+bool CppNet::Connection(const std::string& ip, int16_t port) {
+    return _cppnet_base->Connection(ip, port);
+}
+
+}

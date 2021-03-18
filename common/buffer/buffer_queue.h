@@ -4,9 +4,9 @@
 #include <vector>
 #include <memory>
 #include "buffer_interface.h"
-#include "network/io_handle.h"
 #include "common/structure/list.h"
-#include "alloter/alloter_interface.h"
+#include "common/network/io_handle.h"
+#include "common/alloter/alloter_interface.h"
 
 namespace cppnet {
 

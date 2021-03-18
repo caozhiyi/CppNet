@@ -4,7 +4,7 @@
 #include <sys/socket.h>
 #include <sys/resource.h>
 
-#include "socket.h"
+#include "../socket.h"
 
 namespace cppnet {
 

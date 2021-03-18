@@ -4,9 +4,9 @@
 #include <list>
 #include <vector>
 
-#include "util/bitmap.h"
 #include "timer_solt.h"
 #include "timer_interface.h"
+#include "common/util/bitmap.h"
 
 namespace cppnet {
 

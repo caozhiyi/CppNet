@@ -22,6 +22,7 @@ namespace cppnet {
 
 EpollEventActions::EpollEventActions():
     _epoll_handler(-1) {
+    _active_list.resize(1024);
 
 }
 
@@ -63,16 +64,15 @@ bool EpollEventActions::Init(uint32_t thread_num) {
 }
 
 bool EpollEventActions::Dealloc() {
-    _run = false;
     Wakeup();
     return true;
 }
 
 bool EpollEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
-    if (event->GetSettedFlag() & ESF_WRITE) {
+    if (event->GetType() & ET_WRITE) {
         return false;
     }
-    event->AddSettedFlag(ESF_WRITE);
+    event->AddType(ET_WRITE);
 
     auto sock = event->GetSocket();
     if (sock) {
@@ -83,17 +83,20 @@ bool EpollEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
             event->SetData(ep_event);
         }
         ep_event->data.ptr = (void*)&event;
-        return AddEvent(ep_event, EPOLLOUT, sock->GetSocket(), event->GetType() & ET_INACTIONS);
+        if (AddEvent(ep_event, EPOLLOUT, sock->GetSocket(), event->GetType() & ET_INACTIONS)) {
+            event->AddType(ET_INACTIONS);
+            return true;
+        }
     }
     LOG_WARN("socket is already distroyed! event %s", "AddSendEvent");
     return false;
 }
 
 bool EpollEventActions::AddRecvEvent(std::shared_ptr<Event>& event) {
-    if (event->GetSettedFlag() & ESF_READ) {
+    if (event->GetType() & ET_READ) {
         return false;
     }
-    event->AddSettedFlag(ESF_READ);
+    event->AddType(ET_READ);
     
     auto sock = event->GetSocket();
     if (sock) {
@@ -104,17 +107,20 @@ bool EpollEventActions::AddRecvEvent(std::shared_ptr<Event>& event) {
             event->SetData(ep_event);
         }
         ep_event->data.ptr = (void*)&event;
-        return AddEvent(ep_event, EPOLLIN, sock->GetSocket(), event->GetType() & ET_INACTIONS);
+        if (AddEvent(ep_event, EPOLLIN, sock->GetSocket(), event->GetType() & ET_INACTIONS)) {
+            event->AddType(ET_INACTIONS);
+            return true;
+        }
     }
     LOG_WARN("socket is already distroyed! event %s", "AddRecvEvent");
     return false;
 }
 
 bool EpollEventActions::AddAcceptEvent(std::shared_ptr<Event>& event) {
-    if (event->GetSettedFlag() & ESF_READ) {
+    if (event->GetType() & ET_READ) {
         return false;
     }
-    event->AddSettedFlag(ESF_READ);
+    event->AddType(ET_READ);
     
     auto sock = event->GetSocket();
     if (sock) {
@@ -124,17 +130,20 @@ bool EpollEventActions::AddAcceptEvent(std::shared_ptr<Event>& event) {
             event->SetData(ep_event);
         }
         ep_event->data.ptr = (void*)&event;
-        return AddEvent(ep_event, EPOLLIN, sock->GetSocket(), event->GetType() & ET_INACTIONS);
+        if (AddEvent(ep_event, EPOLLIN, sock->GetSocket(), event->GetType() & ET_INACTIONS)) {
+            event->AddType(ET_INACTIONS);
+            return true;
+        }
     }
     LOG_WARN("socket is already distroyed! event %s", "AddAcceptEvent");
     return false;
 }
 
 bool EpollEventActions::AddConnection(std::shared_ptr<Event>& event, Address& addr) {
-    if (event->GetSettedFlag() & ESF_CONNECT) {
+    if (event->GetType() & ET_CONNECT) {
         return false;
     }
-    event->AddSettedFlag(ESF_CONNECT);
+    event->AddType(ET_CONNECT);
 
     auto sock = event->GetSocket();
     if (sock) {
@@ -153,7 +162,7 @@ bool EpollEventActions::AddConnection(std::shared_ptr<Event>& event, Address& ad
             rw_sock->OnConnect(CEC_SUCCESS);
             return true;
 
-        } else if (errno == EINPROGRESS) {
+        } else if (ret._errno == EINPROGRESS) {
             /*if (CheckConnect(socket_ptr->GetSocket())) {
                 socket_ptr->Recv(socket_ptr->_read_event);
                 return true;
@@ -162,7 +171,7 @@ bool EpollEventActions::AddConnection(std::shared_ptr<Event>& event, Address& ad
             */
         }
         rw_sock->OnConnect(CEC_CONNECT_REFUSE);
-        LOG_WARN("connect event failed! %d", errno);
+        LOG_WARN("connect event failed! %d", ret._errno);
         return false;
     }
     LOG_WARN("connection event is already destroyed!,%s", "AddConnection");
@@ -170,6 +179,11 @@ bool EpollEventActions::AddConnection(std::shared_ptr<Event>& event, Address& ad
 }
 
 bool EpollEventActions::AddDisconnection(std::shared_ptr<Event>& event) {
+    if (event->GetType() & ET_DISCONNECT) {
+        return false;
+    }
+    event->AddType(ET_DISCONNECT);
+    
     auto sock = event->GetSocket();
     if (!sock) {
         return false;
@@ -181,15 +195,6 @@ bool EpollEventActions::AddDisconnection(std::shared_ptr<Event>& event) {
     }
     OsHandle::Close(socket->GetSocket());
     socket->OnDisConnect(CEC_SUCCESS);
-}
-
-bool EpollEventActions::DelEvent(const uint64_t sock) {
-    int32_t ret = epoll_ctl(_epoll_handler, EPOLL_CTL_DEL, sock, nullptr);
-    if (ret < 0) {
-        LOG_ERROR("remove event from epoll faild! error :%d, socket : %d", errno, sock);
-        return false;
-    }
-    LOG_DEBUG("del a socket from epoll, %d", sock);
     return true;
 }
 
@@ -210,49 +215,16 @@ bool EpollEventActions::DelEvent(std::shared_ptr<Event>& event) {
     return true;
 }
 
-void EpollEventActions::ProcessEvent() {
-    _run = true;
+void EpollEventActions::ProcessEvent(int32_t wait_ms) {
+    int16_t ret = epoll_wait(_epoll_handler, &*_active_list.begin(), (int)_active_list.size(), wait_ms);
+    if (ret == -1) {
+        LOG_ERROR("epoll wait faild! error :%d", errno);
 
-    int32_t wait_time = 0;
-    std::vector<epoll_event> event_vec;
-    event_vec.resize(1000);
-    _cur_utc_time = UTCTimeMsec();
+    } else {
+        LOG_DEBUG("epoll get events! num :%d, TheadId : %lld", ret, std::this_thread::get_id());
 
-    while (_run) {
-        wait_time = _timer->MinTime();
-        if (wait_time > 0) {
-            
-        } else {
-            wait_time = -1;
-        }
-
-        int16_t ret = epoll_wait(_epoll_handler, &*event_vec.begin(), (int)event_vec.size(), wait_time);
-        if (ret == -1) {
-            LOG_ERROR("kevent faild! error :%d", errno);
-        }
-
-        if (ret > 0) {
-            LOG_DEBUG("kevent get events! num :%d, TheadId : %lld", ret, std::this_thread::get_id());
-
-            OnEvent(event_vec, ret);
-        }
-
-        OnTask();
-
-        uint64_t cur_time = UTCTimeMsec();
-        _timer->TimerRun(cur_time - _cur_utc_time);
-        _cur_utc_time = cur_time;
+        OnEvent(_active_list, ret);
     }
-
-    LOG_INFO("return the net io thread");
-}
-
-void EpollEventActions::PostTask(Task& task) {
-    {
-        std::unique_lock<std::mutex> lock(_mutex);
-        _task_list.push_back(task);
-    }
-    Wakeup();
 }
 
 void EpollEventActions::Wakeup() {
@@ -301,18 +273,6 @@ void EpollEventActions::OnEvent(std::vector<epoll_event>& event_vec, int16_t num
                 rw_sock->OnWrite();
             }
         }
-    }
-}
-
-void EpollEventActions::OnTask() {
-    std::vector<Task> func_vec;
-    {
-        std::unique_lock<std::mutex> lock(_mutex);
-        func_vec.swap(_task_list);
-    }
-
-    for (size_t i = 0; i < func_vec.size(); ++i) {
-        func_vec[i]();
     }
 }
 
