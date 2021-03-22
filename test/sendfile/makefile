@@ -3,8 +3,7 @@ CLI = SendFileClient.cpp md5.cpp
 
 CC = g++
 
-INCLUDES = -I../../base      \
-           -I../../include   \
+INCLUDES = -I../../
 
 #debug -pg
 #CCFLAGS = -lpthread -fPIC -m64 -g -std=c++11 -lstdc++ -pipe 
