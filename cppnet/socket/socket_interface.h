@@ -11,10 +11,14 @@ class Buffer;
 class Address;
 class CppNetBase;
 class Dispatcher;
+class AlloterWrap;
 class EventActions;
 class Socket { 
 public:
     Socket(): _sock(0) {}
+    Socket(std::shared_ptr<AlloterWrap> alloter): _alloter(alloter) {}
+    Socket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter): 
+        _sock(sock), _alloter(alloter) {}
     virtual ~Socket() {}
 
     void SetSocket(const uint64_t& sock) { _sock = sock; }
@@ -31,11 +35,14 @@ public:
 
     void SetDispatcher(std::shared_ptr<Dispatcher> dis) { _dispatcher = dis; }
     std::shared_ptr<Dispatcher> GetDispatcher() { return _dispatcher.lock(); }
-    
+
+    void SetAlloter(std::shared_ptr<AlloterWrap> alloter) { _alloter = alloter; }
+    std::shared_ptr<AlloterWrap> GetAlocter() { return _alloter; }
+
 protected:
     uint64_t _sock;
-
-    std::shared_ptr<Address>  _addr;
+    std::shared_ptr<AlloterWrap> _alloter;
+    std::shared_ptr<Address>     _addr;
 
     std::weak_ptr<CppNetBase>   _cppnet_base;
     std::weak_ptr<EventActions> _event_actions;

@@ -19,6 +19,7 @@ class RWSocket:
 
 public:
     RWSocket(std::shared_ptr<AlloterWrap> alloter);
+    RWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter);
     virtual ~RWSocket();
 
     bool GetAddress(std::string& ip, uint16_t& port);
@@ -39,8 +40,6 @@ public:
     void OnConnect(uint16_t err);
     void OnDisConnect(uint16_t err);
 
-    std::shared_ptr<AlloterWrap> GetAlocter() { return _alloter; }
-
     std::shared_ptr<BufferQueue> GetReadBuffer() { return _read_buffer; }
 
 private:
@@ -53,7 +52,6 @@ private:
     std::shared_ptr<BufferQueue> _write_buffer;
     std::shared_ptr<BufferQueue> _read_buffer;
 
-    std::shared_ptr<AlloterWrap>     _alloter;
     std::shared_ptr<BlockMemoryPool> _block_pool;
 };
 

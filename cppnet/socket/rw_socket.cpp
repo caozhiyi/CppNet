@@ -15,9 +15,16 @@
 #include "common/alloter/alloter_interface.h"
 
 namespace cppnet {
+RWSocket::RWSocket(std::shared_ptr<AlloterWrap> alloter): 
+    Socket(alloter) {
 
-RWSocket::RWSocket(std::shared_ptr<AlloterWrap> alloter):
-    _alloter(alloter) {
+    _block_pool = _alloter->PoolNewSharePtr<BlockMemoryPool>(__mem_block_size, __mem_block_add_step);
+    _write_buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
+    _read_buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
+}
+
+RWSocket::RWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter):
+    Socket(sock, alloter) {
 
     _block_pool = _alloter->PoolNewSharePtr<BlockMemoryPool>(__mem_block_size, __mem_block_add_step);
     _write_buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
@@ -25,15 +32,7 @@ RWSocket::RWSocket(std::shared_ptr<AlloterWrap> alloter):
 }
 
 RWSocket::~RWSocket() {
-    if (!_event) {
-        _event = _alloter->PoolNewSharePtr<Event>();
-        _event->SetSocket(shared_from_this());
-    }
-    
-    auto actions = GetEventActions();
-    if (actions) {
-        actions->DelEvent(_event);
-    }
+
 }
 
 bool RWSocket::GetAddress(std::string& ip, uint16_t& port) {
@@ -48,7 +47,7 @@ bool RWSocket::GetAddress(std::string& ip, uint16_t& port) {
 }
 
 bool RWSocket::Close() {
-    __all_socket_map.erase(_sock);
+    Disconnect();
     return true;
 }
 
@@ -173,10 +172,15 @@ void RWSocket::OnConnect(uint16_t err) {
 void RWSocket::OnDisConnect(uint16_t err) {
     auto sock = shared_from_this();
     __all_socket_map.erase(_sock);
-    
+
     auto cppnet_base = _cppnet_base.lock();
     if (cppnet_base) {
         cppnet_base->OnDisConnect(sock, err);
+    }
+
+    // not active disconnection
+    if (_event && !(_event->GetType() & ET_DISCONNECT)) {
+        OsHandle::Close(_sock);
     }
 }
 
@@ -207,14 +211,16 @@ bool RWSocket::Recv() {
                 off_set += ret._return_value;
                 break;
 
-            } else if (errno == EBADMSG || errno == ECONNRESET) {
-                cppnet_base->OnDisConnect(shared_from_this(), CEC_CONNECT_BREAK);
+            } else if (errno == EBADMSG) {
+                OnDisConnect(CEC_CONNECT_BREAK);
                 return false;
 
             } else {
-                cppnet_base->OnDisConnect(shared_from_this(), CEC_CLOSED);
-                return false;
+                
             }
+        } else if (ret._return_value == 0) {
+            OnDisConnect(CEC_CLOSED);
+            return false;
 
         } else {
             _read_buffer->MoveWritePt(ret._return_value);
@@ -256,11 +262,11 @@ bool RWSocket::Send() {
                 }
 
             } else if (errno == EBADMSG) {
-                cppnet_base->OnDisConnect(shared_from_this(), CEC_CONNECT_BREAK);
+                OnDisConnect(CEC_CONNECT_BREAK);
                 return false;
 
             } else {
-                cppnet_base->OnDisConnect(shared_from_this(), CEC_CLOSED);
+                OnDisConnect(CEC_CLOSED);
                 return false;
             }
         }

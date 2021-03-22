@@ -76,7 +76,7 @@ bool KqueueEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
         udata = (void*)(((uintptr_t)udata) | 1);
 
         struct kevent ev;
-        EV_SET(&ev, sock->GetSocket(), EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, udata);
+        EV_SET(&ev, sock->GetSocket(), EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, udata);
 
         _change_list.push_back(ev);
         return true;
@@ -129,7 +129,7 @@ bool KqueueEventActions::AddConnection(std::shared_ptr<Event>& event, Address& a
     
     auto sock = event->GetSocket();
     if (sock) {
-        //SocketNoblocking(sock->GetSocket());
+        SocketNoblocking(sock->GetSocket());
 
         auto ret = OsHandle::Connect(sock->GetSocket(), address);
 
@@ -141,12 +141,10 @@ bool KqueueEventActions::AddConnection(std::shared_ptr<Event>& event, Address& a
             return true;
     
         } else if (ret._errno == EINPROGRESS) {
-            /*if (CheckConnect(socket_ptr->GetSocket())) {
-                socket_ptr->Recv(socket_ptr->_read_event);
+            if (CheckConnect(rw_sock->GetSocket())) {
+                rw_sock->OnConnect(CEC_SUCCESS);
                 return true;
             }
-            socket_ptr->_read_event->_event_flag_set |= ERR_CONNECT_FAILED;
-            */
         }
         rw_sock->OnConnect(CEC_CONNECT_REFUSE);
         return false;
@@ -169,9 +167,6 @@ bool KqueueEventActions::AddDisconnection(std::shared_ptr<Event>& event) {
     }
     
     std::shared_ptr<RWSocket> socket = std::dynamic_pointer_cast<RWSocket>(sock);
-    if (!DelEvent(event)) {
-        return false;
-    }
     OsHandle::Close(socket->GetSocket());
     socket->OnDisConnect(CEC_SUCCESS);
     return true;
@@ -184,11 +179,11 @@ bool KqueueEventActions::DelEvent(std::shared_ptr<Event>& event) {
     }
     
     struct kevent read_ev;
-    EV_SET(&read_ev, sock->GetSocket(), EVFILT_READ, EV_DELETE, 0, 0, NULL);
+    EV_SET(&read_ev, sock->GetSocket(), EVFILT_READ, EV_DELETE | EV_DISABLE | EV_DISPATCH, 0, 0, NULL);
     _change_list.push_back(read_ev);
 
     struct kevent write_ev;
-    EV_SET(&write_ev, sock->GetSocket(), EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
+    EV_SET(&write_ev, sock->GetSocket(), EVFILT_WRITE, EV_DELETE | EV_DISABLE | EV_DISPATCH, 0, 0, NULL);
     _change_list.push_back(write_ev);
 
     event->ClearType();

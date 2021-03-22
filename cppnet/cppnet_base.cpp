@@ -110,23 +110,33 @@ void CppNetBase::OnTimer(std::shared_ptr<RWSocket> sock) {
 }
 
 void CppNetBase::OnAccept(std::shared_ptr<RWSocket> sock) {
-    _accept_cb(sock, CEC_SUCCESS);
+    if (_accept_cb) {
+        _accept_cb(sock, CEC_SUCCESS);
+    }
 }
 
 void CppNetBase::OnRead(std::shared_ptr<RWSocket> sock, uint32_t len) {
-    _read_cb(sock, sock->GetReadBuffer(), len);
+    if (_read_cb) {
+        _read_cb(sock, sock->GetReadBuffer(), len);
+    }
 }
 
 void CppNetBase::OnWrite(std::shared_ptr<RWSocket> sock, uint32_t len) {
-    _write_cb(sock, len);
+    if (_write_cb) {
+        _write_cb(sock, len);
+    }
 }
 
 void CppNetBase::OnConnect(std::shared_ptr<RWSocket> sock, uint16_t err) {
-    _connect_cb(sock, err);
+    if (_connect_cb) {
+        _connect_cb(sock, err);
+    }
 }
 
 void CppNetBase::OnDisConnect(std::shared_ptr<RWSocket> sock, uint16_t err) {
-    _disconnect_cb(sock, err);
+    if (_disconnect_cb) {
+        _disconnect_cb(sock, err);
+    }
 }
 
 }

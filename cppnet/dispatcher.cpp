@@ -54,7 +54,7 @@ void Dispatcher::Run() {
 }
 
 void Dispatcher::Stop() {
-    _stop = false;
+    _stop = true;
     _event_actions->Wakeup();
 }
 
@@ -75,7 +75,6 @@ void Dispatcher::Listen(uint64_t sock, const std::string& ip, uint16_t port) {
             connect_sock->SetSocket(sock);
             connect_sock->Bind(ip, port);
             connect_sock->Listen();
-            _event_actions->Wakeup();
         };
         PostTask(task);
     }
@@ -83,20 +82,21 @@ void Dispatcher::Listen(uint64_t sock, const std::string& ip, uint16_t port) {
 
 void Dispatcher::Connect(const std::string& ip, uint16_t port) {
     if (std::this_thread::get_id() == _local_thread_id) {
-        auto allocter = std::make_shared<AlloterWrap>(MakePoolAlloterPtr());
-        auto sock = allocter->PoolNewSharePtr<RWSocket>(allocter);
+        auto alloter = std::make_shared<AlloterWrap>(MakePoolAlloterPtr());
+        auto sock = std::make_shared<RWSocket>(alloter);
+
         sock->SetEventActions(_event_actions);
         sock->SetCppNetBase(_cppnet_base.lock());
         sock->Connect(ip, port);
     
     } else {
         auto task = [ip, port, this]() {
-            auto allocter = std::make_shared<AlloterWrap>(MakePoolAlloterPtr());
-            auto sock = allocter->PoolNewSharePtr<RWSocket>(allocter);
+            auto alloter = std::make_shared<AlloterWrap>(MakePoolAlloterPtr());
+            auto sock = std::make_shared<RWSocket>(alloter);
+
             sock->SetEventActions(_event_actions);
             sock->SetCppNetBase(_cppnet_base.lock());
             sock->Connect(ip, port);
-            _event_actions->Wakeup();
         };
         PostTask(task);
     }

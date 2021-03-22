@@ -55,6 +55,9 @@ bool ConnectSocket::Listen() {
         return false;
     }
 
+    //set the socket noblocking
+    SocketNoblocking(_sock);
+
     Accept();
 
     return true;
@@ -74,8 +77,8 @@ void ConnectSocket::Accept() {
 
 void ConnectSocket::OnAccept() {
     while (true) {
-        std::shared_ptr<AlloterWrap> allocter = std::make_shared<AlloterWrap>(MakePoolAlloterPtr());
-        std::shared_ptr<Address> address = allocter->PoolNewSharePtr<Address>(AT_IPV4);
+        std::shared_ptr<AlloterWrap> alloter = std::make_shared<AlloterWrap>(MakePoolAlloterPtr());
+        std::shared_ptr<Address> address = alloter->PoolNewSharePtr<Address>(AT_IPV4);
         //may get more than one connections
         auto ret = OsHandle::Accept(_sock, *address);
         if (ret._return_value < 0) {
@@ -94,10 +97,10 @@ void ConnectSocket::OnAccept() {
         //set the socket noblocking
         SocketNoblocking(ret._return_value);
         
-        //create a new socket
-        auto sock = allocter->PoolNewSharePtr<RWSocket>(allocter);
+        //create a new socket.
+        auto sock = std::make_shared<RWSocket>(ret._return_value, alloter);
+
         sock->SetCppNetBase(cppnet_base);
-        sock->SetSocket(ret._return_value);
         sock->SetEventActions(_event_actions);
         sock->SetAddress(address);
 

@@ -163,12 +163,10 @@ bool EpollEventActions::AddConnection(std::shared_ptr<Event>& event, Address& ad
             return true;
 
         } else if (ret._errno == EINPROGRESS) {
-            /*if (CheckConnect(socket_ptr->GetSocket())) {
-                socket_ptr->Recv(socket_ptr->_read_event);
+            if (CheckConnect(rw_sock->GetSocket())) {
+                rw_sock->OnConnect(CEC_SUCCESS);
                 return true;
             }
-            socket_ptr->_read_event->_event_flag_set |= ERR_CONNECT_FAILED;
-            */
         }
         rw_sock->OnConnect(CEC_CONNECT_REFUSE);
         LOG_WARN("connect event failed! %d", ret._errno);

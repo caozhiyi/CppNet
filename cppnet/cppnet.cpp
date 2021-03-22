@@ -11,7 +11,7 @@ CppNet::CppNet() {
 }
 
 CppNet::~CppNet() {
-
+    
 }
 
 void CppNet::Init(int32_t thread_num) {
