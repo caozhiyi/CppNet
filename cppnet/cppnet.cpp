@@ -1,5 +1,8 @@
-#include "cppnet_base.h"
 #include "include/cppnet.h"
+
+#include "cppnet_base.h"
+#include "cppnet/cppnet_config.h"
+
 #include "common/log/log.h"
 #include "common/log/file_logger.h"
 #include "common/log/stdout_logger.h"
@@ -16,12 +19,17 @@ CppNet::~CppNet() {
 
 void CppNet::Init(int32_t thread_num) {
     _cppnet_base->Init(thread_num);
-
-    std::shared_ptr<Logger> file_log = std::make_shared<FileLogger>();
-    std::shared_ptr<Logger> std_log = std::make_shared<StdoutLogger>();
-    file_log->SetLogger(std_log);
-    LOG_SET(file_log);
-    LOG_SET_LEVEL(LL_DEBUG);
+    if (__open_log) {
+        std::shared_ptr<Logger> file_log = std::make_shared<FileLogger>();
+        std::shared_ptr<Logger> std_log = std::make_shared<StdoutLogger>();
+        file_log->SetLogger(std_log);
+        LOG_SET(file_log);
+        LOG_SET_LEVEL(LL_DEBUG);
+    } else {
+        LOG_SET_LEVEL(LL_NULL);
+    }
+    
+    
 }
 
 void CppNet::Join() {
