@@ -12,6 +12,8 @@ namespace cppnet {
 // socket
 class CNSocket;
 typedef std::shared_ptr<CNSocket> Handle;
+typedef std::shared_ptr<Buffer>   BufferPtr;
+
 // call back define
 // param : param is setted when set
 typedef std::function<void(Handle)>                                            timer_call_back;
@@ -28,8 +30,8 @@ typedef std::function<void(Handle handle, uint32_t len)>                       w
 // handle : handle of socket
 // data   : point to recv data buffer
 // len    : recv data len
-typedef std::function<void(Handle handle, std::shared_ptr<Buffer> data, 
-                        uint32_t len)>                                             read_call_back;
+typedef std::function<void(Handle handle, BufferPtr data, 
+                        uint32_t len)>                                         read_call_back;
     
 // error code
 enum CPPNET_ERROR_CODE {

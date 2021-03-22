@@ -35,7 +35,7 @@ void ReadFunc(Handle handle, std::shared_ptr<Buffer> data, uint32_t len) {
     
     Sleep(1000);
 
-    if (msg_index > 10) {
+    if (msg_index >= 5) {
         handle->Close();
         return;
     }
@@ -73,5 +73,5 @@ int main() {
 
     net.Connection("127.0.0.1", 8999);
 
-    net.Join();
+    Sleep(8000);
 }
