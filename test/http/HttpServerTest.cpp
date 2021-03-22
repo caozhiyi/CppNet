@@ -7,6 +7,8 @@
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 
+#include "common/util/time.h"
+
 std::string image;
 bool benchmark = true;
 
@@ -25,8 +27,7 @@ void OnRequest(const CHttpRequest& req, CHttpResponse& resp) {
         resp.SetStatusMessage("OK");
         resp.SetContentType("text/html");
         resp.AddHeader("Server", "CppNet");
-        CHttpServer::_time_tool.Now();
-        std::string now = std::to_string(CHttpServer::_time_tool.GetMsec());
+        std::string now = cppnet::GetFormatTime();
         resp.SetBody("<html><head><title>This is title</title></head>"
             "<body><h1>Hello</h1>Now is " + now +
             "</body></html>");
@@ -66,16 +67,16 @@ void DisConnectionFunc(const cppnet::Handle& , uint32_t ) {
 }
 
 int main() {
-    cppnet::CCppNet net;
+    cppnet::CppNet net;
     net.Init(2);
 
     CHttpServer server;
     server.SetHttpCallback(OnRequest);
 
     net.SetAcceptCallback(std::bind(&CHttpServer::OnConnection, &server, std::placeholders::_1, std::placeholders::_2));
-    net.SetWriteCallback(std::bind(&CHttpServer::OnMessageSend, &server, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    net.SetWriteCallback(std::bind(&CHttpServer::OnMessageSend, &server, std::placeholders::_1, std::placeholders::_2));
     net.SetReadCallback(std::bind(&CHttpServer::OnMessage, &server, std::placeholders::_1, std::placeholders::_2, 
-                                              std::placeholders::_3, std::placeholders::_4));
+                                              std::placeholders::_3));
     net.SetDisconnectionCallback(DisConnectionFunc);
 
     net.ListenAndAccept("0.0.0.0", 8921);

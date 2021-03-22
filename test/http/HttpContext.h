@@ -2,6 +2,7 @@
 #define TEST_HTTP_HTTP_CONTEXT_HEADER
 
 #include "HttpRequest.h"
+#include "include/cppnet_type.h"
 
 enum HttpRequestParseState{
     ExpectRequestLine,
@@ -10,17 +11,13 @@ enum HttpRequestParseState{
     GotAll,
 };
 
-namespace base { 
-    class CBuffer;
-}
-
 class CHttpContext {
     public:
         CHttpContext() : _state(ExpectRequestLine) { }
 
         // default copy-ctor, dtor and assignment are fine
         // return false if any error
-        bool ParseRequest(base::CBuffer* buf, uint64_t receive_time);
+        bool ParseRequest(cppnet::BufferPtr buf, uint64_t receive_time);
 
         bool IsGotAll() const { 
             return _state == GotAll;

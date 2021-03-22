@@ -5,12 +5,12 @@
 #include <functional>
 #include <mutex>
 
-#include "CppNet.h"
-#include "TimeTool.h"
-#include "CppDefine.h"
 #include "HttpContext.h"
 #include "HttpRequest.h"
 #include "HttpResponse.h"
+
+#include "include/cppnet.h"
+#include "include/cppnet_socket.h"
 
 typedef std::function<void (const CHttpRequest&, CHttpResponse&)> HttpCallback;
 
@@ -23,23 +23,20 @@ class CHttpServer {
             _http_call_back = cb;
         }
 
-        void OnConnection(const cppnet::Handle& handle, uint32_t err);
+        void OnConnection(cppnet::Handle handle, uint32_t err);
 
-        void OnMessage(const cppnet::Handle& handle, base::CBuffer* data, 
-                          uint32_t len, uint32_t err);
+        void OnMessage(cppnet::Handle handle, cppnet::BufferPtr data, 
+                          uint32_t len);
       
-        void OnMessageSend(const cppnet::Handle& handle, uint32_t len, uint32_t err);
+        void OnMessageSend(cppnet::Handle handle, uint32_t len);
       
     private:
-        void OnRequest(const cppnet::Handle& handle, const CHttpRequest&);
+        void OnRequest(cppnet::Handle handle, const CHttpRequest&);
 
     private:
         std::mutex _mutex;
         std::unordered_map<cppnet::Handle, CHttpContext> _context_map;
         HttpCallback _http_call_back;
-
-    public:
-        static base::CTimeTool _time_tool;
 };
 
 #endif 

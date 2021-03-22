@@ -1,5 +1,4 @@
 #include <algorithm>
-#include "Buffer.h"
 #include "HttpContext.h"
 
 const char CRLF[] = "\r\n";
@@ -41,14 +40,14 @@ bool CHttpContext::processRequestLine(const char* begin, const char* end) {
 }
 
 // return false if any error
-bool CHttpContext::ParseRequest(base::CBuffer* buf, uint64_t receive_time) {
+bool CHttpContext::ParseRequest(cppnet::BufferPtr buf, uint64_t receive_time) {
     bool ok = true;
     bool hasMore = true;
     while (hasMore) {
         if (_state == ExpectRequestLine) {
             char line_buf[1024] = {0};
-            int need_len = 0;
-            int size = buf->ReadUntil(line_buf, 1024, CRLF, CRLF_LEN, need_len);
+            uint32_t need_len = 0;
+            uint32_t size = buf->ReadUntil(line_buf, 1024, CRLF, CRLF_LEN, need_len);
             if (size > 0) {
                 ok = processRequestLine(line_buf, line_buf + size);
                 if (ok) {
@@ -65,8 +64,8 @@ bool CHttpContext::ParseRequest(base::CBuffer* buf, uint64_t receive_time) {
 
         } else if (_state == ExpectHeaders) {
             char line_buf[1024] = { 0 };
-            int need_len = 0;
-            int size = buf->ReadUntil(line_buf, 1024, CRLF, CRLF_LEN, need_len);
+            uint32_t need_len = 0;
+            uint32_t size = buf->ReadUntil(line_buf, 1024, CRLF, CRLF_LEN, need_len);
             char* end = line_buf + size - CRLF_LEN;
             if (size > 0) {
                 const char* colon = std::find(line_buf, end, ':');

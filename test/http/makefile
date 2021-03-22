@@ -4,9 +4,7 @@ OBJS = $(patsubst %.cpp, %.o, $(SRCS))
 
 CC = g++
 
-INCLUDES = -I.               \
-           -I../../base      \
-           -I../../include   \
+INCLUDES = -I../../
 
 #debug
 #CCFLAGS = -lpthread -fPIC -m64 -g -pg -std=c++11 -lstdc++ -pipe 

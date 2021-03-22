@@ -7,10 +7,10 @@
 #endif
 
 #include <map>
+#include <string>
 #include <stdio.h>
 #include <assert.h>
 
-#include "Type.h"
 
 enum Method {
     Invalid, 
