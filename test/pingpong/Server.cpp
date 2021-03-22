@@ -1,12 +1,12 @@
 #include <atomic>
 #include <iostream>
 
-#include "Socket.h"
-#include "CppNet.h"
+#include "include/cppnet.h"
+#include "include/cppnet_socket.h"
 
 using namespace cppnet;
 
-#ifndef __linux__
+#ifdef WIN32
 #include <winsock2.h>
 void SetNoDelay(const uint64_t& sock) {
     int opt = 1;
@@ -33,21 +33,17 @@ void OnConnection(const Handle& handle, uint32_t error) {
     }
 }
 
-void OnMessage(const Handle& handle, base::CBuffer* data, uint32_t, uint32_t error) {
+void OnMessage(const Handle& handle, std::shared_ptr<cppnet::Buffer> data, uint32_t) {
     char buff[65535];
-    if (error == CEC_SUCCESS) {
-        while (data->GetCanReadLength()) {
-           int ret = data->Read(buff, 65535);
-           handle->Write(buff, ret);
-        }
-
-    } else {
-        std::cout << " something error while reading. err : " << error << std::endl;
+    
+    while (data->GetCanReadLength()) {
+        int ret = data->Read(buff, 65535);
+        handle->Write(buff, ret);
     }
 }
 
 int main() {
-    cppnet::CCppNet net;
+    cppnet::CppNet net;
     net.Init(4);
 
     net.SetAcceptCallback(OnConnection);

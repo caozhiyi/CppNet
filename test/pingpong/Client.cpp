@@ -6,11 +6,10 @@
 #include <functional>
 #include <unordered_map>
 
-#include "CppNet.h"
-#include "Socket.h"
-#include "Runnable.h"
+#include "include/cppnet.h"
+#include "include/cppnet_socket.h"
 
-#ifndef __linux__
+#ifdef WIN32
 #include <winsock2.h>
 void SetNoDelay(const uint64_t& sock) {
     int opt = 1;
@@ -46,9 +45,9 @@ class Session {
        return _messages_read;
     }
 
-    void OnConnection(const Handle& handle);
+    void OnConnection(Handle handle);
 
-    void OnMessage(const Handle& handle, base::CBuffer* data, uint32_t) {
+    void OnMessage(Handle handle, std::shared_ptr<cppnet::Buffer> data, uint32_t) {
        char buff[65535];
        ++_messages_read;
        int len_get = data->GetCanReadLength();
@@ -66,7 +65,7 @@ class Session {
 
 class Client {
 public:
-    Client(int block_size, int session_count, int timeout, const std::string& ip, int port, cppnet::CCppNet* net) : 
+    Client(int block_size, int session_count, int timeout, const std::string& ip, int port, cppnet::CppNet* net) : 
                              _ip(ip), _port(port), _session_count(session_count), _timeout(timeout),
                              _block_size(block_size), _net(net) {
         _num_connected = 0;
@@ -76,7 +75,7 @@ public:
     }
 
     void Start() {
-        _net->SetTimer(_timeout, std::bind(&Client::HandleTimeout, this, std::placeholders::_1), nullptr);
+        _net->AddTimer(_timeout, std::bind(&Client::HandleTimeout, this, std::placeholders::_1), nullptr);
 
         for (int i = 0; i < _session_count; ++i) {
             _net->Connection(_ip, _port);
@@ -87,19 +86,14 @@ public:
         return _message;
     }
 
-    void OnMessage(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t error) {
-       if (error == CEC_SUCCESS) {
-          auto iter = _sessions.find(handle);
-          if (iter != _sessions.end()) {
-              iter->second->OnMessage(handle, data, len);
-          }
-
-       } else {
-          std::cout << " something error while reading. " << std::endl;
-       }
+    void OnMessage(Handle handle, std::shared_ptr<cppnet::Buffer> data, uint32_t len) {
+        auto iter = _sessions.find(handle);
+        if (iter != _sessions.end()) {
+            iter->second->OnMessage(handle, data, len);
+        }
     }
 
-    void OnConnect(const Handle& handle, uint32_t error) {
+    void OnConnect(Handle handle, uint32_t error) {
        std::cout << "OnConnect :" << _num_connected.load() << std::endl;
         if (error == CEC_SUCCESS) {
             _num_connected++;
@@ -115,7 +109,7 @@ public:
         }
     }
 
-  void OnDisconnect(const Handle&, uint32_t) {
+  void OnDisconnect(Handle, uint32_t) {
       std::cout << "disconnected :" << _num_connected.load() << std::endl;
       _num_connected--;
       if (_num_connected== 0) {
@@ -155,11 +149,11 @@ private:
     int          _block_size;
     std::string       _message;
     std::atomic_uint  _num_connected;
-    cppnet::CCppNet*  _net;
+    cppnet::CppNet*  _net;
     std::unordered_map<Handle, std::unique_ptr<Session>> _sessions;
 };
 
-void Session::OnConnection(const Handle& handle) {
+void Session::OnConnection(Handle handle) {
     //SetNoDelay(handle);
     auto msg = _owner->Message();
     handle->Write(msg.c_str(), msg.length());
@@ -179,14 +173,14 @@ int main(int argc, char* argv[]) {
     int session_count = atoi(argv[5]);
     int timeout       = atoi(argv[6]);
 
-    cppnet::CCppNet* net = new cppnet::CCppNet;
+    cppnet::CppNet* net = new cppnet::CppNet;
     net->Init(threadCount);
 
     Client client(block_size, session_count, timeout, ip, port, net);
 
     net->SetConnectionCallback(std::bind(&Client::OnConnect, &client, std::placeholders::_1, std::placeholders::_2));
     net->SetReadCallback(std::bind(&Client::OnMessage, &client, std::placeholders::_1, std::placeholders::_2,
-                                   std::placeholders::_3, std::placeholders::_4));
+                                   std::placeholders::_3));
     net->SetDisconnectionCallback(std::bind(&Client::OnDisconnect, &client, std::placeholders::_1, std::placeholders::_2));
 
     client.Start();
