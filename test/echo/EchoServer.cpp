@@ -3,36 +3,28 @@
 #include <string.h> // for strlen
 #include <iostream>
 
-#include "Socket.h"
-#include "CppNet.h"
+#include "include/cppnet.h"
+#include "include/cppnet_socket.h"
 
 using namespace cppnet;
 
 static const int __buf_len = 2048;
 static const char* __buf_spilt = "\r\n";
 
-void WriteFunc(const Handle& handle, uint32_t len, uint32_t error) {
-    if (error != CEC_SUCCESS) {
-        std::cout << "something err while write : " << error << std::endl;
-    }
+void WriteFunc(Handle handle, uint32_t len) {
     // do nothing 
 }
 
-void ReadFunc(const Handle& handle, base::CBuffer* data, uint32_t len, uint32_t error) {
-    if (error != CEC_SUCCESS) {
-        std::cout << "something err while read : " << error << std::endl;
-        
-    } else {
-        char msg_buf[__buf_len] = {0};
-        int need_len = 0;
-        int find_len = strlen(__buf_spilt);
-        // get recv data to send back.
-        int size = data->ReadUntil(msg_buf, __buf_len, __buf_spilt, find_len, need_len);
-        handle->Write(msg_buf, size);
-    }
+void ReadFunc(Handle handle, cppnet::BufferPtr data, uint32_t len) {
+    char msg_buf[__buf_len] = {0};
+    uint32_t need_len = 0;
+    uint32_t find_len = strlen(__buf_spilt);
+    // get recv data to send back.
+    uint32_t size = data->ReadUntil(msg_buf, __buf_len, __buf_spilt, find_len, need_len);
+    handle->Write(msg_buf, size);
 }
 
-void ConnectFunc(const Handle& handle, uint32_t error) {
+void ConnectFunc(Handle handle, uint32_t error) {
     if (error != CEC_SUCCESS) {
         std::cout << "something err while connect : " << error << std::endl;
     }
@@ -41,7 +33,7 @@ void ConnectFunc(const Handle& handle, uint32_t error) {
 int main() {
 
     // start 4 threads
-    cppnet::CCppNet net;
+    cppnet::CppNet net;
     net.Init(4);
 
     net.SetAcceptCallback(ConnectFunc);

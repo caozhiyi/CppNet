@@ -3,8 +3,7 @@ CLI = EchoClient.cpp
 
 CC = g++
 
-INCLUDES = -I../../base      \
-           -I../../include   \
+INCLUDES = -I../../
 
 #debug
 #CCFLAGS = -lpthread -fPIC -m64 -g -pg -std=c++11 -lstdc++ -pipe 
