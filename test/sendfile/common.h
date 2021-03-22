@@ -17,4 +17,4 @@ struct FileHeader {
 };
 
 const int __header_len = sizeof(FileHeader);
-const int __read_len   = 1024;
+const int __read_len   = 1024*1024;

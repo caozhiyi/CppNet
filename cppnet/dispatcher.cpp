@@ -43,7 +43,6 @@ Dispatcher::~Dispatcher() {
 
         std::unique_lock<std::mutex> lock(_wait_destroy_map_mutex);
         _wait_destroy_thread_map[std::this_thread::get_id()] = _thread;
-        Join();
     }
 }
 

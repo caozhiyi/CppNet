@@ -28,8 +28,6 @@ void CppNet::Init(int32_t thread_num) {
     } else {
         LOG_SET_LEVEL(LL_NULL);
     }
-    
-    
 }
 
 void CppNet::Join() {

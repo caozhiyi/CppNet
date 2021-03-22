@@ -217,6 +217,9 @@ bool EpollEventActions::DelEvent(std::shared_ptr<Event>& event) {
 void EpollEventActions::ProcessEvent(int32_t wait_ms) {
     int16_t ret = epoll_wait(_epoll_handler, &*_active_list.begin(), (int)_active_list.size(), wait_ms);
     if (ret == -1) {
+        if (errno == EINTR) {
+            return;
+        }
         LOG_ERROR("epoll wait faild! error:%d, info:%s", errno, ErrnoInfo(errno));
 
     } else {

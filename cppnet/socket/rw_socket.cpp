@@ -253,13 +253,11 @@ bool RWSocket::Send() {
         } else {
             if (errno == EWOULDBLOCK || errno == EAGAIN || errno == EINTR) {
                 //can't send complete
-                if (ret._return_value < data_len) {
-                    auto actions = GetEventActions();
-                    if (actions) {
-                        return actions->AddSendEvent(_event);
-                    }
-                    return false;
+                auto actions = GetEventActions();
+                if (actions) {
+                    return actions->AddSendEvent(_event);
                 }
+                return false;
 
             } else if (errno == EBADMSG) {
                 OnDisConnect(CEC_CONNECT_BREAK);
