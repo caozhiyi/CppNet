@@ -14,6 +14,9 @@ namespace cppnet {
 
 thread_local std::unordered_map<uint64_t, std::shared_ptr<TimerEvent>> Dispatcher::__all_timer_event_map;
 
+std::mutex Dispatcher::_wait_destroy_map_mutex;
+std::unordered_map<std::thread::id, std::shared_ptr<std::thread>> Dispatcher::_wait_destroy_thread_map;
+
 Dispatcher::Dispatcher(std::shared_ptr<CppNetBase> base):
     _cur_utc_time(0),
     _timer_id_creater(0),
@@ -31,8 +34,17 @@ Dispatcher::Dispatcher(std::shared_ptr<CppNetBase> base):
 }
 
 Dispatcher::~Dispatcher() {
-    Stop();
-    Join();
+    if (std::this_thread::get_id() != _local_thread_id) {
+        Stop();
+        Join();
+
+    } else {
+        Stop();
+
+        std::unique_lock<std::mutex> lock(_wait_destroy_map_mutex);
+        _wait_destroy_thread_map[std::this_thread::get_id()] = _thread;
+        Join();
+    }
 }
 
 void Dispatcher::Run() {
@@ -40,16 +52,17 @@ void Dispatcher::Run() {
     _cur_utc_time = UTCTimeMsec();
     int32_t wait_time = 0;
     uint64_t cur_time = 0;
+
     while (!_stop) {
+        cur_time = UTCTimeMsec();
+        _timer->TimerRun(cur_time - _cur_utc_time);
+        _cur_utc_time = cur_time;
+
         wait_time = _timer->MinTime();
 
         _event_actions->ProcessEvent(wait_time);
 
         DoTask();
-
-        cur_time = UTCTimeMsec();
-        _timer->TimerRun(cur_time - _cur_utc_time);
-        _cur_utc_time = cur_time;
     }
 }
 

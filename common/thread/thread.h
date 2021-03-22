@@ -16,8 +16,8 @@ public:
     //base option
     virtual void Start() {
         _stop = false;
-        if (!_pthread) {
-            _pthread = std::make_shared<std::thread>(std::bind(&Thread::Run, this));
+        if (!_thread) {
+            _thread = std::make_shared<std::thread>(std::bind(&Thread::Run, this));
         }
     }
 
@@ -26,8 +26,8 @@ public:
     }
 
     virtual void Join() {
-        if (_pthread) {
-            _pthread->join();
+        if (_thread) {
+            _thread->join();
         }
     }
     //TO DO
@@ -43,7 +43,7 @@ protected:
 
 protected:
     std::atomic_bool _stop;
-    std::shared_ptr<std::thread> _pthread;
+    std::shared_ptr<std::thread> _thread;
 };
 
 }
