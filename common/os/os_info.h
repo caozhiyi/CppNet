@@ -4,7 +4,9 @@
 #include <cstdint>
 
 namespace cppnet {
-    uint32_t GetCpuNum();
+
+uint32_t GetCpuNum();
+
 }
 
 #endif

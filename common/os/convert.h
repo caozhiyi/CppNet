@@ -7,6 +7,8 @@ namespace cppnet {
 
 void Localtime(const uint64_t* time, void* out_tm);
 
+char* ErrnoInfo(uint32_t err);
+
 }
 
 #endif

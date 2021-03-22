@@ -1,5 +1,6 @@
 #ifdef __linux__
 #include <thread>
+#include <cstring>
 #include <unistd.h>
 #include <signal.h>
 #include <sys/poll.h>
@@ -7,15 +8,17 @@
 #include <sys/socket.h>
 
 #include "epoll_action.h"
-#include "common/log/log.h"
-#include "common/util/time.h"
 #include "include/cppnet_type.h"
 #include "cppnet/cppnet_config.h"
-#include "common/network/socket.h"
 #include "cppnet/socket/rw_socket.h"
-#include "common/network/io_handle.h"
 #include "cppnet/socket/connect_socket.h"
 #include "cppnet/event/event_interface.h"
+
+#include "common/log/log.h"
+#include "common/util/time.h"
+#include "common/os/convert.h"
+#include "common/network/socket.h"
+#include "common/network/io_handle.h"
 #include "common/alloter/alloter_interface.h"
 
 namespace cppnet {
@@ -33,12 +36,6 @@ EpollEventActions::~EpollEventActions() {
 }
 
 bool EpollEventActions::Init(uint32_t thread_num) {
-    //Disable SIGPIPE signal
-    /*sigset_t set;
-    sigprocmask(SIG_SETMASK, NULL, &set);
-    sigaddset(&set, SIGPIPE);
-    sigprocmask(SIG_SETMASK, &set, NULL);
-    */
     //get epoll handle. the param is invalid since linux 2.6.8
     _epoll_handler = epoll_create(1500);
     if (_epoll_handler == -1) {
@@ -55,8 +52,8 @@ bool EpollEventActions::Init(uint32_t thread_num) {
 
     _pipe_content.events = EPOLLIN;
     _pipe_content.data.fd = _pipe[0];
-    int res = epoll_ctl(_epoll_handler, EPOLL_CTL_ADD, _pipe[0], &_pipe_content);
-    if (res == -1) {
+    int32_t ret = epoll_ctl(_epoll_handler, EPOLL_CTL_ADD, _pipe[0], &_pipe_content);
+    if (ret < 0) {
         LOG_FATAL("add pipe handle to epoll faild! error :%d", errno);
         return false;
     }
@@ -80,6 +77,7 @@ bool EpollEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
         if (!ep_event) {
             auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
             ep_event = rw_sock->GetAlocter()->PoolNew<epoll_event>();
+            memset(ep_event, 0, sizeof(epoll_event));
             event->SetData(ep_event);
         }
         ep_event->data.ptr = (void*)&event;
@@ -104,6 +102,7 @@ bool EpollEventActions::AddRecvEvent(std::shared_ptr<Event>& event) {
         if (!ep_event) {
             auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
             ep_event = rw_sock->GetAlocter()->PoolNew<epoll_event>();
+            memset(ep_event, 0, sizeof(epoll_event));
             event->SetData(ep_event);
         }
         ep_event->data.ptr = (void*)&event;
@@ -127,11 +126,13 @@ bool EpollEventActions::AddAcceptEvent(std::shared_ptr<Event>& event) {
         epoll_event* ep_event = (epoll_event*)event->GetData();
         if (!ep_event) {
             ep_event = new epoll_event;
+            memset(ep_event, 0, sizeof(epoll_event));
             event->SetData(ep_event);
         }
         ep_event->data.ptr = (void*)&event;
         if (AddEvent(ep_event, EPOLLIN, sock->GetSocket(), event->GetType() & ET_INACTIONS)) {
             event->AddType(ET_INACTIONS);
+            _listener_map.insert(sock->GetSocket());
             return true;
         }
     }
@@ -216,10 +217,10 @@ bool EpollEventActions::DelEvent(std::shared_ptr<Event>& event) {
 void EpollEventActions::ProcessEvent(int32_t wait_ms) {
     int16_t ret = epoll_wait(_epoll_handler, &*_active_list.begin(), (int)_active_list.size(), wait_ms);
     if (ret == -1) {
-        LOG_ERROR("epoll wait faild! error :%d", errno);
+        LOG_ERROR("epoll wait faild! error:%d, info:%s", errno, ErrnoInfo(errno));
 
     } else {
-        LOG_DEBUG("epoll get events! num :%d, TheadId : %lld", ret, std::this_thread::get_id());
+        LOG_DEBUG("epoll get events! num:%d, TheadId: %lld", ret, std::this_thread::get_id());
 
         OnEvent(_active_list, ret);
     }
@@ -230,8 +231,8 @@ void EpollEventActions::Wakeup() {
 }
 
 void EpollEventActions::OnEvent(std::vector<epoll_event>& event_vec, int16_t num) {
-    std::shared_ptr<Event> event;
     std::shared_ptr<Socket> sock;
+    std::shared_ptr<Event> event;
     
     std::shared_ptr<RWSocket> rw_sock;
     std::shared_ptr<ConnectSocket> connect_sock;
@@ -295,7 +296,7 @@ bool EpollEventActions::AddEvent(epoll_event* ev, int32_t event_flag, uint64_t s
         if (ret == 0) {
             return true;
         }
-         LOG_ERROR("modify event to epoll faild! error :%d, sock: %d", errno, sock);
+        LOG_ERROR("modify event to epoll faild! error :%d, sock: %d", errno, sock);
     }
     return false;
 }
