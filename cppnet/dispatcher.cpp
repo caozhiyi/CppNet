@@ -37,12 +37,6 @@ Dispatcher::~Dispatcher() {
     if (std::this_thread::get_id() != _local_thread_id) {
         Stop();
         Join();
-
-    } else {
-        Stop();
-
-        std::unique_lock<std::mutex> lock(_wait_destroy_map_mutex);
-        _wait_destroy_thread_map[std::this_thread::get_id()] = _thread;
     }
 }
 
@@ -56,6 +50,10 @@ void Dispatcher::Run() {
         cur_time = UTCTimeMsec();
         _timer->TimerRun(cur_time - _cur_utc_time);
         _cur_utc_time = cur_time;
+
+        if (_stop) {
+            break;
+        }
 
         wait_time = _timer->MinTime();
 
@@ -76,6 +74,8 @@ void Dispatcher::Listen(uint64_t sock, const std::string& ip, uint16_t port) {
         connect_sock->SetEventActions(_event_actions);
         connect_sock->SetCppNetBase(_cppnet_base.lock());
         connect_sock->SetSocket(sock);
+        connect_sock->SetDispatcher(shared_from_this());
+
         connect_sock->Bind(ip, port);
         connect_sock->Listen();
 
@@ -85,6 +85,8 @@ void Dispatcher::Listen(uint64_t sock, const std::string& ip, uint16_t port) {
             connect_sock->SetEventActions(_event_actions);
             connect_sock->SetCppNetBase(_cppnet_base.lock());
             connect_sock->SetSocket(sock);
+            connect_sock->SetDispatcher(shared_from_this());
+
             connect_sock->Bind(ip, port);
             connect_sock->Listen();
         };

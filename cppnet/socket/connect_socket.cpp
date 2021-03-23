@@ -4,6 +4,7 @@
 #include "rw_socket.h"
 #include "connect_socket.h"
 #include "common/log/log.h"
+#include "common/os/convert.h"
 #include "common/network/socket.h"
 #include "common/network/address.h"
 #include "common/network/io_handle.h"
@@ -85,7 +86,7 @@ void ConnectSocket::OnAccept() {
             if (errno == EAGAIN) {
                 break;
             }
-            LOG_FATAL("accept socket filed! error code:%d", ret._errno);
+            LOG_ERROR("accept socket filed! errno:%d, info:%s", ret._errno, ErrnoInfo(ret._errno));
             break;
         }
 
@@ -103,6 +104,7 @@ void ConnectSocket::OnAccept() {
         sock->SetCppNetBase(cppnet_base);
         sock->SetEventActions(_event_actions);
         sock->SetAddress(address);
+        sock->SetDispatcher(GetDispatcher());
 
         __all_socket_map[ret._return_value] = sock;
 

@@ -129,7 +129,7 @@ public:
           std::cout << static_cast<double>(totalBytesRead) / ((_timeout / 1000) * 1024 * 1024)
                     << " MiB/s throughput" << std::endl;
 
-          delete _net;
+          _net->Destory();
       }
   }
 
@@ -186,6 +186,8 @@ int main(int argc, char* argv[]) {
     client.Start();
 
     net->Join();
+
+    delete net;
 
     return 0;
 }

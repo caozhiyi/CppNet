@@ -1,17 +1,19 @@
 #include <errno.h>
 
 #include "rw_socket.h"
-#include "common/log/log.h"
+#include "include/cppnet_type.h"
+
 #include "cppnet/dispatcher.h"
 #include "cppnet/cppnet_base.h"
-#include "include/cppnet_type.h"
 #include "cppnet/cppnet_config.h"
+#include "cppnet/event/event_interface.h"
+#include "cppnet/event/action_interface.h"
+
+#include "common/log/log.h"
 #include "common/network/address.h"
 #include "common/network/io_handle.h"
 #include "common/alloter/pool_block.h"
 #include "common/buffer/buffer_queue.h"
-#include "cppnet/event/event_interface.h"
-#include "cppnet/event/action_interface.h"
 #include "common/alloter/alloter_interface.h"
 
 namespace cppnet {
@@ -71,6 +73,10 @@ bool RWSocket::Write(const char* src, uint32_t len) {
 
     //can't send now
     if (_write_buffer->GetCanReadLength() > 0) {
+        if (_write_buffer->GetCanReadLength() > __max_write_cache) {
+            return false;
+        }
+        
         _write_buffer->Write(src, len);
         auto actions = GetEventActions();
         if (actions) {

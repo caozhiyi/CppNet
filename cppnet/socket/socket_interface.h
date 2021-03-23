@@ -16,7 +16,8 @@ class EventActions;
 class Socket { 
 public:
     Socket(): _sock(0) {}
-    Socket(std::shared_ptr<AlloterWrap> alloter): _alloter(alloter) {}
+    Socket(std::shared_ptr<AlloterWrap> alloter):
+        _sock(0), _alloter(alloter) {}
     Socket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter): 
         _sock(sock), _alloter(alloter) {}
     virtual ~Socket() {}

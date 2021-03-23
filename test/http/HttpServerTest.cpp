@@ -68,7 +68,7 @@ void DisConnectionFunc(const cppnet::Handle& , uint32_t ) {
 
 int main() {
     cppnet::CppNet net;
-    net.Init(2);
+    net.Init(4);
 
     CHttpServer server;
     server.SetHttpCallback(OnRequest);

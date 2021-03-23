@@ -26,7 +26,7 @@ public:
     }
 
     virtual void Join() {
-        if (_thread) {
+        if (_thread && _thread->joinable()) {
             _thread->join();
         }
     }

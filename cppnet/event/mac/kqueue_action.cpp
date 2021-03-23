@@ -5,6 +5,7 @@
 
 #include "common/log/log.h"
 #include "common/util/time.h"
+#include "common/os/convert.h"
 #include "common/util/os_return.h"
 #include "common/network/socket.h"
 #include "common/network/address.h"
@@ -23,6 +24,8 @@ namespace cppnet {
 KqueueEventActions::KqueueEventActions():
     _kqueue_handler(-1) {
     _active_list.resize(1024);
+    _kqueue_timeout.tv_nsec = 0;
+    _kqueue_timeout.tv_sec = 0;
 }
 
 KqueueEventActions::~KqueueEventActions() {
@@ -133,8 +136,6 @@ bool KqueueEventActions::AddConnection(std::shared_ptr<Event>& event, Address& a
 
         auto ret = OsHandle::Connect(sock->GetSocket(), address);
 
-        SocketNoblocking(sock->GetSocket());
-
         auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
         if (ret._return_value == 0) {
             rw_sock->OnConnect(CEC_SUCCESS);
@@ -147,6 +148,7 @@ bool KqueueEventActions::AddConnection(std::shared_ptr<Event>& event, Address& a
             }
         }
         rw_sock->OnConnect(CEC_CONNECT_REFUSE);
+        LOG_ERROR("connect to peer failed! errno:%d, info:%s", ret._errno, ErrnoInfo(ret._errno));
         return false;
         
     }
@@ -191,23 +193,22 @@ bool KqueueEventActions::DelEvent(std::shared_ptr<Event>& event) {
 }
 
 void KqueueEventActions::ProcessEvent(int32_t wait_ms) {
-    struct timespec timeout;
-
     int16_t ret = 0;
     if (wait_ms > 0) {
-        timeout.tv_nsec = wait_ms * 1000000;
+        _kqueue_timeout.tv_sec = (uint64_t)wait_ms / 1000;
+        _kqueue_timeout.tv_nsec = ((uint64_t)wait_ms - (_kqueue_timeout.tv_sec * 1000)) * 1000000;
 
-        ret = kevent(_kqueue_handler, &*_change_list.begin(), (int)_change_list.size(), &*_active_list.begin(), (int)_active_list.size(), &timeout);
+        ret = kevent(_kqueue_handler, &*_change_list.begin(), (int)_change_list.size(), &*_active_list.begin(), (int)_active_list.size(), &_kqueue_timeout);
     } else {
         ret = kevent(_kqueue_handler, &*_change_list.begin(), (int)_change_list.size(), &*_active_list.begin(), (int)_active_list.size(), nullptr);
     }
 
     _change_list.clear();
     if (ret < 0) {
-        LOG_ERROR("kevent faild! error :%d", errno);
+        LOG_ERROR("kevent faild! error:%d, info:%s", errno, ErrnoInfo(errno));
 
     } else {
-        LOG_DEBUG("kevent get events! num :%d, TheadId : %lld", ret, std::this_thread::get_id());
+        LOG_DEBUG("kevent get events! num:%d, TheadId:%lld", ret, std::this_thread::get_id());
 
         OnEvent(_active_list, ret);
     }

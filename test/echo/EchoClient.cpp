@@ -54,7 +54,7 @@ int main() {
     net.SetWriteCallback(WriteFunc);
     net.SetReadCallback(ReadFunc);
     net.SetDisconnectionCallback(DisConnectionFunc);
-    for (size_t i = 0; i < 1000; i++) {
+    for (size_t i = 0; i < 200; i++) {
         net.Connection("127.0.0.1", 8921);
     }
 

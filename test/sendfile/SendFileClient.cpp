@@ -12,14 +12,24 @@
 
 using namespace cppnet;
 
-class CSendFile {
+class SendFile {
 public:
-    CSendFile(const std::string& file, cppnet::CppNet* net) : _status(hello),
-            _file_name(file), _net(net) {
+    SendFile(const std::string& file, cppnet::CppNet* net):
+        _block(false),
+        _status(hello),
+        _file_name(file), 
+        _net(net) {
     }
 
-    ~CSendFile() {
+    ~SendFile() {
+        _file.close();
+    }
 
+    void OnWrite(Handle handle, uint32_t len) {
+        if (_block) {
+            _block = false;
+            Send(handle);
+        }
     }
 
     void OnRecv(Handle handle, std::shared_ptr<cppnet::Buffer> data, uint32_t len) {
@@ -28,8 +38,10 @@ public:
             data->Read(ret_char, 4);
 
         } else {
+            std::cout << "3" << std::endl;
             return;
         }
+        std::cout << "4" << std::endl;
         std::string ret(ret_char);
         std::cout << "recv from server : " << ret << std::endl;
 
@@ -51,8 +63,7 @@ public:
                 std::cout << "something error while sending!" << std::endl;
             }
 
-            handle->Close();
-            delete _net;
+            _net->Destory();
         }
     }
 
@@ -76,7 +87,7 @@ private:
         if (!_file.good()) {
             return false;
         }
-     
+
         sprintf(_header._name, "%s", _file_name.c_str());
         _file.seekg(0, _file.end);
         _header._length = _file.tellg();
@@ -86,14 +97,16 @@ private:
         return true;
     }
     
-    void Send(Handle handle) {
+    void Send(const Handle& handle) {
         char buf[__read_len];
         while (!_file.eof()) {
             _file.read(buf, __read_len);
             int len =  _file.gcount();
-            handle->Write(buf, len);
+            if (!handle->Write(buf, len)) {
+                _block = true;
+                return;
+            }
         }
-        _file.close();
     }
 
 private:
@@ -101,6 +114,7 @@ private:
     FileHeader   _header;
     STATUS       _status;
     std::string  _file_name;
+    bool         _block;
     cppnet::CppNet* _net;
 };
 
@@ -115,15 +129,17 @@ int main(int argc, char *argv[]) {
    
     cppnet::CppNet* net(new cppnet::CppNet());
 
-    CSendFile file(file_name, net);
+    SendFile file(file_name, net);
 
     net->Init(1);
-    net->SetConnectionCallback(std::bind(&CSendFile::OnConnect, &file, std::placeholders::_1, std::placeholders::_2));
-    net->SetReadCallback(std::bind(&CSendFile::OnRecv, &file, std::placeholders::_1, std::placeholders::_2,
+    net->SetConnectionCallback(std::bind(&SendFile::OnConnect, &file, std::placeholders::_1, std::placeholders::_2));
+    net->SetReadCallback(std::bind(&SendFile::OnRecv, &file, std::placeholders::_1, std::placeholders::_2,
                                       std::placeholders::_3));
+    net->SetWriteCallback(std::bind(&SendFile::OnWrite, &file, std::placeholders::_1, std::placeholders::_2));
 
     net->Connection("127.0.0.1", 8921);
     
     net->Join();
+
     return 0;
 }

@@ -39,7 +39,7 @@ protected:
     std::mutex _mutex;
     int32_t    _kqueue_handler;
     uint32_t   _pipe[2];
-
+    timespec   _kqueue_timeout;
     std::vector<struct kevent> _change_list;
     std::vector<struct kevent> _active_list;
 };

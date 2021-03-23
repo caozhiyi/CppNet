@@ -30,6 +30,10 @@ void CppNet::Init(int32_t thread_num) {
     }
 }
 
+void CppNet::Destory() {
+    _cppnet_base->Dealloc();
+}
+
 void CppNet::Join() {
     _cppnet_base->Join();
 }

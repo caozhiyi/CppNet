@@ -20,7 +20,8 @@ class CppNetBase;
 class EventActions;
 
 class Dispatcher: 
-    public Thread {
+    public Thread,
+    public std::enable_shared_from_this<Dispatcher> {
 public:
     Dispatcher(std::shared_ptr<CppNetBase> base);
     ~Dispatcher();
@@ -38,6 +39,8 @@ public:
     uint32_t AddTimer(const user_timer_call_back& cb, void* param, uint32_t interval, bool always = false);
     uint32_t AddTimer(std::shared_ptr<RWSocket> sock, uint32_t interval, bool always = false);
     void StopTimer(uint64_t timer_id);
+
+    std::thread::id GetThreadID() { return _local_thread_id; }
 
 private:
     void DoTask();

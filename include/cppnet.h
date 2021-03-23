@@ -16,6 +16,7 @@ public:
     // init cppnet library.
     // thread_num : the number of running threads.
     void Init(int32_t thread_num);
+    void Destory();
 
     // thread join
     void Join();
