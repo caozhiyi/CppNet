@@ -1,15 +1,13 @@
-SRCS = FuncThread.cpp InfoRouter.cpp ParsePackage.cpp RPCClient.cpp RPCServer.cpp
+SRCS = func_thread.cpp info_router.cpp parse_package.cpp rpc_client.cpp rpc_server.cpp
 
 OBJS = $(patsubst %.cpp, %.o, $(SRCS))
-CLI = TestClient.cpp
-SER = TestServer.cpp
+CLI = client.cpp
+SER = server.cpp
 
 
 CC = g++
 
-INCLUDES = -I.               \
-           -I../../base      \
-           -I../../include   \
+INCLUDES = -I../../
 
 #debug
 #CCFLAGS = -lpthread -fPIC -m64 -g -pg -std=c++11 -lstdc++ -pipe 

@@ -2,16 +2,16 @@
 #define TEST_RPC_CFUNCTHREAD_HEADER
 
 #include <map>
-#include "CommonStruct.h"
-#include "RunnableAloneTaskList.h"
+#include "common_struct.h"
+#include "common/util/any.h"
+#include "common/thread/thread_with_queue.h"
 
-class CFuncManager;
-class CInfoRouter;
-class CFuncThread : public base::CRunnableAloneTaskList<FuncCallInfo*>
-{
+class FuncManager;
+class InfoRouter;
+class FuncThread : public cppnet::ThreadWithQueue<FuncCallInfo*> {
 public:
-	CFuncThread(std::shared_ptr<CInfoRouter>& router);
-    ~CFuncThread();
+	FuncThread(std::shared_ptr<InfoRouter>& router);
+    ~FuncThread();
 
 	//main loop
 	virtual void Run();
@@ -24,13 +24,13 @@ public:
 	//find function by name
 	CommonFunc FindFunc(const std::string& name);
 	//call function by name. Thread unsafety. param_ret use in/out
-    bool CallFunc(const std::string& name, std::vector<base::CAny>& param_ret);
+    bool CallFunc(const std::string& name, std::vector<cppnet::Any>& param_ret);
 
 private:
 
     std::mutex                          _mutex;
 	std::map<std::string, CommonFunc>	_func_map;
-	std::shared_ptr<CInfoRouter>		_func_router;
+	std::shared_ptr<InfoRouter>		    _func_router;
 };
 
 #endif

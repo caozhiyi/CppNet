@@ -8,18 +8,18 @@ namespace cppnet {
 
 class Any {
 public:
-    Any() noexcept : _content(0) {}
+    Any(): _content(0) {}
     template<typename ValueType>
-    Any(const ValueType & value) : _content(new CHolder<ValueType>(value)) {}
-    Any(const Any & other) : _content(other._content ? other._content->Clone() : 0) {}
-    Any(Any&& other) noexcept : _content(other._content) {
+    Any(const ValueType & value): _content(new CHolder<ValueType>(value)) {}
+    Any(const Any & other): _content(other._content ? other._content->Clone() : 0) {}
+    Any(Any&& other): _content(other._content) {
         other._content = 0;
     }
-    ~Any() noexcept {
+    ~Any()  {
         delete _content;
     }
 public: // modifiers
-    Any& Swap(Any & rhs) noexcept {
+    Any& Swap(Any & rhs)  {
         std::swap(_content, rhs._content);
         return *this;
     }
@@ -33,19 +33,19 @@ public: // modifiers
         return *this;
     }
     // move assignement
-    Any& operator=(Any&& rhs) noexcept {
+    Any& operator=(Any&& rhs)  {
         rhs.Swap(*this);
         Any().Swap(rhs);
         return *this;
     }
 public: // queries
-    bool Empty() const noexcept {
+    bool Empty() const  {
         return !_content;
     }
-    void Clear() noexcept {
+    void Clear()  {
         Any().Swap(*this);
     }
-    const std::type_info& Type() const noexcept {
+    const std::type_info& Type() const  {
         return _content ? _content->Type() : typeid(void);
     }
     class CPlaceHolder {
@@ -53,7 +53,7 @@ public: // queries
         virtual ~CPlaceHolder() {
         }
         // queries
-        virtual const std::type_info& Type() const noexcept = 0;
+        virtual const std::type_info& Type() const  = 0;
         virtual CPlaceHolder * Clone() const = 0;
     };
     template<typename ValueType>
@@ -64,7 +64,7 @@ public: // queries
         CHolder(ValueType&& value) : _held(static_cast<ValueType&&>(value)) {
         }
         // queries
-        virtual const std::type_info& Type() const noexcept {
+        virtual const std::type_info& Type() const  {
             return typeid(ValueType);
         }
         virtual CPlaceHolder * Clone() const {
@@ -77,35 +77,29 @@ public: // queries
     };
 private: // representation
     template<typename ValueType>
-    friend ValueType* any_cast(Any *) noexcept;
+    friend ValueType* any_cast(Any *) ;
     CPlaceHolder* _content;
 };
 
-    class bad_any_cast: public std::exception {
-public:
-    virtual const char * what() const noexcept {
-        return "bad_any_cast : failed conversion using any_cast";
+template<typename ValueType>
+ValueType* any_cast(Any * operand)  {
+    if (operand && operand->Type() == typeid(ValueType)) {
+        return &static_cast<Any::CHolder<ValueType> *>(operand->_content)->_held;
     }
-};
-
-template<typename ValueType>
-ValueType* any_cast(Any * operand) noexcept {
-if (operand && operand->Type() == typeid(ValueType)) {
-    return &static_cast<Any::CHolder<ValueType> *>(operand->_content)->_held;
+    return nullptr;
 }
-return nullptr;
-
 
 template<typename ValueType>
-const ValueType * any_cast(const Any * operand) noexcept {
+const ValueType * any_cast(const Any * operand)  {
     return any_cast<ValueType>(const_cast<Any *>(operand));
 }
 
 template<typename ValueType>
 ValueType any_cast(Any & operand) {
     ValueType * result = any_cast<ValueType>(&operand);
-    if (!result)
-        std::exception(bad_any_cast());
+    if (!result) {
+        throw "bad_any_cast: failed conversion using any_cast";
+    }
     return static_cast<ValueType>(*result);
 }
 

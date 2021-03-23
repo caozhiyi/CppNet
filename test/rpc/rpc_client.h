@@ -1,19 +1,20 @@
 #ifndef TEST_RPC_RPCCLIENT_HEADER
 #define TEST_RPC_RPCCLIENT_HEADER
 
-#include "Socket.h"
-#include "CppNet.h"
-#include "CommonStruct.h"
-#include "ParsePackage.h"
+#include "common_struct.h"
+#include "parse_package.h"
+#include "include/cppnet.h"
+#include "include/cppnet_socket.h"
+#include "common/util/any.h"
 
-typedef std::function<void(int code, std::vector<base::CAny>& ret)> Call_back;
+typedef std::function<void(int code, std::vector<cppnet::Any>& ret)> Call_back;
 
-class CInfoRouter;
-class CParsePackage;
-class CRPCClient {
+class InfoRouter;
+class ParsePackage;
+class RPCClient {
 public:
-	CRPCClient();
-	~CRPCClient();
+	RPCClient();
+	~RPCClient();
 	//start work
 	void Start(short port, std::string ip);
 	//set call back when rpc server response called;
@@ -21,18 +22,18 @@ public:
 	template<typename...Args>
 	bool CallFunc(const std::string& func_name, Args&&...args);
 public:
-    void _DoRead(const cppnet::Handle& handle, base::CBuffer* data,
-                 uint32_t len, uint32_t err);
-    void _DoWrite(const cppnet::Handle& handle, uint32_t len, uint32_t err);
-    void _DoConnect(const cppnet::Handle& handle, uint32_t err);
-    void _DoDisConnect(const cppnet::Handle& handle, uint32_t err);
+    void _DoRead(cppnet::Handle handle, cppnet::BufferPtr data,
+                 uint32_t len);
+    void _DoWrite(cppnet::Handle handle, uint32_t len);
+    void _DoConnect(cppnet::Handle handle, uint32_t err);
+    void _DoDisConnect(cppnet::Handle handle, uint32_t err);
 
 private:
     bool				                _connected;
-	std::shared_ptr<CInfoRouter>		_info_router;
-	std::shared_ptr<CParsePackage>		_parse_package;
+	std::shared_ptr<InfoRouter>		    _info_router;
+	std::shared_ptr<ParsePackage>		_parse_package;
 
-	cppnet::CCppNet						_net;
+	cppnet::CppNet						_net;
     std::string                         _ip;
     int                                 _port;
     cppnet::Handle                      _socket;
@@ -41,7 +42,7 @@ private:
 };
 
 template<typename...Args>
-bool CRPCClient::CallFunc(const std::string& func_name, Args&&...args) {
+bool RPCClient::CallFunc(const std::string& func_name, Args&&...args) {
 	if (!_func_map.count(func_name)) {
 		return false;
 	}
@@ -52,7 +53,7 @@ bool CRPCClient::CallFunc(const std::string& func_name, Args&&...args) {
 		return false;
 	}
 
-    std::vector<base::CAny> vec;
+    std::vector<cppnet::Any> vec;
 	_parse_package->ParseParam(vec, std::forward<Args>(args)...);
 
 	char buf[8192] = { 0 };

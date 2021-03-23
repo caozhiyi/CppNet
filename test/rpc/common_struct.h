@@ -5,8 +5,9 @@
 #include <string>
 #include <thread>
 
-#include "Any.h"
-#include "Socket.h"
+#include "common/util/any.h"
+#include "include/cppnet_type.h"
+#include "include/cppnet_socket.h"
 
 enum MessageType {
 	FUNCTION_CALL	= 0x01,	//client call functnion request 
@@ -24,11 +25,11 @@ enum ERROR_CODE {
 
 struct FuncCallInfo {
     std::string				    _func_name;
-    std::vector<base::CAny>		_func_param_ret;
+    std::vector<cppnet::Any>    _func_param_ret;
 
     cppnet::Handle              _socket;
 };
 
 
-typedef std::function<std::vector<base::CAny>(std::vector<base::CAny>)> CommonFunc;
+typedef std::function<std::vector<cppnet::Any>(std::vector<cppnet::Any>)> CommonFunc;
 #endif

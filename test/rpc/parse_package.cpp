@@ -1,5 +1,4 @@
-#include "Any.h"
-#include "ParsePackage.h"
+#include "parse_package.h"
 
 enum PARSE_STATE {
 	PARSE_TYPE	= 1,
@@ -10,13 +9,14 @@ enum PARSE_STATE {
 	PARSE_FUNC  = 6
 };
 
-CParsePackage::CParsePackage() {
+ParsePackage::ParsePackage() {
+
 }
 
-CParsePackage::~CParsePackage() {
+ParsePackage::~ParsePackage() {
 }
 
-bool CParsePackage::ParseType(char* buf, int len, int& type) {
+bool ParsePackage::ParseType(char* buf, int len, int& type) {
 	if (!buf) {
 		return false;
 	}
@@ -30,7 +30,7 @@ bool CParsePackage::ParseType(char* buf, int len, int& type) {
 	return true;
 }
 
-bool CParsePackage::ParseFuncRet(char* buf, int len, int& code, std::string& func_name, const std::map<std::string, std::string>& func_str_map, std::vector<base::CAny>& res) {
+bool ParsePackage::ParseFuncRet(char* buf, int len, int& code, std::string& func_name, const std::map<std::string, std::string>& func_str_map, std::vector<cppnet::Any>& res) {
 	if (!buf) {
 		return false;
 	}
@@ -106,7 +106,7 @@ bool CParsePackage::ParseFuncRet(char* buf, int len, int& code, std::string& fun
 	return true;
 }
 
-bool CParsePackage::ParseFuncCall(char* buf, int len, std::string& func_name, const std::map<std::string, std::string>& func_str_map, std::vector<base::CAny>& res) {
+bool ParsePackage::ParseFuncCall(char* buf, int len, std::string& func_name, const std::map<std::string, std::string>& func_str_map, std::vector<cppnet::Any>& res) {
 	if (!buf) {
 		return false;
 	}
@@ -180,7 +180,7 @@ bool CParsePackage::ParseFuncCall(char* buf, int len, std::string& func_name, co
 	return false;
 }
 
-bool CParsePackage::ParseFuncList(char* buf, int len, std::map<std::string, std::string>& map) {
+bool ParsePackage::ParseFuncList(char* buf, int len, std::map<std::string, std::string>& map) {
 	if (!buf) {
 		return false;
 	}
@@ -233,7 +233,7 @@ bool CParsePackage::ParseFuncList(char* buf, int len, std::map<std::string, std:
 	return false;
 }
 
-bool CParsePackage::PackageFuncRet(char* buf, int& len, int code, const std::string& func_name, const std::map<std::string, std::string>& func_str_map, std::vector<base::CAny>& ret) {
+bool ParsePackage::PackageFuncRet(char* buf, int& len, int code, const std::string& func_name, const std::map<std::string, std::string>& func_str_map, std::vector<cppnet::Any>& ret) {
 	if (!buf) {
 		return false;
 	}
@@ -283,7 +283,7 @@ bool CParsePackage::PackageFuncRet(char* buf, int& len, int code, const std::str
 			if (typeid(int) != ret[i - v_offset].Type()) {
 				return false;
 			}
-            if (!_SafeSprintf(false, cur, end, "i:%d|", base::any_cast<int>(ret[i - v_offset])))
+            if (!_SafeSprintf(false, cur, end, "i:%d|", cppnet::any_cast<int>(ret[i - v_offset])))
 				return false;
 			cur += strlen(cur);
 			num--;
@@ -292,7 +292,7 @@ bool CParsePackage::PackageFuncRet(char* buf, int& len, int code, const std::str
 			if (typeid(char) != ret[i - v_offset].Type()) {
 				return false;
 			}
-            if (!_SafeSprintf(false, cur, end, "c:%c|", base::any_cast<char>(ret[i - v_offset])))
+            if (!_SafeSprintf(false, cur, end, "c:%c|", cppnet::any_cast<char>(ret[i - v_offset])))
 				return false;
 			cur += strlen(cur);
 			num--;
@@ -301,7 +301,7 @@ bool CParsePackage::PackageFuncRet(char* buf, int& len, int code, const std::str
 			if (typeid(std::string) != ret[i - v_offset].Type()) {
 				return false;
 			}
-            if (!_SafeSprintf(false, cur, end, "s:%s|", (base::any_cast<std::string>(ret[i - v_offset])).c_str()))
+            if (!_SafeSprintf(false, cur, end, "s:%s|", (cppnet::any_cast<std::string>(ret[i - v_offset])).c_str()))
 				return false;
 			cur += strlen(cur);
 			num--;
@@ -310,7 +310,7 @@ bool CParsePackage::PackageFuncRet(char* buf, int& len, int code, const std::str
 			if (typeid(double) != ret[i - v_offset].Type()) {
 				return false;
 			}
-            if (!_SafeSprintf(false, cur, end, "d:%f|", base::any_cast<double>(ret[i - v_offset])))
+            if (!_SafeSprintf(false, cur, end, "d:%f|", cppnet::any_cast<double>(ret[i - v_offset])))
 				return false;
 			cur += strlen(cur);
 			num--;
@@ -319,7 +319,7 @@ bool CParsePackage::PackageFuncRet(char* buf, int& len, int code, const std::str
 			if (typeid(long) != ret[i - v_offset].Type()) {
 				return false;
 			}
-            if (!_SafeSprintf(false, cur, end, "l:%ld|", base::any_cast<long>(ret[i - v_offset])))
+            if (!_SafeSprintf(false, cur, end, "l:%ld|", cppnet::any_cast<long>(ret[i - v_offset])))
 				return false;
 			cur += strlen(cur);
 			num--;
@@ -328,7 +328,7 @@ bool CParsePackage::PackageFuncRet(char* buf, int& len, int code, const std::str
 			if (typeid(bool) != ret[i - v_offset].Type()) {
 				return false;
 			}
-            if (!_SafeSprintf(false, cur, end, "b:%d|", base::any_cast<bool>(ret[i - v_offset]) ? 1 : 0))
+            if (!_SafeSprintf(false, cur, end, "b:%d|", cppnet::any_cast<bool>(ret[i - v_offset]) ? 1 : 0))
 				return false;
 			cur += strlen(cur);
 			num--;
@@ -349,7 +349,7 @@ bool CParsePackage::PackageFuncRet(char* buf, int& len, int code, const std::str
 	return false;
 }
 
-bool CParsePackage::PackageFuncCall(char* buf, int& len, const std::string& func_name, const std::map<std::string, std::string>& func_str_map, std::vector<base::CAny>& param) {
+bool ParsePackage::PackageFuncCall(char* buf, int& len, const std::string& func_name, const std::map<std::string, std::string>& func_str_map, std::vector<cppnet::Any>& param) {
 	if (!buf) {
 		return false;
 	}
@@ -397,7 +397,7 @@ bool CParsePackage::PackageFuncCall(char* buf, int& len, const std::string& func
 			if (typeid(int) != param[i - (pos + 1 + v_offset)].Type()) {
 				return false;
 			}
-            if (!_SafeSprintf(false, cur, end, "i:%d|", base::any_cast<int>(param[i - (pos + 1 + v_offset)])))
+            if (!_SafeSprintf(false, cur, end, "i:%d|", cppnet::any_cast<int>(param[i - (pos + 1 + v_offset)])))
 				return false;
 			cur += strlen(cur);
 			num--;
@@ -406,7 +406,7 @@ bool CParsePackage::PackageFuncCall(char* buf, int& len, const std::string& func
 			if (typeid(char) != param[i - (pos + 1 + v_offset)].Type()) {
 				return false;
 			}
-            if (!_SafeSprintf(false, cur, end, "c:%c|", base::any_cast<char>(param[i - (pos + 1 + v_offset)])))
+            if (!_SafeSprintf(false, cur, end, "c:%c|", cppnet::any_cast<char>(param[i - (pos + 1 + v_offset)])))
 				return false;
 			cur += strlen(cur);
 			num--;
@@ -415,7 +415,7 @@ bool CParsePackage::PackageFuncCall(char* buf, int& len, const std::string& func
 			if (typeid(std::string) != param[i - (pos + 1 + v_offset)].Type()) {
 				return false;
 			}
-            if (!_SafeSprintf(false, cur, end, "s:%s|", (base::any_cast<std::string>(param[i - (pos + 1 + v_offset)])).c_str()))
+            if (!_SafeSprintf(false, cur, end, "s:%s|", (cppnet::any_cast<std::string>(param[i - (pos + 1 + v_offset)])).c_str()))
 				return false;
 			cur += strlen(cur);
 			num--;
@@ -424,7 +424,7 @@ bool CParsePackage::PackageFuncCall(char* buf, int& len, const std::string& func
 			if (typeid(double) != param[i - (pos + 1 + v_offset)].Type()) {
 				return false;
 			}
-            if (!_SafeSprintf(false, cur, end, "d:%f|", base::any_cast<double>(param[i - (pos + 1 + v_offset)])))
+            if (!_SafeSprintf(false, cur, end, "d:%f|", cppnet::any_cast<double>(param[i - (pos + 1 + v_offset)])))
 				return false;
 			cur += strlen(cur);
 			num--;
@@ -433,7 +433,7 @@ bool CParsePackage::PackageFuncCall(char* buf, int& len, const std::string& func
 			if (typeid(long) != param[i - (pos + 1 + v_offset)].Type()) {
 				return false;
 			}
-            if (!_SafeSprintf(false, cur, end, "l:%ld|", base::any_cast<long>(param[i - (pos + 1 + v_offset)])))
+            if (!_SafeSprintf(false, cur, end, "l:%ld|", cppnet::any_cast<long>(param[i - (pos + 1 + v_offset)])))
 				return false;
 			cur += strlen(cur);
 			num--;
@@ -442,7 +442,7 @@ bool CParsePackage::PackageFuncCall(char* buf, int& len, const std::string& func
 			if (typeid(bool) != param[i - (pos + 1 + v_offset)].Type()) {
 				return false;
 			}
-            if (!_SafeSprintf(false, cur, end, "b:%d|", base::any_cast<bool>(param[i - (pos + 1 + v_offset)]) ? 1 : 0))
+            if (!_SafeSprintf(false, cur, end, "b:%d|", cppnet::any_cast<bool>(param[i - (pos + 1 + v_offset)]) ? 1 : 0))
 				return false;
 			cur += strlen(cur);
 			num--;
@@ -463,7 +463,7 @@ bool CParsePackage::PackageFuncCall(char* buf, int& len, const std::string& func
 	return false;
 }
 
-bool CParsePackage::PackageFuncList(char* buf, int& len, std::map<std::string, std::string>& func_map) {
+bool ParsePackage::PackageFuncList(char* buf, int& len, std::map<std::string, std::string>& func_map) {
 	if (!buf) {
 		return false;
 	}
@@ -496,7 +496,7 @@ bool CParsePackage::PackageFuncList(char* buf, int& len, std::map<std::string, s
 	return true;
 }
 
-bool CParsePackage::_ParseParam(char* buf, char type, std::vector<base::CAny>& res) {
+bool ParsePackage::_ParseParam(char* buf, char type, std::vector<cppnet::Any>& res) {
 	char* cur = buf;
 	if (*cur != type) {
 		return false;
@@ -504,22 +504,22 @@ bool CParsePackage::_ParseParam(char* buf, char type, std::vector<base::CAny>& r
 	switch (type)
 	{
 	case 'i':
-        res.push_back(base::CAny(atoi(cur + 2)));
+        res.push_back(cppnet::Any(atoi(cur + 2)));
 		break;
 	case 'c':
-        res.push_back(base::CAny(cur + 2));
+        res.push_back(cppnet::Any(cur + 2));
 		break;
 	case 's':
-        res.push_back(base::CAny(std::string(cur + 2)));
+        res.push_back(cppnet::Any(std::string(cur + 2)));
 		break;
 	case 'd':
-        res.push_back(base::CAny(atoll(cur + 2)));
+        res.push_back(cppnet::Any(atoll(cur + 2)));
 		break;
 	case 'l':
-        res.push_back(base::CAny(atol(cur + 2)));
+        res.push_back(cppnet::Any(atol(cur + 2)));
 		break;
 	case 'b':
-        res.push_back(base::CAny(strcmp(cur + 2, "1") == 0?true : false));
+        res.push_back(cppnet::Any(strcmp(cur + 2, "1") == 0?true : false));
 		break;
 	default:
 		return false;
@@ -527,7 +527,7 @@ bool CParsePackage::_ParseParam(char* buf, char type, std::vector<base::CAny>& r
 	return true;
 }
 
-bool CParsePackage::_ParseVec(char* buf, char type, std::vector<base::CAny>& res) {
+bool ParsePackage::_ParseVec(char* buf, char type, std::vector<cppnet::Any>& res) {
 	char* next = buf;
 	char* pos = nullptr;
 	char* cur = nullptr;
@@ -566,42 +566,42 @@ bool CParsePackage::_ParseVec(char* buf, char type, std::vector<base::CAny>& res
 			case 'i':
 				i_vec.push_back(atoi(cur));
 				if (num == 0) {
-                    res.push_back(base::CAny(i_vec));
+                    res.push_back(cppnet::Any(i_vec));
 					return true;
 				}
 				break;
 			case 'c':
 				c_vec.push_back(*(cur));
 				if (num == 0) {
-                    res.push_back(base::CAny(c_vec));
+                    res.push_back(cppnet::Any(c_vec));
 					return true;
 				}
 				break;
 			case 's':
 				s_vec.push_back(std::string(cur));
 				if (num == 0) {
-                    res.push_back(base::CAny(s_vec));
+                    res.push_back(cppnet::Any(s_vec));
 					return true;
 				}
 				break;
 			case 'd':
 				d_vec.push_back(atoll(cur));
 				if (num == 0) {
-                    res.push_back(base::CAny(d_vec));
+                    res.push_back(cppnet::Any(d_vec));
 					return true;
 				}
 				break;
 			case 'l':
 				l_vec.push_back(atol(cur));
 				if (num == 0) {
-                    res.push_back(base::CAny(l_vec));
+                    res.push_back(cppnet::Any(l_vec));
 					return true;
 				}
 				break;
 			case 'b':
 				b_vec.push_back(strcmp(cur, "1") == 0 ? true : false);
 				if (num == 0) {
-                    res.push_back(base::CAny(b_vec));
+                    res.push_back(cppnet::Any(b_vec));
 					return true;
 				}
 				break;
@@ -613,7 +613,7 @@ bool CParsePackage::_ParseVec(char* buf, char type, std::vector<base::CAny>& res
 	return false;
 }
 
-bool CParsePackage::_PackageVec(char* buf, char* end, char type, int index, std::vector<base::CAny>& vec) {
+bool ParsePackage::_PackageVec(char* buf, char* end, char type, int index, std::vector<cppnet::Any>& vec) {
 	char* cur = buf;
 
 	int cur_add = 0;
@@ -625,7 +625,7 @@ bool CParsePackage::_PackageVec(char* buf, char* end, char type, int index, std:
 		if (typeid(std::vector<int>) != vec[index].Type()) {
 			return false;
 		}
-        std::vector<int> i_vec = base::any_cast<std::vector<int>>(vec[index]);
+        std::vector<int> i_vec = cppnet::any_cast<std::vector<int>>(vec[index]);
 		if (!_SafeSprintf(false, cur, end, "%d,", (int)i_vec.size())) {
 			return false;
 		}
@@ -644,7 +644,7 @@ bool CParsePackage::_PackageVec(char* buf, char* end, char type, int index, std:
 		if (typeid(std::vector<char>) != vec[index].Type()) {
 			return false;
 		}
-        std::vector<char> c_vec = base::any_cast<std::vector<char>>(vec[index]);
+        std::vector<char> c_vec = cppnet::any_cast<std::vector<char>>(vec[index]);
 		if (!_SafeSprintf(false, cur, end, "%d,", (int)c_vec.size())) {
 			return false;
 		}
@@ -663,7 +663,7 @@ bool CParsePackage::_PackageVec(char* buf, char* end, char type, int index, std:
 		if (typeid(std::vector<std::string>) != vec[index].Type()) {
 			return false;
 		}
-        std::vector<std::string> s_vec = base::any_cast<std::vector<std::string>>(vec[index]);
+        std::vector<std::string> s_vec = cppnet::any_cast<std::vector<std::string>>(vec[index]);
 		if (!_SafeSprintf(false, cur, end, "%d,", (int)s_vec.size())) {
 			return false;
 		}
@@ -682,7 +682,7 @@ bool CParsePackage::_PackageVec(char* buf, char* end, char type, int index, std:
 		if (typeid(std::vector<double>) != vec[index].Type()) {
 			return false;
 		}
-        std::vector<double> d_vec = base::any_cast<std::vector<double>>(vec[index]);
+        std::vector<double> d_vec = cppnet::any_cast<std::vector<double>>(vec[index]);
 		if (!_SafeSprintf(false, cur, end, "%d,", (int)d_vec.size())) {
 			return false;
 		}
@@ -701,7 +701,7 @@ bool CParsePackage::_PackageVec(char* buf, char* end, char type, int index, std:
 		if (typeid(std::vector<long>) != vec[index].Type()) {
 			return false;
 		}
-        std::vector<long> l_vec = base::any_cast<std::vector<long>>(vec[index]);
+        std::vector<long> l_vec = cppnet::any_cast<std::vector<long>>(vec[index]);
 		if (!_SafeSprintf(false, cur, end, "%d,", (int)l_vec.size())) {
 			return false;
 		}
@@ -720,7 +720,7 @@ bool CParsePackage::_PackageVec(char* buf, char* end, char type, int index, std:
 		if (typeid(std::vector<bool>) != vec[index].Type()) {
 			return false;
 		}
-        std::vector<bool> b_vec = base::any_cast<std::vector<bool>>(vec[index]);
+        std::vector<bool> b_vec = cppnet::any_cast<std::vector<bool>>(vec[index]);
 		if (!_SafeSprintf(false, cur, end, "%d,", (int)b_vec.size())) {
 			return false;
 		}

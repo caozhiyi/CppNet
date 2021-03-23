@@ -7,18 +7,17 @@
 #include <string>
 #include <vector>
 
-#include "TaskQueue.h"
-#include "CommonStruct.h"
+#include "common_struct.h"
+#include "common/structure/thread_safe_block_queue.h"
 
 struct FuncCallInfo;
-class CFuncThread;
-class CInfoRouter
-{
+class FuncThread;
+class InfoRouter {
 public:
-	CInfoRouter();
-	~CInfoRouter();
+	InfoRouter();
+	~InfoRouter();
 	//add a funcmanager thread.
-	void AddThread(std::shared_ptr<CFuncThread>& thread);
+	void AddThread(std::shared_ptr<FuncThread>& thread);
 	void StopAllThread();
 	//push call info
 	void PushTask(FuncCallInfo* info);
@@ -31,11 +30,11 @@ public:
 	void RemoveFunc(const std::string& name);
 
 private:
-    base::CTaskQueue<FuncCallInfo*>	            _out_task_list;
+    cppnet::ThreadSafeBlockQueue<FuncCallInfo*> _out_task_list;
 	
 	std::atomic_int								_curent_index;
 	std::mutex									_mutex;
-	std::vector<std::shared_ptr<CFuncThread>>	_func_thread_vec;
+	std::vector<std::shared_ptr<FuncThread>>	_func_thread_vec;
 };
 
 #endif

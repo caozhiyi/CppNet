@@ -34,34 +34,33 @@ type info:
 #include <vector>
 #include <string.h> // for memset
 
-#include "Any.h"
-#include "CommonStruct.h"
+#include "common_struct.h"
+#include "common/util/any.h"
 
-class CParsePackage
-{
+class ParsePackage {
 public:
-	CParsePackage();
-	~CParsePackage();
+	ParsePackage();
+	~ParsePackage();
 	//get message type: function call. return. info.
 	bool ParseType(char* buf, int len, int& type);
 	//parase for every type
-    bool ParseFuncRet(char* buf, int len, int& code, std::string& func_name, const std::map<std::string, std::string>& func_str_map, std::vector<base::CAny>& res);
-    bool ParseFuncCall(char* buf, int len, std::string& func_name, const std::map<std::string, std::string>& func_str_map, std::vector<base::CAny>& res);
+    bool ParseFuncRet(char* buf, int len, int& code, std::string& func_name, const std::map<std::string, std::string>& func_str_map, std::vector<cppnet::Any>& res);
+    bool ParseFuncCall(char* buf, int len, std::string& func_name, const std::map<std::string, std::string>& func_str_map, std::vector<cppnet::Any>& res);
 	bool ParseFuncList(char* buf, int len, std::map<std::string, std::string>& map);
 	//package for every type
-    bool PackageFuncRet(char* buf, int& len, int code, const std::string& func_name, const std::map<std::string, std::string>& func_str_map, std::vector<base::CAny>& ret);
-    bool PackageFuncCall(char* buf, int& len, const std::string& func_name, const std::map<std::string, std::string>& func_str_map, std::vector<base::CAny>& param);
+    bool PackageFuncRet(char* buf, int& len, int code, const std::string& func_name, const std::map<std::string, std::string>& func_str_map, std::vector<cppnet::Any>& ret);
+    bool PackageFuncCall(char* buf, int& len, const std::string& func_name, const std::map<std::string, std::string>& func_str_map, std::vector<cppnet::Any>& param);
 	bool PackageFuncList(char* buf, int& len, std::map<std::string, std::string>& func_map);
 
 	template <typename T, typename ...Args>
-    void ParseParam(std::vector<base::CAny>& vec, T&& first, Args&&... args);
+    void ParseParam(std::vector<cppnet::Any>& vec, T&& first, Args&&... args);
 	template <class T>
-    void ParseParam(std::vector<base::CAny>& vec, T&& end);
+    void ParseParam(std::vector<cppnet::Any>& vec, T&& end);
 
 private:
-    bool _ParseParam(char* buf, char type, std::vector<base::CAny>& res);
-    bool _ParseVec(char* buf, char type, std::vector<base::CAny>& res);
-    bool _PackageVec(char* buf, char* end, char type, int index, std::vector<base::CAny>& vec);
+    bool _ParseParam(char* buf, char type, std::vector<cppnet::Any>& res);
+    bool _ParseVec(char* buf, char type, std::vector<cppnet::Any>& res);
+    bool _PackageVec(char* buf, char* end, char type, int index, std::vector<cppnet::Any>& vec);
 
 	//format string. max size 4096
 	template<typename ...Args>
@@ -69,7 +68,7 @@ private:
 };
 
 template<typename ...Args>
-bool CParsePackage::_SafeSprintf(bool is_str, char* buf, char* end, const char* format, Args&&... args) {
+bool ParsePackage::_SafeSprintf(bool is_str, char* buf, char* end, const char* format, Args&&... args) {
 	if (is_str) {
 		char temp_buf[4096] = { 0 };
 		sprintf(temp_buf, format, std::forward<Args>(args)...);
@@ -93,13 +92,13 @@ bool CParsePackage::_SafeSprintf(bool is_str, char* buf, char* end, const char* 
 }
 
 template <typename T, typename ...Args>
-void CParsePackage::ParseParam(std::vector<base::CAny>& vec, T&& first, Args&&... args) {
-    vec.push_back(base::CAny(std::forward<T>(first)));
+void ParsePackage::ParseParam(std::vector<cppnet::Any>& vec, T&& first, Args&&... args) {
+    vec.push_back(cppnet::Any(std::forward<T>(first)));
 	ParseParam(vec, std::forward<Args>(args)...);
 }
 
 template <class T>
-void CParsePackage::ParseParam(std::vector<base::CAny>& vec, T&& end) {
-    vec.push_back(base::CAny(std::forward<T>(end)));
+void ParsePackage::ParseParam(std::vector<cppnet::Any>& vec, T&& end) {
+    vec.push_back(cppnet::Any(std::forward<T>(end)));
 }
 #endif

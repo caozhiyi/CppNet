@@ -1,15 +1,16 @@
-#include "FuncThread.h"
-#include "InfoRouter.h"
+#include "func_thread.h"
+#include "info_router.h"
 
-CFuncThread::CFuncThread(std::shared_ptr<CInfoRouter>& router) : _func_router(router) {
+FuncThread::FuncThread(std::shared_ptr<InfoRouter>& router):
+	_func_router(router) {
 }
 
-CFuncThread::~CFuncThread() {
+FuncThread::~FuncThread() {
 }
 
-void CFuncThread::Run() {
+void FuncThread::Run() {
 	while (!_stop) {
-		auto t = _Pop();
+		auto t = Pop();
 		if (t) {
 			if (CallFunc(t->_func_name, t->_func_param_ret)){
 				_func_router->PushRet(t);
@@ -21,12 +22,12 @@ void CFuncThread::Run() {
 	}
 }
 
-void CFuncThread::Stop() {
+void FuncThread::Stop() {
 	_stop = true;
 	Push(nullptr);
 }
 
-bool CFuncThread::RegisterFunc(const std::string& name, const CommonFunc& func) {
+bool FuncThread::RegisterFunc(const std::string& name, const CommonFunc& func) {
     std::unique_lock<std::mutex> lock(_mutex);
 	if (_func_map.count(name)) {
 		return false;
@@ -35,7 +36,7 @@ bool CFuncThread::RegisterFunc(const std::string& name, const CommonFunc& func) 
 	return true;
 }
 
-bool CFuncThread::RemoveFunc(const std::string& name) {
+bool FuncThread::RemoveFunc(const std::string& name) {
     std::unique_lock<std::mutex> lock(_mutex);
 	auto iter = _func_map.find(name);
 	if (iter != _func_map.end()) {
@@ -45,7 +46,7 @@ bool CFuncThread::RemoveFunc(const std::string& name) {
 	return false;
 }
 
-CommonFunc CFuncThread::FindFunc(const std::string& name) {
+CommonFunc FuncThread::FindFunc(const std::string& name) {
     std::unique_lock<std::mutex> lock(_mutex);
 	auto iter = _func_map.find(name);
 	if (iter != _func_map.end()) {
@@ -54,7 +55,7 @@ CommonFunc CFuncThread::FindFunc(const std::string& name) {
 	return nullptr;
 }
 
-bool CFuncThread::CallFunc(const std::string& name, std::vector<base::CAny>& param_ret) {
+bool FuncThread::CallFunc(const std::string& name, std::vector<cppnet::Any>& param_ret) {
 	auto iter = _func_map.find(name);
 	if (iter == _func_map.end()) {
 		return false;
