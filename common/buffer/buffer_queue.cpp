@@ -337,11 +337,11 @@ uint32_t BufferQueue::GetFreeMemoryBlock(std::vector<Iovec>& block_vec, uint32_t
         
             temp->GetFreeMemoryBlock(mem_1, mem_len_1, mem_2, mem_len_2);
             if (mem_len_1 > 0) {
-                block_vec.push_back(Iovec(mem_1, mem_len_1));
+                block_vec.emplace_back(Iovec(mem_1, mem_len_1));
                 cur_len += mem_len_1;
             }
             if (mem_len_2 > 0) {
-                block_vec.push_back(Iovec(mem_2, mem_len_2));
+                block_vec.emplace_back(Iovec(mem_2, mem_len_2));
                 cur_len += mem_len_2;
             }
             temp = temp->GetNext();
@@ -351,11 +351,11 @@ uint32_t BufferQueue::GetFreeMemoryBlock(std::vector<Iovec>& block_vec, uint32_t
         while (temp) {
             temp->GetFreeMemoryBlock(mem_1, mem_len_1, mem_2, mem_len_2);
             if (mem_len_1 > 0) {
-                block_vec.push_back(Iovec(mem_1, mem_len_1));
+                block_vec.emplace_back(Iovec(mem_1, mem_len_1));
                 cur_len += mem_len_1;
             }
             if (mem_len_2 > 0) {
-                block_vec.push_back(Iovec(mem_2, mem_len_2));
+                block_vec.emplace_back(Iovec(mem_2, mem_len_2));
                 cur_len += mem_len_2;
             }
             if (temp == _buffer_list.GetTail()) {
@@ -378,11 +378,11 @@ uint32_t BufferQueue::GetUseMemoryBlock(std::vector<Iovec>& block_vec, uint32_t 
     while (temp) {
         temp->GetUseMemoryBlock(mem_1, mem_len_1, mem_2, mem_len_2);
         if (mem_len_1 > 0) {
-            block_vec.push_back(Iovec(mem_1, mem_len_1));
+            block_vec.emplace_back(Iovec(mem_1, mem_len_1));
             cur_len += mem_len_1;
         }
         if (mem_len_2 > 0) {
-            block_vec.push_back(Iovec(mem_2, mem_len_2));
+            block_vec.emplace_back(Iovec(mem_2, mem_len_2));
             cur_len += mem_len_2;
         }
         if (temp == _buffer_write) {
