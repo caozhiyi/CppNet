@@ -1,5 +1,5 @@
-#ifndef NET_EVENT_TIMER_EVENT
-#define NET_EVENT_TIMER_EVENT
+#ifndef CPPNET_EVENT_TIMER_EVENT
+#define CPPNET_EVENT_TIMER_EVENT
 
 #include <memory>
 #include <atomic>

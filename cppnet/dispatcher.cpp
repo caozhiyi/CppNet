@@ -71,7 +71,7 @@ void Dispatcher::Stop() {
 
 void Dispatcher::Listen(uint64_t sock, const std::string& ip, uint16_t port) {
     if (std::this_thread::get_id() == _local_thread_id) {
-        auto connect_sock = std::make_shared<ConnectSocket>();
+        auto connect_sock = MakeConnectSocket();
         connect_sock->SetEventActions(_event_actions);
         connect_sock->SetCppNetBase(_cppnet_base.lock());
         connect_sock->SetSocket(sock);
@@ -82,7 +82,7 @@ void Dispatcher::Listen(uint64_t sock, const std::string& ip, uint16_t port) {
 
     } else {
         auto task = [sock, ip, port, this]() {
-            auto connect_sock = std::make_shared<ConnectSocket>();
+            auto connect_sock = MakeConnectSocket();
             connect_sock->SetEventActions(_event_actions);
             connect_sock->SetCppNetBase(_cppnet_base.lock());
             connect_sock->SetSocket(sock);
@@ -98,7 +98,7 @@ void Dispatcher::Listen(uint64_t sock, const std::string& ip, uint16_t port) {
 void Dispatcher::Connect(const std::string& ip, uint16_t port) {
     if (std::this_thread::get_id() == _local_thread_id) {
         auto alloter = std::make_shared<AlloterWrap>(MakePoolAlloterPtr());
-        auto sock = std::make_shared<RWSocket>(alloter);
+        auto sock = MakeRWSocket(alloter);
 
         sock->SetEventActions(_event_actions);
         sock->SetCppNetBase(_cppnet_base.lock());
@@ -107,7 +107,7 @@ void Dispatcher::Connect(const std::string& ip, uint16_t port) {
     } else {
         auto task = [ip, port, this]() {
             auto alloter = std::make_shared<AlloterWrap>(MakePoolAlloterPtr());
-            auto sock = std::make_shared<RWSocket>(alloter);
+            auto sock = MakeRWSocket(alloter);
 
             sock->SetEventActions(_event_actions);
             sock->SetCppNetBase(_cppnet_base.lock());

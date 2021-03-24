@@ -1,9 +1,11 @@
-#ifndef NET_EVENT_WIN_IOCP_ACTION
-#define NET_EVENT_WIN_IOCP_ACTION
+#ifndef CPPNET_EVENT_WIN_IOCP_ACTION
+#define CPPNET_EVENT_WIN_IOCP_ACTION
 
 #include "../action_interface.h"
 
 namespace cppnet {
+
+struct EventOverlapped;
 
 // epoll event interface
 class IOCPEventActions:
@@ -29,6 +31,7 @@ public:
     virtual void Wakeup();
 private:
     bool AddToIOCP(uint64_t sock);
+    void DoEvent(EventOverlapped *socket_context, uint32_t bytes);
 
 protected:
     void*     _iocp_handler;

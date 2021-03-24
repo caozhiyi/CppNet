@@ -1,5 +1,5 @@
-#ifndef NET_SOCKET_READ_WRITE_SOCKET
-#define NET_SOCKET_READ_WRITE_SOCKET
+#ifndef CPPNET_SOCKET_READ_WRITE_SOCKET
+#define CPPNET_SOCKET_READ_WRITE_SOCKET
 
 #include "socket_interface.h"
 #include "include/cppnet_socket.h"
@@ -22,32 +22,28 @@ public:
     RWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter);
     virtual ~RWSocket();
 
-    bool GetAddress(std::string& ip, uint16_t& port);
+    virtual bool GetAddress(std::string& ip, uint16_t& port);
 
-    bool Close();
+    virtual bool Close();
 
-    void Read();
-    bool Write(const char* src, uint32_t len);
-    void Connect(const std::string& ip, uint16_t port);
-    void Disconnect();
+    virtual void Read();
+    virtual bool Write(const char* src, uint32_t len) { return false; }
+    virtual void Connect(const std::string& ip, uint16_t port);
+    virtual void Disconnect();
 
-    uint64_t AddTimer(uint32_t interval, bool always = false);
-    void StopTimer(uint64_t timer_id);
+    virtual uint64_t AddTimer(uint32_t interval, bool always = false);
+    virtual void StopTimer(uint64_t timer_id);
 
-    void OnTimer();
-    void OnRead(uint32_t len = 0);
-    void OnWrite(uint32_t len = 0);
-    void OnConnect(uint16_t err);
-    void OnDisConnect(uint16_t err);
+    virtual void OnTimer();
+    virtual void OnRead(uint32_t len = 0) {}
+    virtual void OnWrite(uint32_t len = 0) {}
+    virtual void OnConnect(uint16_t err);
+    virtual void OnDisConnect(uint16_t err);
 
     std::shared_ptr<BufferQueue> GetReadBuffer() { return _read_buffer; }
     std::shared_ptr<BufferQueue> GetWriteBuffer() { return _write_buffer; }
-
-private:
-    bool Recv();
-    bool Send();
     
-private:
+protected:
     std::shared_ptr<Event>  _event;
 
     std::shared_ptr<BufferQueue> _write_buffer;
@@ -55,6 +51,9 @@ private:
 
     std::shared_ptr<BlockMemoryPool> _block_pool;
 };
+
+std::shared_ptr<RWSocket> MakeRWSocket(std::shared_ptr<AlloterWrap> alloter);
+std::shared_ptr<RWSocket> MakeRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter);
 
 }
 

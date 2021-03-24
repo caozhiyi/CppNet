@@ -1,5 +1,5 @@
-#ifndef NET_EVENT_ACTION_INTERFACE
-#define NET_EVENT_ACTION_INTERFACE
+#ifndef CPPNET_EVENT_ACTION_INTERFACE
+#define CPPNET_EVENT_ACTION_INTERFACE
 
 #include <vector>
 #include <string>
@@ -37,10 +37,6 @@ public:
     virtual void ProcessEvent(int32_t wait_ms) = 0;
     // weak up net io thread
     virtual void Wakeup() = 0;
-
-protected:
-    std::unordered_set<uint64_t> _listener_map;
-
 };
 
 }

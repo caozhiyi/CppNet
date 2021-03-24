@@ -1,5 +1,5 @@
-#ifndef NET_EVENT_EVENT_INTERFACE
-#define NET_EVENT_EVENT_INTERFACE
+#ifndef CPPNET_EVENT_EVENT_INTERFACE
+#define CPPNET_EVENT_EVENT_INTERFACE
 
 #include <memory>
 #include <atomic>

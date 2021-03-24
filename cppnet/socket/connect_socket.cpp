@@ -65,54 +65,14 @@ bool ConnectSocket::Listen() {
 }
 
 void ConnectSocket::Accept() {
-    if (!_read_event) {
-        _read_event = std::make_shared<Event>();
-        _read_event->SetSocket(shared_from_this());
+    if (!_accept_event) {
+        _accept_event = std::make_shared<Event>();
+        _accept_event->SetSocket(shared_from_this());
     }
     __all_socket_map[_sock] = shared_from_this();
     auto actions = GetEventActions();
     if (actions) {
-        actions->AddAcceptEvent(_read_event);
-    }
-}
-
-void ConnectSocket::OnAccept() {
-    while (true) {
-        std::shared_ptr<AlloterWrap> alloter = std::make_shared<AlloterWrap>(MakePoolAlloterPtr());
-        std::shared_ptr<Address> address = alloter->PoolNewSharePtr<Address>(AT_IPV4);
-        //may get more than one connections
-        auto ret = OsHandle::Accept(_sock, *address);
-        if (ret._return_value < 0) {
-            if (errno == EAGAIN) {
-                break;
-            }
-            LOG_ERROR("accept socket filed! errno:%d, info:%s", ret._errno, ErrnoInfo(ret._errno));
-            break;
-        }
-
-        auto cppnet_base = _cppnet_base.lock();
-        if (!cppnet_base) {
-            return;
-        }
-
-        //set the socket noblocking
-        SocketNoblocking(ret._return_value);
-        
-        //create a new socket.
-        auto sock = std::make_shared<RWSocket>(ret._return_value, alloter);
-
-        sock->SetCppNetBase(cppnet_base);
-        sock->SetEventActions(_event_actions);
-        sock->SetAddress(address);
-        sock->SetDispatcher(GetDispatcher());
-
-        __all_socket_map[ret._return_value] = sock;
-
-        //call accept call back function
-        cppnet_base->OnAccept(sock);
-
-        //start read
-        sock->Read();
+        actions->AddAcceptEvent(_accept_event);
     }
 }
 
