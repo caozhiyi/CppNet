@@ -4,8 +4,6 @@
 #include "cppnet/event/timer_event.h"
 #include "cppnet/socket/connect_socket.h"
 #include "cppnet/event/action_interface.h"
-#include "cppnet/event/mac/kqueue_action.h"
-#include "cppnet/event/linux/epoll_action.h"
 
 #include "common/util/time.h"
 #include "common/timer/timer.h"
@@ -24,11 +22,9 @@ Dispatcher::Dispatcher(std::shared_ptr<CppNetBase> base):
     _cppnet_base(base) {
 
     _timer = MakeTimer1Min();
-#ifdef __APPLE__
-    _event_actions = std::make_shared<KqueueEventActions>();
-#elif __linux__
-    _event_actions = std::make_shared<EpollEventActions>();
-#endif
+
+    _event_actions = MakeEventActions();
+
     _event_actions->Init();
     // start thread
     Start();

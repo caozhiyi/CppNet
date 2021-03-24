@@ -22,6 +22,10 @@
 
 namespace cppnet {
 
+std::shared_ptr<EventActions> MakeEventActions() {
+    return std::make_shared<EpollEventActions>();
+}
+
 EpollEventActions::EpollEventActions():
     _epoll_handler(-1) {
     _active_list.resize(1024);
@@ -115,10 +119,10 @@ bool EpollEventActions::AddRecvEvent(std::shared_ptr<Event>& event) {
 }
 
 bool EpollEventActions::AddAcceptEvent(std::shared_ptr<Event>& event) {
-    if (event->GetType() & ET_READ) {
+    if (event->GetType() & ET_ACCEPT) {
         return false;
     }
-    event->AddType(ET_READ);
+    event->AddType(ET_ACCEPT);
     
     auto sock = event->GetSocket();
     if (sock) {

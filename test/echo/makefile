@@ -6,9 +6,9 @@ CC = g++
 INCLUDES = -I../../
 
 #debug
-#CCFLAGS = -lpthread -fPIC -m64 -g -pg -std=c++11 -lstdc++ -pipe 
+CCFLAGS = -lpthread -fPIC -m64 -g -pg -std=c++11 -lstdc++ -pipe 
 
-CCFLAGS = -lpthread -fPIC -m64 -O2 -std=c++11 -lstdc++ -pipe -march=corei7 
+#CCFLAGS = -lpthread -fPIC -m64 -O2 -std=c++11 -lstdc++ -pipe -march=corei7 
 
 TARGET = ../../libcppnet.a
 SERBIN = echoserver

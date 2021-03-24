@@ -14,6 +14,10 @@
 
 namespace cppnet {
 
+std::shared_ptr<EventActions> MakeEventActions() {
+    return std::make_shared<IOCPEventActions>();
+}
+
 enum IOCP_NOTIFY_CODE {
     INC_WEAK_UP = 0xAAAAFFFF,
 };

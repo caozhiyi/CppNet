@@ -39,6 +39,8 @@ public:
     virtual void Wakeup() = 0;
 };
 
+std::shared_ptr<EventActions> MakeEventActions();
+
 }
 
 #endif

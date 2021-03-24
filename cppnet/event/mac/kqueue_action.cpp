@@ -19,6 +19,10 @@
 
 namespace cppnet {
 
+std::shared_ptr<EventActions> MakeEventActions() {
+    return std::make_shared<KqueueEventActions>();
+}
+
 KqueueEventActions::KqueueEventActions():
     _kqueue_handler(-1) {
     _active_list.resize(1024);

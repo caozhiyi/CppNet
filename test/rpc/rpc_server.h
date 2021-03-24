@@ -2,6 +2,7 @@
 #define TEST_RPC_RPCSERVER_HEADER
 
 #include <map>
+#include <mutex>
 #include <memory>
 #include <atomic>
 
