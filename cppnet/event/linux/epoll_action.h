@@ -1,4 +1,3 @@
-#ifdef __linux__
 #ifndef NET_EVENT_LINUX_EPOLL_ACTION
 #define NET_EVENT_LINUX_EPOLL_ACTION
 
@@ -45,5 +44,4 @@ protected:
 
 }
 
-#endif
 #endif

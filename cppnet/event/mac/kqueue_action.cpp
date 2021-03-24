@@ -1,5 +1,3 @@
-#ifdef __APPLE__
-
 #include <thread>
 #include <unistd.h>    // for close
 
@@ -75,11 +73,8 @@ bool KqueueEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
 
     auto sock = event->GetSocket();
     if (sock) {
-        void* udata = (void*)&event;
-        udata = (void*)(((uintptr_t)udata) | 1);
-
         struct kevent ev;
-        EV_SET(&ev, sock->GetSocket(), EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, udata);
+        EV_SET(&ev, sock->GetSocket(), EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, (void*)&event);
 
         _change_list.push_back(ev);
         return true;
@@ -106,10 +101,10 @@ bool KqueueEventActions::AddRecvEvent(std::shared_ptr<Event>& event) {
 }
 
 bool KqueueEventActions::AddAcceptEvent(std::shared_ptr<Event>& event) {
-    if (event->GetType() & ET_READ) {
+    if (event->GetType() & ET_ACCEPT) {
         return false;
     }
-    event->AddType(ET_READ);
+    event->AddType(ET_ACCEPT);
 
     auto sock = event->GetSocket();
     if (sock) {
@@ -117,7 +112,6 @@ bool KqueueEventActions::AddAcceptEvent(std::shared_ptr<Event>& event) {
         EV_SET(&ev, sock->GetSocket(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, (void*)&event);
     
         _change_list.push_back(ev);
-        _listener_map.insert(sock->GetSocket());
         return true;
     }
     LOG_WARN("socket is already distroyed! event %s", "AddAcceptEvent");
@@ -222,10 +216,6 @@ void KqueueEventActions::OnEvent(std::vector<struct kevent>& event_vec, int16_t 
     std::shared_ptr<Socket> sock;
     std::shared_ptr<Event> event;
 
-    std::shared_ptr<RWSocket> rw_sock;
-    std::shared_ptr<ConnectSocket> connect_sock;
-
-    bool is_send = false;
     for (int i = 0; i < num; i++) {
         if (event_vec[i].ident == _pipe[0]) {
             LOG_INFO("weak up the io thread, index : %d", i);
@@ -234,39 +224,31 @@ void KqueueEventActions::OnEvent(std::vector<struct kevent>& event_vec, int16_t 
             continue;
         }
 
-        is_send = ((uintptr_t)event_vec[i].udata) & 1;
+        event = (*(std::shared_ptr<Event>*)event_vec[i].udata);
+        sock = event->GetSocket();
+        if (!sock) {
+            LOG_WARN("kqueue weak up but socket already destroy, index : %d", i);
+            continue;
+        }
 
-        if (is_send) {
-            void* ptr = (void*)(((uintptr_t)event_vec[i].udata) & (uintptr_t)~1);
-            event = (*(std::shared_ptr<Event>*)ptr);
-            sock = event->GetSocket();
-            if (!sock) {
-                LOG_WARN("kqueue weak up but socket already destroy, index : %d", i);
-                continue;
-            }
-            rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
-            rw_sock->OnWrite(event_vec[i].data);
+        // accept event
+        if (event->GetType() & ET_ACCEPT) {
+            std::shared_ptr<ConnectSocket> connect_sock = std::dynamic_pointer_cast<ConnectSocket>(sock);
+            connect_sock->OnAccept();
 
         } else {
-            event = (*(std::shared_ptr<Event>*)event_vec[i].udata);
-            sock = event->GetSocket();
-            if (!sock) {
-                LOG_WARN("kqueue weak up but socket already destroy, index : %d", i);
-                continue;
-            }
-            auto iter = _listener_map.find(sock->GetSocket());
-            if (iter != _listener_map.end()) {
-                connect_sock = std::dynamic_pointer_cast<ConnectSocket>(sock);
-                connect_sock->OnAccept();
-
+            // write event
+            if (event_vec[i].flags & EV_CLEAR) {
+                std::shared_ptr<RWSocket> rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
+                event->RemoveType(ET_WRITE);
+                rw_sock->OnWrite(event_vec[i].data);
+            // read event
             } else {
-                rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
+                std::shared_ptr<RWSocket> rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
                 rw_sock->OnRead(event_vec[i].data);
             }
-        }
+        }   
     }
 }
 
 }
-
-#endif

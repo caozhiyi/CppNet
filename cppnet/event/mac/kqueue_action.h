@@ -1,4 +1,3 @@
-#ifdef __APPLE__
 #ifndef NET_EVENT_MAC_EPOLL_ACTION
 #define NET_EVENT_MAC_EPOLL_ACTION
 
@@ -46,5 +45,4 @@ protected:
 
 }
 
-#endif
 #endif

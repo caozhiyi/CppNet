@@ -1,4 +1,3 @@
-#ifdef __linux__
 #include <thread>
 #include <cstring>
 #include <unistd.h>
@@ -132,7 +131,6 @@ bool EpollEventActions::AddAcceptEvent(std::shared_ptr<Event>& event) {
         ep_event->data.ptr = (void*)&event;
         if (AddEvent(ep_event, EPOLLIN, sock->GetSocket(), event->GetType() & ET_INACTIONS)) {
             event->AddType(ET_INACTIONS);
-            _listener_map.insert(sock->GetSocket());
             return true;
         }
     }
@@ -236,9 +234,6 @@ void EpollEventActions::Wakeup() {
 void EpollEventActions::OnEvent(std::vector<epoll_event>& event_vec, int16_t num) {
     std::shared_ptr<Socket> sock;
     std::shared_ptr<Event> event;
-    
-    std::shared_ptr<RWSocket> rw_sock;
-    std::shared_ptr<ConnectSocket> connect_sock;
 
     for (int i = 0; i < num; i++) {
         if (event_vec[i].data.fd == _pipe[0]) {
@@ -255,14 +250,13 @@ void EpollEventActions::OnEvent(std::vector<epoll_event>& event_vec, int16_t num
             continue;
         }
 
-        auto iter = _listener_map.find(sock->GetSocket());
-        if (iter != _listener_map.end()) {
-            connect_sock = std::dynamic_pointer_cast<ConnectSocket>(sock);
+        // accept event
+        if (event->GetType() & ET_ACCEPT) {
+            std::shared_ptr<ConnectSocket> connect_sock = std::dynamic_pointer_cast<ConnectSocket>(sock);
             connect_sock->OnAccept();
 
         } else {
-            rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
-            
+            std::shared_ptr<RWSocket> rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
             if (event_vec[i].events & EPOLLIN) {
                 // close
                 if (event_vec[i].events & EPOLLRDHUP) {
@@ -305,5 +299,3 @@ bool EpollEventActions::AddEvent(epoll_event* ev, int32_t event_flag, uint64_t s
 }
 
 }
-
-#endif

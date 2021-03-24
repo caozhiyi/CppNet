@@ -1,5 +1,3 @@
-#if ((defined __linux__) || (defined __APPLE__)) 
-
 #include <errno.h>
 #include <unistd.h>
 #include <sys/uio.h>
@@ -118,5 +116,3 @@ SysCallInt32Result OsHandle::Readv(int64_t sockfd, Iovec *vec, uint32_t vec_len)
 }
 
 }
-
-#endif

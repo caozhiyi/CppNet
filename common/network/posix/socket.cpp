@@ -1,5 +1,3 @@
-#if ((defined __linux__) || (defined __APPLE__)) 
-
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/poll.h>
@@ -47,5 +45,3 @@ bool CheckConnect(const uint64_t sock) {
 
 
 }
-
-#endif
