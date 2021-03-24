@@ -3,6 +3,7 @@
 #include "cppnet/socket/rw_socket.h"
 #include "cppnet/event/timer_event.h"
 #include "cppnet/socket/connect_socket.h"
+#include "cppnet/event/action_interface.h"
 #include "cppnet/event/mac/kqueue_action.h"
 #include "cppnet/event/linux/epoll_action.h"
 

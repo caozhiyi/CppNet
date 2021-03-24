@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{E98183C7-10C3-4B1A-B8FB-D60BB6217962}</ProjectGuid>
     <RootNamespace>CppNet</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -40,7 +40,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -76,6 +76,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IntDir>$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IncludePath>$(SolutionDir);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IntDir>$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
@@ -132,62 +133,83 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="base\BlockMemoryPool.cpp" />
-    <ClCompile Include="base\Buffer.cpp" />
-    <ClCompile Include="base\Config.cpp" />
-    <ClCompile Include="base\Log.cpp" />
-    <ClCompile Include="base\LoopBuffer.cpp" />
-    <ClCompile Include="base\MemoryPool.cpp" />
-    <ClCompile Include="base\TimeTool.cpp" />
-    <None Include="net\linux\SocketImpl.cpp" />
-    <ClCompile Include="net\win\SocketImpl.cpp" />
-    <None Include="net\linux\AcceptSocket.cpp" />
-    <None Include="net\linux\CEpoll.cpp" />
-    <None Include="net\linux\LinuxFunc.cpp" />
-    <None Include="net\linux\SocketBase.cpp" />
-    <ClCompile Include="net\CppNet.cpp" />
-    <ClCompile Include="net\CppNetImpl.cpp" />
-    <ClCompile Include="net\OSInfo.cpp" />
-    <ClCompile Include="net\Socket.cpp" />
-    <ClCompile Include="net\Timer.cpp" />
-    <ClCompile Include="net\win\AcceptSocket.cpp" />
-    <ClCompile Include="net\win\IOCP.cpp" />
-    <ClCompile Include="net\win\SocketBase.cpp" />
+    <ClInclude Include="common\alloter\alloter_interface.h" />
+    <ClInclude Include="common\alloter\normal_alloter.h" />
+    <ClInclude Include="common\alloter\pool_alloter.h" />
+    <ClInclude Include="common\alloter\pool_block.h" />
+    <ClInclude Include="common\buffer\buffer_block.h" />
+    <ClInclude Include="common\buffer\buffer_interface.h" />
+    <ClInclude Include="common\buffer\buffer_queue.h" />
+    <ClInclude Include="common\log\base_logger.h" />
+    <ClInclude Include="common\log\file_logger.h" />
+    <ClInclude Include="common\log\log.h" />
+    <ClInclude Include="common\log\logger_interface.h" />
+    <ClInclude Include="common\log\stdout_logger.h" />
+    <ClInclude Include="common\network\address.h" />
+    <ClInclude Include="common\network\io_handle.h" />
+    <ClInclude Include="common\network\socket.h" />
+    <ClInclude Include="common\os\convert.h" />
+    <ClInclude Include="common\os\os_info.h" />
+    <ClInclude Include="common\structure\list.h" />
+    <ClInclude Include="common\structure\list_solt.h" />
+    <ClInclude Include="common\structure\thread_safe_block_queue.h" />
+    <ClInclude Include="common\structure\thread_safe_queue.h" />
+    <ClInclude Include="common\thread\thread.h" />
+    <ClInclude Include="common\thread\thread_with_queue.h" />
+    <ClInclude Include="common\timer\timer.h" />
+    <ClInclude Include="common\timer\timer_1ms.h" />
+    <ClInclude Include="common\timer\timer_container.h" />
+    <ClInclude Include="common\timer\timer_interface.h" />
+    <ClInclude Include="common\timer\timer_solt.h" />
+    <ClInclude Include="common\util\any.h" />
+    <ClInclude Include="common\util\bitmap.h" />
+    <ClInclude Include="common\util\config.h" />
+    <ClInclude Include="common\util\os_return.h" />
+    <ClInclude Include="common\util\random.h" />
+    <ClInclude Include="common\util\singleton.h" />
+    <ClInclude Include="common\util\time.h" />
+    <ClInclude Include="cppnet\cppnet_base.h" />
+    <ClInclude Include="cppnet\cppnet_config.h" />
+    <ClInclude Include="cppnet\dispatcher.h" />
+    <ClInclude Include="cppnet\event\action_interface.h" />
+    <ClInclude Include="cppnet\event\event_interface.h" />
+    <ClInclude Include="cppnet\event\timer_event.h" />
+    <ClInclude Include="cppnet\socket\connect_socket.h" />
+    <ClInclude Include="cppnet\socket\rw_socket.h" />
+    <ClInclude Include="cppnet\socket\socket_interface.h" />
+    <ClInclude Include="include\cppnet.h" />
+    <ClInclude Include="include\cppnet_socket.h" />
+    <ClInclude Include="include\cppnet_type.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="base\Any.h" />
-    <ClInclude Include="base\BlockMemoryPool.h" />
-    <ClInclude Include="base\Buffer.h" />
-    <ClInclude Include="base\Config.h" />
-    <ClInclude Include="base\Log.h" />
-    <ClInclude Include="base\LoopBuffer.h" />
-    <ClInclude Include="base\MemoryPool.h" />
-    <ClInclude Include="base\PoolSharedPtr.h" />
-    <ClInclude Include="base\Runnable.h" />
-    <ClInclude Include="base\RunnableAloneTaskList.h" />
-    <ClInclude Include="base\RunnableAloneTaskListWithPost.h" />
-    <ClInclude Include="base\RunnableShareTaskList.h" />
-    <ClInclude Include="base\Single.h" />
-    <ClInclude Include="base\TaskQueue.h" />
-    <ClInclude Include="base\TimeTool.h" />
-    <ClInclude Include="base\TSQueue.h" />
-    <ClInclude Include="include\CppDefine.h" />
-    <ClInclude Include="include\CppNet.h" />
-    <ClInclude Include="include\Socket.h" />
-    <ClInclude Include="include\Type.h" />
-    <ClInclude Include="net\AcceptSocket.h" />
-    <ClInclude Include="net\CNConfig.h" />
-    <ClInclude Include="net\EventActions.h" />
-    <ClInclude Include="net\EventHandler.h" />
-    <ClInclude Include="net\linux\CEpoll.h" />
-    <ClInclude Include="net\linux\LinuxFunc.h" />
-    <ClInclude Include="net\CppNetImpl.h" />
-    <ClInclude Include="net\OSInfo.h" />
-    <ClInclude Include="net\SocketBase.h" />
-    <ClInclude Include="net\SocketImpl.h" />
-    <ClInclude Include="net\Timer.h" />
-    <ClInclude Include="net\win\IOCP.h" />
-    <ClInclude Include="net\win\WinExpendFunc.h" />
+    <ClCompile Include="common\alloter\normal_alloter.cpp" />
+    <ClCompile Include="common\alloter\pool_alloter.cpp" />
+    <ClCompile Include="common\alloter\pool_block.cpp" />
+    <ClCompile Include="common\buffer\buffer_block.cpp" />
+    <ClCompile Include="common\buffer\buffer_queue.cpp" />
+    <ClCompile Include="common\log\base_logger.cpp" />
+    <ClCompile Include="common\log\file_logger.cpp" />
+    <ClCompile Include="common\log\log.cpp" />
+    <ClCompile Include="common\log\stdout_logger.cpp" />
+    <ClCompile Include="common\network\address.cpp" />
+    <ClCompile Include="common\os\os_info.cpp" />
+    <ClCompile Include="common\os\win\convert.cpp" />
+    <ClCompile Include="common\timer\timer.cpp" />
+    <ClCompile Include="common\timer\timer_1ms.cpp" />
+    <ClCompile Include="common\timer\timer_container.cpp" />
+    <ClCompile Include="common\timer\timer_solt.cpp" />
+    <ClCompile Include="common\util\bitmap.cpp" />
+    <ClCompile Include="common\util\config.cpp" />
+    <ClCompile Include="common\util\random.cpp" />
+    <ClCompile Include="common\util\time.cpp" />
+    <ClCompile Include="cppnet\cppnet.cpp" />
+    <ClCompile Include="cppnet\cppnet_base.cpp" />
+    <ClCompile Include="cppnet\cppnet_socket.cpp" />
+    <ClCompile Include="cppnet\dispatcher.cpp" />
+    <ClCompile Include="cppnet\event\timer_event.cpp" />
+    <ClCompile Include="cppnet\socket\connect_socket.cpp" />
+    <ClCompile Include="cppnet\socket\rw_socket.cpp" />
+    <ClCompile Include="cppnet\socket\socket_interface.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

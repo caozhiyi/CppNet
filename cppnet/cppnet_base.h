@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <memory>
+#include <string>
 #include "include/cppnet_type.h"
 
 namespace cppnet {

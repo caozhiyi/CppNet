@@ -41,6 +41,7 @@ public:
     void OnDisConnect(uint16_t err);
 
     std::shared_ptr<BufferQueue> GetReadBuffer() { return _read_buffer; }
+    std::shared_ptr<BufferQueue> GetWriteBuffer() { return _write_buffer; }
 
 private:
     bool Recv();

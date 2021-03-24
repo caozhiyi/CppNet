@@ -1,6 +1,7 @@
 #ifndef INCLUDE_CPPNET
 #define INCLUDE_CPPNET
 
+#include <string>
 #include <memory>
 #include "cppnet_type.h"
 

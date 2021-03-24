@@ -25,8 +25,6 @@ static const char* __log_file_name         = "CppNetLog";
 // open log print.
 static const bool __open_log               = false;
 
-#if ((defined __linux__) || (defined __APPLE__)) 
-
 // every thread has a epoll handle.
 static const bool __epoll_use_et                   = true;
 // the start extend size of read buff while buff is't enough. 
@@ -36,12 +34,9 @@ static const uint32_t __linux_read_buff_expand_max = 65536;
 // max size of buffer will get from buffer. Be careful IOV_MAX.
 static const uint16_t __linux_write_buff_get       = 4096;
 
-#elif WIN32
-
 // iocp buffer length.
-static const uint16_t __iocp_buff_size = 8192;
+static const uint16_t __iocp_buff_size = 1024*4;
 
-#endif
 
 }
 

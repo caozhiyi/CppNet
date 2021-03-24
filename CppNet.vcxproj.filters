@@ -1,188 +1,279 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="base">
-      <UniqueIdentifier>{b690a62c-604b-49ac-8547-0f7dfebfbb05}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="net">
-      <UniqueIdentifier>{d0b899ae-a8d4-4808-a5ee-64822497b537}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="net\win">
-      <UniqueIdentifier>{e68d38ab-7e33-4061-b30f-d8d452c83950}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="net\linux">
-      <UniqueIdentifier>{3619e14b-ac00-4eac-8d85-aeb35c29e7d8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="include">
       <UniqueIdentifier>{626d3ede-1715-4aaa-8e62-b6b629ea490b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{144e50f1-c31c-4e00-8ad8-680781d16db2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common\alloter">
+      <UniqueIdentifier>{204333be-eb41-4a14-adf4-6b765829a40d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common\buffer">
+      <UniqueIdentifier>{b34126ae-d3eb-4d6e-95a3-3e288813bce7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common\log">
+      <UniqueIdentifier>{a554d1f0-a323-4ce8-b5e5-158d54046d24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common\network">
+      <UniqueIdentifier>{bc50d003-b0c0-4c2e-9dde-898d3de6ee86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common\os">
+      <UniqueIdentifier>{ecc2f375-b76f-4125-9465-3f1043fc5470}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common\os\win">
+      <UniqueIdentifier>{282a1e7e-a529-459c-bc3c-72e32ae913e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common\structure">
+      <UniqueIdentifier>{325758b0-fcee-4ced-b877-e981c5618bae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common\thread">
+      <UniqueIdentifier>{2ca51fbd-fbbc-4bb4-ba04-ac6cac0e9a9d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common\timer">
+      <UniqueIdentifier>{51e83188-f190-490b-afd3-b86c57e28890}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common\util">
+      <UniqueIdentifier>{1b765bc0-3da6-43a1-8b98-909c5fd28237}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cppnet">
+      <UniqueIdentifier>{3075f8af-e0a9-4212-88f6-b21ba50b7784}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cppnet\socket">
+      <UniqueIdentifier>{620901fb-6d00-45d3-a5a1-1ce30da805fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cppnet\event">
+      <UniqueIdentifier>{ea04e906-9556-4346-9ed2-40ae19f6ede3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="base\Buffer.cpp">
-      <Filter>base</Filter>
-    </ClCompile>
-    <ClCompile Include="base\Log.cpp">
-      <Filter>base</Filter>
-    </ClCompile>
-    <ClCompile Include="base\LoopBuffer.cpp">
-      <Filter>base</Filter>
-    </ClCompile>
-    <ClCompile Include="base\MemoryPool.cpp">
-      <Filter>base</Filter>
-    </ClCompile>
-    <ClCompile Include="base\TimeTool.cpp">
-      <Filter>base</Filter>
-    </ClCompile>
-    <ClCompile Include="net\win\AcceptSocket.cpp">
-      <Filter>net\win</Filter>
-    </ClCompile>
-    <ClCompile Include="net\win\IOCP.cpp">
-      <Filter>net\win</Filter>
-    </ClCompile>
-    <ClCompile Include="net\win\SocketBase.cpp">
-      <Filter>net\win</Filter>
-    </ClCompile>
-    <ClCompile Include="net\Timer.cpp">
-      <Filter>net</Filter>
-    </ClCompile>
-    <ClCompile Include="net\OSInfo.cpp">
-      <Filter>net</Filter>
-    </ClCompile>
-    <ClCompile Include="base\Config.cpp">
-      <Filter>base</Filter>
-    </ClCompile>
-    <ClCompile Include="net\CppNetImpl.cpp">
-      <Filter>net</Filter>
-    </ClCompile>
-    <ClCompile Include="net\CppNet.cpp">
-      <Filter>net</Filter>
-    </ClCompile>
-    <ClCompile Include="net\Socket.cpp">
-      <Filter>net</Filter>
-    </ClCompile>
-    <ClCompile Include="net\win\SocketImpl.cpp">
-      <Filter>net\win</Filter>
-    </ClCompile>
-    <ClCompile Include="base\BlockMemoryPool.cpp">
-      <Filter>base</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="base\Buffer.h">
-      <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="base\Log.h">
-      <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="base\LoopBuffer.h">
-      <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="base\MemoryPool.h">
-      <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="base\PoolSharedPtr.h">
-      <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="base\Runnable.h">
-      <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="base\RunnableAloneTaskList.h">
-      <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="base\RunnableAloneTaskListWithPost.h">
-      <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="base\RunnableShareTaskList.h">
-      <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="base\Single.h">
-      <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="base\TaskQueue.h">
-      <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="base\TimeTool.h">
-      <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="net\win\IOCP.h">
-      <Filter>net\win</Filter>
-    </ClInclude>
-    <ClInclude Include="net\win\WinExpendFunc.h">
-      <Filter>net\win</Filter>
-    </ClInclude>
-    <ClInclude Include="net\AcceptSocket.h">
-      <Filter>net</Filter>
-    </ClInclude>
-    <ClInclude Include="net\EventActions.h">
-      <Filter>net</Filter>
-    </ClInclude>
-    <ClInclude Include="net\EventHandler.h">
-      <Filter>net</Filter>
-    </ClInclude>
-    <ClInclude Include="net\OSInfo.h">
-      <Filter>net</Filter>
-    </ClInclude>
-    <ClInclude Include="net\SocketBase.h">
-      <Filter>net</Filter>
-    </ClInclude>
-    <ClInclude Include="net\Timer.h">
-      <Filter>net</Filter>
-    </ClInclude>
-    <ClInclude Include="net\linux\CEpoll.h">
-      <Filter>net\linux</Filter>
-    </ClInclude>
-    <ClInclude Include="net\linux\LinuxFunc.h">
-      <Filter>net\linux</Filter>
-    </ClInclude>
-    <ClInclude Include="base\Any.h">
-      <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="base\TSQueue.h">
-      <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="base\Config.h">
-      <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="net\CppNetImpl.h">
-      <Filter>net</Filter>
-    </ClInclude>
-    <ClInclude Include="include\CppNet.h">
+    <ClInclude Include="include\cppnet.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\CppDefine.h">
+    <ClInclude Include="include\cppnet_socket.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\Socket.h">
+    <ClInclude Include="include\cppnet_type.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\Type.h">
-      <Filter>include</Filter>
+    <ClInclude Include="common\alloter\alloter_interface.h">
+      <Filter>common\alloter</Filter>
     </ClInclude>
-    <ClInclude Include="net\SocketImpl.h">
-      <Filter>net</Filter>
+    <ClInclude Include="common\alloter\normal_alloter.h">
+      <Filter>common\alloter</Filter>
     </ClInclude>
-    <ClInclude Include="base\BlockMemoryPool.h">
-      <Filter>base</Filter>
+    <ClInclude Include="common\alloter\pool_alloter.h">
+      <Filter>common\alloter</Filter>
     </ClInclude>
-    <ClInclude Include="net\CNConfig.h">
-      <Filter>net</Filter>
+    <ClInclude Include="common\alloter\pool_block.h">
+      <Filter>common\alloter</Filter>
+    </ClInclude>
+    <ClInclude Include="common\buffer\buffer_block.h">
+      <Filter>common\buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="common\buffer\buffer_interface.h">
+      <Filter>common\buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="common\buffer\buffer_queue.h">
+      <Filter>common\buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="common\log\base_logger.h">
+      <Filter>common\log</Filter>
+    </ClInclude>
+    <ClInclude Include="common\log\file_logger.h">
+      <Filter>common\log</Filter>
+    </ClInclude>
+    <ClInclude Include="common\log\log.h">
+      <Filter>common\log</Filter>
+    </ClInclude>
+    <ClInclude Include="common\log\logger_interface.h">
+      <Filter>common\log</Filter>
+    </ClInclude>
+    <ClInclude Include="common\log\stdout_logger.h">
+      <Filter>common\log</Filter>
+    </ClInclude>
+    <ClInclude Include="common\network\address.h">
+      <Filter>common\network</Filter>
+    </ClInclude>
+    <ClInclude Include="common\network\io_handle.h">
+      <Filter>common\network</Filter>
+    </ClInclude>
+    <ClInclude Include="common\network\socket.h">
+      <Filter>common\network</Filter>
+    </ClInclude>
+    <ClInclude Include="common\os\convert.h">
+      <Filter>common\os</Filter>
+    </ClInclude>
+    <ClInclude Include="common\os\os_info.h">
+      <Filter>common\os</Filter>
+    </ClInclude>
+    <ClInclude Include="common\structure\list.h">
+      <Filter>common\structure</Filter>
+    </ClInclude>
+    <ClInclude Include="common\structure\list_solt.h">
+      <Filter>common\structure</Filter>
+    </ClInclude>
+    <ClInclude Include="common\structure\thread_safe_block_queue.h">
+      <Filter>common\structure</Filter>
+    </ClInclude>
+    <ClInclude Include="common\structure\thread_safe_queue.h">
+      <Filter>common\structure</Filter>
+    </ClInclude>
+    <ClInclude Include="common\thread\thread.h">
+      <Filter>common\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="common\thread\thread_with_queue.h">
+      <Filter>common\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="common\timer\timer.h">
+      <Filter>common\timer</Filter>
+    </ClInclude>
+    <ClInclude Include="common\timer\timer_1ms.h">
+      <Filter>common\timer</Filter>
+    </ClInclude>
+    <ClInclude Include="common\timer\timer_container.h">
+      <Filter>common\timer</Filter>
+    </ClInclude>
+    <ClInclude Include="common\timer\timer_interface.h">
+      <Filter>common\timer</Filter>
+    </ClInclude>
+    <ClInclude Include="common\timer\timer_solt.h">
+      <Filter>common\timer</Filter>
+    </ClInclude>
+    <ClInclude Include="common\util\any.h">
+      <Filter>common\util</Filter>
+    </ClInclude>
+    <ClInclude Include="common\util\bitmap.h">
+      <Filter>common\util</Filter>
+    </ClInclude>
+    <ClInclude Include="common\util\config.h">
+      <Filter>common\util</Filter>
+    </ClInclude>
+    <ClInclude Include="common\util\os_return.h">
+      <Filter>common\util</Filter>
+    </ClInclude>
+    <ClInclude Include="common\util\random.h">
+      <Filter>common\util</Filter>
+    </ClInclude>
+    <ClInclude Include="common\util\singleton.h">
+      <Filter>common\util</Filter>
+    </ClInclude>
+    <ClInclude Include="common\util\time.h">
+      <Filter>common\util</Filter>
+    </ClInclude>
+    <ClInclude Include="cppnet\cppnet_base.h">
+      <Filter>cppnet</Filter>
+    </ClInclude>
+    <ClInclude Include="cppnet\cppnet_config.h">
+      <Filter>cppnet</Filter>
+    </ClInclude>
+    <ClInclude Include="cppnet\dispatcher.h">
+      <Filter>cppnet</Filter>
+    </ClInclude>
+    <ClInclude Include="cppnet\socket\connect_socket.h">
+      <Filter>cppnet\socket</Filter>
+    </ClInclude>
+    <ClInclude Include="cppnet\socket\rw_socket.h">
+      <Filter>cppnet\socket</Filter>
+    </ClInclude>
+    <ClInclude Include="cppnet\socket\socket_interface.h">
+      <Filter>cppnet\socket</Filter>
+    </ClInclude>
+    <ClInclude Include="cppnet\event\action_interface.h">
+      <Filter>cppnet\event</Filter>
+    </ClInclude>
+    <ClInclude Include="cppnet\event\event_interface.h">
+      <Filter>cppnet\event</Filter>
+    </ClInclude>
+    <ClInclude Include="cppnet\event\timer_event.h">
+      <Filter>cppnet\event</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="net\linux\CEpoll.cpp">
-      <Filter>net\linux</Filter>
-    </None>
-    <None Include="net\linux\AcceptSocket.cpp">
-      <Filter>net\linux</Filter>
-    </None>
-    <None Include="net\linux\LinuxFunc.cpp">
-      <Filter>net\linux</Filter>
-    </None>
-    <None Include="net\linux\SocketBase.cpp">
-      <Filter>net\linux</Filter>
-    </None>
-    <None Include="net\linux\SocketImpl.cpp">
-      <Filter>net\linux</Filter>
-    </None>
+    <ClCompile Include="common\alloter\normal_alloter.cpp">
+      <Filter>common\alloter</Filter>
+    </ClCompile>
+    <ClCompile Include="common\alloter\pool_alloter.cpp">
+      <Filter>common\alloter</Filter>
+    </ClCompile>
+    <ClCompile Include="common\alloter\pool_block.cpp">
+      <Filter>common\alloter</Filter>
+    </ClCompile>
+    <ClCompile Include="common\buffer\buffer_block.cpp">
+      <Filter>common\buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="common\buffer\buffer_queue.cpp">
+      <Filter>common\buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="common\log\base_logger.cpp">
+      <Filter>common\log</Filter>
+    </ClCompile>
+    <ClCompile Include="common\log\file_logger.cpp">
+      <Filter>common\log</Filter>
+    </ClCompile>
+    <ClCompile Include="common\log\log.cpp">
+      <Filter>common\log</Filter>
+    </ClCompile>
+    <ClCompile Include="common\log\stdout_logger.cpp">
+      <Filter>common\log</Filter>
+    </ClCompile>
+    <ClCompile Include="common\network\address.cpp">
+      <Filter>common\network</Filter>
+    </ClCompile>
+    <ClCompile Include="common\os\os_info.cpp">
+      <Filter>common\os</Filter>
+    </ClCompile>
+    <ClCompile Include="common\os\win\convert.cpp">
+      <Filter>common\os\win</Filter>
+    </ClCompile>
+    <ClCompile Include="common\timer\timer.cpp">
+      <Filter>common\timer</Filter>
+    </ClCompile>
+    <ClCompile Include="common\timer\timer_1ms.cpp">
+      <Filter>common\timer</Filter>
+    </ClCompile>
+    <ClCompile Include="common\timer\timer_container.cpp">
+      <Filter>common\timer</Filter>
+    </ClCompile>
+    <ClCompile Include="common\timer\timer_solt.cpp">
+      <Filter>common\timer</Filter>
+    </ClCompile>
+    <ClCompile Include="common\util\bitmap.cpp">
+      <Filter>common\util</Filter>
+    </ClCompile>
+    <ClCompile Include="common\util\config.cpp">
+      <Filter>common\util</Filter>
+    </ClCompile>
+    <ClCompile Include="common\util\random.cpp">
+      <Filter>common\util</Filter>
+    </ClCompile>
+    <ClCompile Include="common\util\time.cpp">
+      <Filter>common\util</Filter>
+    </ClCompile>
+    <ClCompile Include="cppnet\cppnet.cpp">
+      <Filter>cppnet</Filter>
+    </ClCompile>
+    <ClCompile Include="cppnet\cppnet_base.cpp">
+      <Filter>cppnet</Filter>
+    </ClCompile>
+    <ClCompile Include="cppnet\cppnet_socket.cpp">
+      <Filter>cppnet</Filter>
+    </ClCompile>
+    <ClCompile Include="cppnet\dispatcher.cpp">
+      <Filter>cppnet</Filter>
+    </ClCompile>
+    <ClCompile Include="cppnet\socket\connect_socket.cpp">
+      <Filter>cppnet\socket</Filter>
+    </ClCompile>
+    <ClCompile Include="cppnet\socket\rw_socket.cpp">
+      <Filter>cppnet\socket</Filter>
+    </ClCompile>
+    <ClCompile Include="cppnet\socket\socket_interface.cpp">
+      <Filter>cppnet\socket</Filter>
+    </ClCompile>
+    <ClCompile Include="cppnet\event\timer_event.cpp">
+      <Filter>cppnet\event</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
