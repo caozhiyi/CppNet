@@ -6,10 +6,10 @@
 #define isspace(c) (c == ' ')
 #endif
 
-#include <map>
 #include <string>
 #include <stdio.h>
 #include <assert.h>
+#include <unordered_map>
 
 
 enum Method {
@@ -131,14 +131,14 @@ class CHttpRequest {
 
   std::string GetHeader(const std::string& field) const {
     std::string result;
-    std::map<std::string, std::string>::const_iterator it = _headers_map.find(field);
+    auto it = _headers_map.find(field);
     if (it != _headers_map.end()) {
       result = it->second;
     }
     return result;
   }
 
-  const std::map<std::string, std::string>& GetHeaders() const { 
+  const std::unordered_map<std::string, std::string>& GetHeaders() const { 
     return _headers_map;
   }
 
@@ -157,7 +157,7 @@ class CHttpRequest {
     std::string _path;
     std::string _query;
     uint64_t _receive_time;
-    std::map<std::string, std::string> _headers_map;
+    std::unordered_map<std::string, std::string> _headers_map;
 };
 
 #endif 

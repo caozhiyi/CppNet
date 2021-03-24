@@ -1,7 +1,7 @@
-#include <map>
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <unordered_map>
 
 #include "HttpServer.h"
 #include "HttpRequest.h"
@@ -16,7 +16,7 @@ std::string GetFile();
 void OnRequest(const CHttpRequest& req, CHttpResponse& resp) {
     //std::cout << "Headers " << req.GetMethodString() << " " << req.GetPath() << std::endl;
     if (!benchmark) {
-        const std::map<std::string, std::string>& headers = req.GetHeaders();
+        const std::unordered_map<std::string, std::string>& headers = req.GetHeaders();
         for (const auto& header : headers) {
             std::cout << header.first << ": " << header.second << std::endl;
         }
@@ -68,7 +68,7 @@ void DisConnectionFunc(const cppnet::Handle& , uint32_t ) {
 
 int main() {
     cppnet::CppNet net;
-    net.Init(4);
+    net.Init(2);
 
     CHttpServer server;
     server.SetHttpCallback(OnRequest);
