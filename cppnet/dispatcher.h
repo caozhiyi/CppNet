@@ -23,7 +23,7 @@ class Dispatcher:
     public Thread,
     public std::enable_shared_from_this<Dispatcher> {
 public:
-    Dispatcher(std::shared_ptr<CppNetBase> base);
+    Dispatcher(std::shared_ptr<CppNetBase> base, uint32_t base_id = 0);
     ~Dispatcher();
 
     void Run();
@@ -44,7 +44,7 @@ public:
 
 private:
     void DoTask();
-    uint64_t MakeTimerID();
+    uint32_t MakeTimerID();
 
 private:
     uint64_t _cur_utc_time;

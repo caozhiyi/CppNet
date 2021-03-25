@@ -71,7 +71,7 @@ int32_t Bitmap::GetMinAfter(uint32_t index) {
         return -1;
     }
 
-    int32_t ret = 0;
+    uint32_t ret = 0;
     for (size_t i = 0; i < _bitmap.size(); i++) {
         if (index > (i + 1) * __step_size) {
             ret += __step_size;
@@ -91,7 +91,7 @@ int32_t Bitmap::GetMinAfter(uint32_t index) {
                     continue;
                 }
                 ret += cur_step;
-                ret += std::log2f(cur_bitmap & (-cur_bitmap));
+                ret += (uint32_t)std::log2f(float(cur_bitmap & (-cur_bitmap)));
                 return ret;
 
             } else {
@@ -100,7 +100,7 @@ int32_t Bitmap::GetMinAfter(uint32_t index) {
                     ret += __step_size;
                     continue;
                 }
-                ret += std::log2f(cur_bitmap & (-cur_bitmap));
+                ret += (uint32_t)std::log2f(float(cur_bitmap & (-cur_bitmap)));
                 return ret;
             }
            

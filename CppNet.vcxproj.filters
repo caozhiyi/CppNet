@@ -46,6 +46,15 @@
     <Filter Include="cppnet\event">
       <UniqueIdentifier>{ea04e906-9556-4346-9ed2-40ae19f6ede3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="cppnet\event\win">
+      <UniqueIdentifier>{d20855db-db9f-4ef5-8779-2ec195a43da8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cppnet\socket\win">
+      <UniqueIdentifier>{bacb660a-99ea-4b26-81a4-cee347e2beeb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common\network\win">
+      <UniqueIdentifier>{75988d4c-ae9d-4a95-8f7a-87fa3268a3be}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\cppnet.h">
@@ -189,6 +198,21 @@
     <ClInclude Include="cppnet\event\timer_event.h">
       <Filter>cppnet\event</Filter>
     </ClInclude>
+    <ClInclude Include="cppnet\event\win\iocp_action.h">
+      <Filter>cppnet\event\win</Filter>
+    </ClInclude>
+    <ClInclude Include="cppnet\event\win\expend_func.h">
+      <Filter>cppnet\event\win</Filter>
+    </ClInclude>
+    <ClInclude Include="cppnet\socket\win\win_connect_socket.h">
+      <Filter>cppnet\socket\win</Filter>
+    </ClInclude>
+    <ClInclude Include="cppnet\socket\win\win_rw_socket.h">
+      <Filter>cppnet\socket\win</Filter>
+    </ClInclude>
+    <ClInclude Include="cppnet\event\win\accept_event.h">
+      <Filter>cppnet\event\win</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\alloter\normal_alloter.cpp">
@@ -274,6 +298,27 @@
     </ClCompile>
     <ClCompile Include="cppnet\event\timer_event.cpp">
       <Filter>cppnet\event</Filter>
+    </ClCompile>
+    <ClCompile Include="cppnet\event\win\iocp_action.cpp">
+      <Filter>cppnet\event\win</Filter>
+    </ClCompile>
+    <ClCompile Include="cppnet\event\win\expend_func.cpp">
+      <Filter>cppnet\event\win</Filter>
+    </ClCompile>
+    <ClCompile Include="cppnet\socket\win\win_connect_socket.cpp">
+      <Filter>cppnet\socket\win</Filter>
+    </ClCompile>
+    <ClCompile Include="cppnet\socket\win\win_rw_socket.cpp">
+      <Filter>cppnet\socket\win</Filter>
+    </ClCompile>
+    <ClCompile Include="common\network\win\io_handle.cpp">
+      <Filter>common\network\win</Filter>
+    </ClCompile>
+    <ClCompile Include="common\network\win\socket.cpp">
+      <Filter>common\network\win</Filter>
+    </ClCompile>
+    <ClCompile Include="cppnet\event\win\accept_event.cpp">
+      <Filter>cppnet\event\win</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -1,4 +1,3 @@
-#include <unistd.h>
 #include <winsock2.h>
 
 #include "../io_handle.h"
@@ -16,14 +15,13 @@ SysCallInt64Result OsHandle::TcpSocket() {
 
 SysCallInt32Result OsHandle::Bind(int64_t sockfd, Address& address) {
     SOCKADDR_IN addr;
-    local.sin_family = AF_INET;
-    local.sin_port = htons(address.GetPort());
-    local.sin_addr.S_un.S_addr = inet_addr(address.GetIp().c_str());
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(address.GetPort());
+    addr.sin_addr.S_un.S_addr = inet_addr(address.GetIp().c_str());
 
-    auto socket_ptr = event->_client_socket.Lock();
-    int32_t ret = bind(sockfd, (sockaddr*)&addr, sizeof(addr));
+    int32_t ret = bind((SOCKET)sockfd, (sockaddr*)&addr, sizeof(addr));
     if (SOCKET_ERROR == ret) {
-        return {ret, GetLastError()};
+        return {ret, (int32_t)GetLastError()};
     }
     return {ret, 0};
 }
@@ -33,22 +31,22 @@ SysCallInt32Result OsHandle::Listen(int64_t sockfd, uint32_t len) {
         len = SOMAXCONN;
     }
     
-    int32_t ret = listen(_sock, SOMAXCONN);
+    int32_t ret = listen((SOCKET)sockfd, SOMAXCONN);
     if (SOCKET_ERROR == ret) {
-        return {ret, GetLastError()};
+        return {ret, (int32_t)GetLastError()};
     }
 
     return {ret, 0};
 }
 
 SysCallInt32Result OsHandle::Connect(int64_t sockfd, Address& address) {
-    return {ret, 0};
+    return {0, 0};
 }
 
 SysCallInt32Result OsHandle::Close(int64_t sockfd) {
-    int32_t ret = closesocket(sockfd);
+    int32_t ret = closesocket((SOCKET)sockfd);
     if (ret != 0) {
-        return {ret, GetLastError()};
+        return {ret, (int32_t)GetLastError()};
     }
     return {ret, 0};
 }
@@ -74,5 +72,3 @@ SysCallInt32Result OsHandle::Readv(int64_t sockfd, Iovec *vec, uint32_t vec_len)
 }
 
 }
-
-#endif

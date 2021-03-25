@@ -1,4 +1,3 @@
-#include <errno.h>
 #include "win_rw_socket.h"
 
 #include "cppnet/cppnet_base.h"
@@ -56,6 +55,8 @@ bool WinRWSocket::Write(const char* src, uint32_t len) {
 
 void WinRWSocket::OnRead(uint32_t len) {
     Recv(len);
+    // wait for read again
+    Read();
 }
 
 void WinRWSocket::OnWrite(uint32_t len) {
@@ -82,7 +83,7 @@ bool WinRWSocket::Send(uint32_t len) {
         return false;
     }
     if (len > 0) {
-        _read_buffer->MoveReadPt(len);
+        _write_buffer->MoveReadPt(len);
         cppnet_base->OnWrite(shared_from_this(), len);
     }
     

@@ -428,32 +428,32 @@ bool BufferBlock::GetUseMemoryBlock(void*& res1, uint32_t& len1, void*& res2, ui
 
 uint32_t BufferBlock::FindStr(const char* s, uint32_t s_len) {
     if (_write > _read) {
-        const char* find = _FindStrInMem(_read, s, _write - _read, s_len);
+        const char* find = _FindStrInMem(_read, s, uint32_t(_write - _read), s_len);
         if (find) {
             return (uint32_t)(find - _read + s_len);
         }
         return 0;
         
     } else if (_write < _read) {
-        const char* find = _FindStrInMem(_read, s, _buffer_end - _read, s_len);
+        const char* find = _FindStrInMem(_read, s, uint32_t(_buffer_end - _read), s_len);
         if (find) {
-            return find - _read + s_len;
+            return uint32_t(find - _read + s_len);
         }
-        find = _FindStrInMem(_buffer_start, s, _write - _buffer_start, s_len);
+        find = _FindStrInMem(_buffer_start, s, uint32_t(_write - _buffer_start), s_len);
         if (find) {
-            return find - _buffer_start + s_len + _buffer_end - _read;
+            return uint32_t(find - _buffer_start + s_len + _buffer_end - _read);
         }
         return 0;
 
     } else {
         if (_can_read) {
-            const char* find = _FindStrInMem(_read, s, _buffer_end - _read, s_len);
+            const char* find = _FindStrInMem(_read, s, uint32_t(_buffer_end - _read), s_len);
             if (find) {
-                return find - _read + s_len;
+                return uint32_t(find - _read + s_len);
             }
-            find = _FindStrInMem(_buffer_start, s, _write - _buffer_start, s_len);
+            find = _FindStrInMem(_buffer_start, s, uint32_t(_write - _buffer_start), s_len);
             if (find) {
-                return find - _buffer_start + s_len + _buffer_end - _read;
+                return uint32_t(find - _buffer_start + s_len + _buffer_end - _read);
             }
             return 0;
 

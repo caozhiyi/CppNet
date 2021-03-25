@@ -8,8 +8,13 @@
 namespace cppnet {
 
 struct Iovec {
-    void      *_iov_base;      // starting address of buffer
-    size_t    _iov_len;        // size of buffer
+#ifdef __win__
+    unsigned long _iov_len;       // size of buffer
+    void*     _iov_base;      // starting address of buffer
+#else
+    void*     _iov_base;      // starting address of buffer
+    size_t    _iov_len;       // size of buffer
+#endif
     Iovec(void* base, size_t len) : _iov_base(base), _iov_len(len) {}
 };
 

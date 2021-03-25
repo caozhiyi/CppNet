@@ -38,7 +38,7 @@ public:
     std::shared_ptr<Dispatcher> GetDispatcher() { return _dispatcher.lock(); }
 
     void SetAlloter(std::shared_ptr<AlloterWrap> alloter) { _alloter = alloter; }
-    std::shared_ptr<AlloterWrap> GetAlocter() { return _alloter; }
+    std::shared_ptr<AlloterWrap> GetAlloter() { return _alloter; }
 
 protected:
     uint64_t _sock;

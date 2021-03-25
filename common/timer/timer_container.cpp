@@ -20,11 +20,11 @@ TimerContainer::~TimerContainer() {
 }
 
 bool TimerContainer::AddTimer(std::weak_ptr<TimerSolt> t, uint32_t time, bool always) {
-    if (time >= _capacity) {
+    if (time >= (uint32_t)_capacity) {
         return false;
     }
 
-    if (time < _accuracy) {
+    if (time < (uint32_t)_accuracy) {
         return _sub_timer->AddTimer(t, time, always);
     }
 
@@ -48,7 +48,7 @@ bool TimerContainer::AddTimer(std::weak_ptr<TimerSolt> t, uint32_t time, bool al
 
     // relative to current time
     time += _cur_index * _accuracy;
-    if (time > _capacity) {
+    if (time > (uint32_t)_capacity) {
         time %= _capacity;
     }
 
@@ -123,7 +123,7 @@ uint32_t TimerContainer::TimerRun(uint32_t time) {
                 if (next_index >= _max_size) {
                     next_index = next_index % _max_size;
                 }
-                AddTimerByIndex(ptr, next_index);
+                AddTimerByIndex(ptr, uint8_t(next_index));
             }
         }
     }

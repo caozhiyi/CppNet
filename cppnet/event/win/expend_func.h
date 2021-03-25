@@ -1,8 +1,10 @@
 #ifndef CPPNET_EVENT_WIN_EXPEND_FUNC
 #define CPPNET_EVENT_WIN_EXPEND_FUNC
 
-#include <MSWSock.h>
 #include <winsock2.h>
+#include <mswsock.h>
+#pragma comment(lib,"mswsock.lib")
+#pragma comment(lib,"ws2_32.lib")
 
 #include "common/util/singleton.h"
 
@@ -14,19 +16,22 @@ class WinExpendFunc:
 public:
     WinExpendFunc();
     ~WinExpendFunc();
-
+    
+    void Init() {}
 public:
+    
     LPFN_ACCEPTEX             _AcceptEx;
     LPFN_CONNECTEX            _ConnectEx;
     LPFN_GETACCEPTEXSOCKADDRS _AcceptExScokAddrs;
     LPFN_DISCONNECTEX         _DisconnectionEx;
+ 
 };
 
-typedef WinExpendFunc::Instance()._AcceptEx          AcceptEx;
-typedef WinExpendFunc::Instance()._ConnectEx         ConnectEx;
-typedef WinExpendFunc::Instance()._AcceptExScokAddrs AcceptExScokAddrs;
-typedef WinExpendFunc::Instance()._DisconnectionEx   DisconnectionEx;
-
+#define WinSockInit        WinExpendFunc::Instance().Init
+#define AcceptEx           WinExpendFunc::Instance()._AcceptEx
+#define ConnectEx          WinExpendFunc::Instance()._ConnectEx
+#define AcceptExScokAddrs  WinExpendFunc::Instance()._AcceptExScokAddrs
+#define DisconnectionEx    WinExpendFunc::Instance()._DisconnectionEx
 
 }
 

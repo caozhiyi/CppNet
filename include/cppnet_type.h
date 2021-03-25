@@ -1,5 +1,5 @@
-#ifndef INCLUDE_CPPNET_DEFINE
-#define INCLUDE_CPPNET_DEFINE
+#ifndef INCLUDE_CPPNET_TYPE
+#define INCLUDE_CPPNET_TYPE
 
 #include <memory>
 #include <cstdint>

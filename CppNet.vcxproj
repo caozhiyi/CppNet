@@ -27,13 +27,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -46,7 +46,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -70,16 +70,21 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IntDir>$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IncludePath>$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IntDir>$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);;$(SolutionDir)</IncludePath>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IntDir>$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <IncludePath>$(SolutionDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir);$(IncludePath);</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IntDir>$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);;$(SolutionDir)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -88,6 +93,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;_X86_</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)base;$(SolutionDir)include;$(SolutionDir)net;$(SolutionDir)net\win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/D "__win__" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -96,7 +102,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;_AMD64_</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)base;$(SolutionDir)include;$(SolutionDir)net;$(SolutionDir)net\win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/D "__win__" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <HeapReserveSize>260046848</HeapReserveSize>
@@ -111,6 +117,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)base;$(SolutionDir)include;$(SolutionDir)net;$(SolutionDir)net\win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;_X86_</PreprocessorDefinitions>
+      <AdditionalOptions>/D "__win__" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -126,6 +133,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)base;$(SolutionDir)include;$(SolutionDir)net;$(SolutionDir)net\win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;_AMD64_</PreprocessorDefinitions>
+      <AdditionalOptions>/D "__win__" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -174,9 +182,14 @@
     <ClInclude Include="cppnet\event\action_interface.h" />
     <ClInclude Include="cppnet\event\event_interface.h" />
     <ClInclude Include="cppnet\event\timer_event.h" />
+    <ClInclude Include="cppnet\event\win\accept_event.h" />
+    <ClInclude Include="cppnet\event\win\expend_func.h" />
+    <ClInclude Include="cppnet\event\win\iocp_action.h" />
     <ClInclude Include="cppnet\socket\connect_socket.h" />
     <ClInclude Include="cppnet\socket\rw_socket.h" />
     <ClInclude Include="cppnet\socket\socket_interface.h" />
+    <ClInclude Include="cppnet\socket\win\win_connect_socket.h" />
+    <ClInclude Include="cppnet\socket\win\win_rw_socket.h" />
     <ClInclude Include="include\cppnet.h" />
     <ClInclude Include="include\cppnet_socket.h" />
     <ClInclude Include="include\cppnet_type.h" />
@@ -192,6 +205,8 @@
     <ClCompile Include="common\log\log.cpp" />
     <ClCompile Include="common\log\stdout_logger.cpp" />
     <ClCompile Include="common\network\address.cpp" />
+    <ClCompile Include="common\network\win\io_handle.cpp" />
+    <ClCompile Include="common\network\win\socket.cpp" />
     <ClCompile Include="common\os\os_info.cpp" />
     <ClCompile Include="common\os\win\convert.cpp" />
     <ClCompile Include="common\timer\timer.cpp" />
@@ -207,9 +222,14 @@
     <ClCompile Include="cppnet\cppnet_socket.cpp" />
     <ClCompile Include="cppnet\dispatcher.cpp" />
     <ClCompile Include="cppnet\event\timer_event.cpp" />
+    <ClCompile Include="cppnet\event\win\accept_event.cpp" />
+    <ClCompile Include="cppnet\event\win\expend_func.cpp" />
+    <ClCompile Include="cppnet\event\win\iocp_action.cpp" />
     <ClCompile Include="cppnet\socket\connect_socket.cpp" />
     <ClCompile Include="cppnet\socket\rw_socket.cpp" />
     <ClCompile Include="cppnet\socket\socket_interface.cpp" />
+    <ClCompile Include="cppnet\socket\win\win_connect_socket.cpp" />
+    <ClCompile Include="cppnet\socket\win\win_rw_socket.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

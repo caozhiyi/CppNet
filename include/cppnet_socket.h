@@ -1,5 +1,5 @@
-#ifndef INCLUDE_SOCKET
-#define INCLUDE_SOCKET
+#ifndef INCLUDE_CPPNET_SOCKET
+#define INCLUDE_CPPNET_SOCKET
 
 #include <memory>
 #include <string>

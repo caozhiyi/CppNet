@@ -1,13 +1,12 @@
 #include "expend_func.h"
 #include "common/log/log.h"
-#pragma comment(lib,"ws2_32.lib")
 
 namespace cppnet {
 
 static void* GetExFunctnion(const uint64_t& socket, const GUID& which) {
     void* func = nullptr;
     DWORD bytes = 0;
-    WSAIoctl(socket, SIO_GET_EXTENSION_FUNCTION_POINTER, (LPVOID)&which,
+    WSAIoctl((SOCKET)socket, SIO_GET_EXTENSION_FUNCTION_POINTER, (LPVOID)&which,
         sizeof(which), &func, sizeof(func), &bytes, NULL, NULL);
 
     return func;

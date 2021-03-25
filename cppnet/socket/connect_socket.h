@@ -24,7 +24,7 @@ public:
 
     virtual void OnAccept() {}
 
-private:
+protected:
     std::shared_ptr<Event>  _accept_event;
 };
 

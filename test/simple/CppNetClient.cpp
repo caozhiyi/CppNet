@@ -39,7 +39,7 @@ void ReadFunc(Handle handle, std::shared_ptr<Buffer> data, uint32_t len) {
         handle->Close();
         return;
     }
-        
+
     auto msg = GetMsg();
     handle->Write(msg.c_str(), msg.length());
 }
@@ -73,5 +73,6 @@ int main() {
 
     net.Connection("127.0.0.1", 8999);
 
+    net.Join();
     Sleep(8000);
 }

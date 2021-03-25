@@ -36,13 +36,24 @@ void CppNetBase::Init(uint32_t thread_num) {
     if (thread_num == 0 || thread_num > cpus * 2) {
         thread_num = cpus;
     }
+    _random = std::make_shared<RangeRandom>(0, thread_num - 1);
 
+#ifdef __win__
+    static uint32_t __cppnet_base_id = 0;
+    __cppnet_base_id++;
+    for (uint32_t i = 0; i < thread_num; i++) {
+        auto dispatcher = std::make_shared<Dispatcher>(shared_from_this(), __cppnet_base_id);
+        _dispatchers.push_back(dispatcher);
+    }
+
+#else
     for (uint32_t i = 0; i < thread_num; i++) {
         auto dispatcher = std::make_shared<Dispatcher>(shared_from_this());
         _dispatchers.push_back(dispatcher);
     }
 
-    _random = std::make_shared<RangeRandom>(0, thread_num - 1);
+#endif
+
 }
 
 void CppNetBase::Dealloc() {

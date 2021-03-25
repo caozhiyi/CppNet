@@ -130,13 +130,14 @@ void RWSocket::OnConnect(uint16_t err) {
     auto sock = shared_from_this();
     if (err == CEC_SUCCESS) {
         __all_socket_map[_sock] = sock;
-        Read();
     }
     
     auto cppnet_base = _cppnet_base.lock();
     if (cppnet_base) {
         cppnet_base->OnConnect(sock, err);
     }
+    // wait for read
+    Read();
 }
 
 void RWSocket::OnDisConnect(uint16_t err) {

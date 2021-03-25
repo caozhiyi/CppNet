@@ -208,7 +208,7 @@ void BufferQueue::Clear() {
 }
 
 int32_t BufferQueue::MoveReadPt(int32_t len) {
-    uint32_t total_read_len = 0;
+    int32_t total_read_len = 0;
     auto buffer_read = _buffer_list.GetHead();
 
     if (len >= 0) {
@@ -240,7 +240,7 @@ int32_t BufferQueue::MoveReadPt(int32_t len) {
 }
 
 int32_t BufferQueue::MoveWritePt(int32_t len) {
-    uint32_t total_write_len = 0;
+    int32_t total_write_len = 0;
     if (len >= 0) {
         while (_buffer_write) {
             total_write_len += _buffer_write->MoveWritePt(len - total_write_len);

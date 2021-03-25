@@ -1,11 +1,11 @@
 #include <time.h>
-#include <WinBase.h>
+#include <Windows.h>
 #include "../convert.h"
 
 namespace cppnet {
 
 void Localtime(const uint64_t* time, void* out_tm) {
-    localtime_r((tm*)out_tm, (time_t*)time);
+    localtime_s((tm*)out_tm, (time_t*)time);
 }
 
 char* ErrnoInfo(uint32_t err) {

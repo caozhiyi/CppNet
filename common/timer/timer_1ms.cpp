@@ -112,7 +112,7 @@ uint32_t Timer1ms::TimerRun(uint32_t time) {
                 if (next_index >= __timer_capacity) {
                     next_index = next_index % __timer_capacity;
                 }
-                AddTimerByIndex(ptr, next_index);
+                AddTimerByIndex(ptr, uint8_t(next_index));
             }
         }
     }
