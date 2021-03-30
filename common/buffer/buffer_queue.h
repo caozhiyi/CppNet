@@ -60,7 +60,8 @@ public:
     // get use memory block, 
     // block_vec: memory block vector.
     // return size of use memory. 
-    virtual uint32_t GetUseMemoryBlock(std::vector<Iovec>& block_vec, uint32_t max_size = 4096);
+    // if size = 0, return all used memory block. 
+    virtual uint32_t GetUseMemoryBlock(std::vector<Iovec>& block_vec, uint32_t max_size = 0);
 
     // return can read bytes
     virtual uint32_t FindStr(const char* s, uint32_t s_len);
@@ -73,6 +74,8 @@ protected:
     virtual void Append();
 
 protected:
+    uint32_t _can_read_length;
+
     List<BufferBlock> _buffer_list;
     std::shared_ptr<BufferBlock> _buffer_write;
     

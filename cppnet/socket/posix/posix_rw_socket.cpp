@@ -77,9 +77,10 @@ bool PosixRWSocket::Recv(uint32_t len) {
     uint32_t off_set = 0;
     //read all data.
     uint32_t expand_buff_len = len;
+    bool need_expend = false;
     while (true) {
         uint32_t expand = 0;
-        if (_read_buffer->GetCanWriteLength() == 0) {
+        if (need_expend) {
             expand = expand_buff_len;
             if (expand_buff_len < __linux_read_buff_expand_max) {
                 expand_buff_len *= 2;
@@ -95,13 +96,11 @@ bool PosixRWSocket::Recv(uint32_t len) {
                 off_set += ret._return_value;
                 break;
 
-            } else if (errno == EBADMSG) {
+            } else {
                 OnDisConnect(CEC_CONNECT_BREAK);
                 return false;
-
-            } else {
-                
             }
+
         } else if (ret._return_value == 0) {
             OnDisConnect(CEC_CLOSED);
             return false;
@@ -113,6 +112,7 @@ bool PosixRWSocket::Recv(uint32_t len) {
             if (ret._return_value < buff_len) {
                 break;
             }
+            need_expend = true;
         }
     }
     cppnet_base->OnRead(shared_from_this(), off_set);

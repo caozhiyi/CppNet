@@ -147,7 +147,7 @@ bool IOCPEventActions::AddRecvEvent(std::shared_ptr<Event>& event) {
     buffer->GetFreeMemoryBlock(bufs, __iocp_buff_size);
 
     DWORD dwFlags = 0;
-    DWORD dwBytes = 0;
+    DWORD dwBytes = 0; // Use NULL for this parameter if the lpOverlapped parameter is not NULL to avoid potentially erroneous results. 
     int32_t ret = WSARecv((SOCKET)sock->GetSocket(), (LPWSABUF)&(*bufs.begin()), (DWORD)bufs.size(), &dwBytes, &dwFlags, &context->_overlapped, nullptr);
     //int32_t ret = WSARecv((SOCKET)sock->GetSocket(), &_wsa_buf, (DWORD)bufs.size(), &dwBytes, &dwFlags, &context->_overlapped, nullptr);
 

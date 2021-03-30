@@ -79,7 +79,7 @@ bool EpollEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
         epoll_event* ep_event = (epoll_event*)event->GetData();
         if (!ep_event) {
             auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
-            ep_event = rw_sock->GetAlocter()->PoolNew<epoll_event>();
+            ep_event = rw_sock->GetAlloter()->PoolNew<epoll_event>();
             memset(ep_event, 0, sizeof(epoll_event));
             event->SetData(ep_event);
         }
@@ -104,7 +104,7 @@ bool EpollEventActions::AddRecvEvent(std::shared_ptr<Event>& event) {
         epoll_event* ep_event = (epoll_event*)event->GetData();
         if (!ep_event) {
             auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
-            ep_event = rw_sock->GetAlocter()->PoolNew<epoll_event>();
+            ep_event = rw_sock->GetAlloter()->PoolNew<epoll_event>();
             memset(ep_event, 0, sizeof(epoll_event));
             event->SetData(ep_event);
         }

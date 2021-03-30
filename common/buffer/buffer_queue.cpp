@@ -5,8 +5,11 @@
 
 namespace cppnet {
 
+static const uint8_t __block_vec_default_size = 8;
+
 BufferQueue::BufferQueue(const std::shared_ptr<BlockMemoryPool>& block_pool, 
     const std::shared_ptr<AlloterWrap>& alloter):
+    _can_read_length(0),
     _block_alloter(block_pool),
     _alloter(alloter) {
 
@@ -90,6 +93,7 @@ uint32_t BufferQueue::Read(std::shared_ptr<Buffer> buffer, uint32_t len) {
             break;
         }
     }
+    _can_read_length -= total_read_len;
     return total_read_len;
 }
 
@@ -150,6 +154,7 @@ uint32_t BufferQueue::Write(std::shared_ptr<Buffer> buffer, uint32_t len) {
             break;
         }
     }
+    _can_read_length += total_write_len;
     return total_write_len;
 }
 
@@ -177,6 +182,7 @@ uint32_t BufferQueue::Read(char* res, uint32_t len) {
         _buffer_list.PopFront();
         buffer_read = _buffer_list.GetHead();
     }
+    _can_read_length -= total_read_len;
     return total_read_len;
 }
 
@@ -200,10 +206,12 @@ uint32_t BufferQueue::Write(const char* str, uint32_t len) {
         }
         _buffer_write = _buffer_write->GetNext();
     }
+    _can_read_length += write_len;
     return write_len;
 }
 
 void BufferQueue::Clear() {
+    _can_read_length = 0;
     Reset();
 }
 
@@ -236,6 +244,7 @@ int32_t BufferQueue::MoveReadPt(int32_t len) {
         total_read_len += buffer_read->MoveReadPt(len);
     }
 
+    _can_read_length -= total_read_len;
     return total_read_len;
 }
 
@@ -259,7 +268,7 @@ int32_t BufferQueue::MoveWritePt(int32_t len) {
             _buffer_write = _buffer_write->GetPrev();
         }
     }
-
+    _can_read_length += total_write_len;
     return total_write_len;
 }
 
@@ -304,20 +313,7 @@ uint32_t BufferQueue::GetCanWriteLength() {
 }
     
 uint32_t BufferQueue::GetCanReadLength() {
-    if (_buffer_list.Size() == 0) {
-        return 0;
-    }
-
-    std::shared_ptr<BufferBlock> temp = _buffer_list.GetHead();
-    uint32_t total_len = 0;
-    while (temp) {
-        total_len += temp->GetCanReadLength();
-        if (temp == _buffer_write) {
-            break;
-        }
-        temp = temp->GetNext();
-    }
-    return total_len;
+    return _can_read_length;
 }
 
 uint32_t BufferQueue::GetFreeMemoryBlock(std::vector<Iovec>& block_vec, uint32_t size) {
@@ -326,6 +322,7 @@ uint32_t BufferQueue::GetFreeMemoryBlock(std::vector<Iovec>& block_vec, uint32_t
     uint32_t mem_len_1 = 0;
     uint32_t mem_len_2 = 0;
 
+    block_vec.reserve(__block_vec_default_size);
     std::shared_ptr<BufferBlock> temp = _buffer_write;
     uint32_t cur_len = 0;
     if (size > 0) {
@@ -348,6 +345,12 @@ uint32_t BufferQueue::GetFreeMemoryBlock(std::vector<Iovec>& block_vec, uint32_t
         }
 
     } else {
+        // add one block
+        if (!temp) {
+            Append();
+            temp = _buffer_list.GetTail();
+        }
+        
         while (temp) {
             temp->GetFreeMemoryBlock(mem_1, mem_len_1, mem_2, mem_len_2);
             if (mem_len_1 > 0) {
@@ -373,6 +376,7 @@ uint32_t BufferQueue::GetUseMemoryBlock(std::vector<Iovec>& block_vec, uint32_t 
     uint32_t mem_len_1 = 0;
     uint32_t mem_len_2 = 0;
 
+    block_vec.reserve(__block_vec_default_size);
     std::shared_ptr<BufferBlock> temp = _buffer_list.GetHead();
     uint32_t cur_len = 0;
     while (temp) {
@@ -388,7 +392,7 @@ uint32_t BufferQueue::GetUseMemoryBlock(std::vector<Iovec>& block_vec, uint32_t 
         if (temp == _buffer_write) {
             break;
         }
-        if (cur_len >= max_size) {
+        if (max_size > 0 && cur_len >= max_size) {
             break;
         }
         temp = temp->GetNext();
