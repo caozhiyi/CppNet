@@ -1,19 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="AnyFunc.h" />
-    <ClInclude Include="CommonStruct.h" />
-    <ClInclude Include="FuncThread.h" />
-    <ClInclude Include="InfoRouter.h" />
-    <ClInclude Include="ParsePackage.h" />
-    <ClInclude Include="RPCClient.h" />
+    <ClCompile Include="client.cpp" />
+    <ClCompile Include="func_thread.cpp" />
+    <ClCompile Include="info_router.cpp" />
+    <ClCompile Include="parse_package.cpp" />
+    <ClCompile Include="rpc_client.cpp" />
+    <ClCompile Include="rpc_server.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FuncThread.cpp" />
-    <ClCompile Include="InfoRouter.cpp" />
-    <ClCompile Include="ParsePackage.cpp" />
-    <ClCompile Include="RPCClient.cpp" />
-    <ClCompile Include="RPCServer.cpp" />
-    <ClCompile Include="TestClient.cpp" />
+    <ClInclude Include="common_struct.h" />
+    <ClInclude Include="func_thread.h" />
+    <ClInclude Include="info_router.h" />
+    <ClInclude Include="parse_package.h" />
+    <ClInclude Include="rpc_client.h" />
+    <ClInclude Include="rpc_server.h" />
   </ItemGroup>
 </Project>

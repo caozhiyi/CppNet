@@ -452,7 +452,9 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
         context->_event_type = 0;
         event->RemoveType(ET_DISCONNECT);
         std::shared_ptr<RWSocket> rw_socket = std::dynamic_pointer_cast<RWSocket>(sock);
-        rw_socket->OnDisConnect(CEC_CONNECT_BREAK);
+        if (rw_socket) {
+            rw_socket->OnDisConnect(CEC_CONNECT_BREAK);
+        }
         break;
     }
     case INC_CONNECTION_REFUSE: {
