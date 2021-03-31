@@ -9,7 +9,7 @@
 #include "include/cppnet.h"
 #include "include/cppnet_socket.h"
 
-#ifdef WIN32
+#ifdef __win__
 #include <winsock2.h>
 void SetNoDelay(const uint64_t& sock) {
     int opt = 1;
