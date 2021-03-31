@@ -2,7 +2,7 @@
 
 #include "cppnet/cppnet_base.h"
 #include "cppnet/cppnet_config.h"
-#include "cppnet/event/event_interface.h"
+#include "cppnet/event/win/rw_event.h"
 #include "cppnet/event/action_interface.h"
 
 #include "common/log/log.h"
@@ -32,9 +32,18 @@ WinRWSocket::~WinRWSocket() {
 
 }
 
+void WinRWSocket::Read() {
+    if (!_event) {
+        _event = _alloter->PoolNewSharePtr<RWEvent>();
+        _event->SetSocket(shared_from_this());
+    }
+
+    RWSocket::Read();
+}
+
 bool WinRWSocket::Write(const char* src, uint32_t len) {
     if (!_event) {
-        _event = _alloter->PoolNewSharePtr<Event>();
+        _event = _alloter->PoolNewSharePtr<RWEvent>();
         _event->SetSocket(shared_from_this());
     }
 
@@ -51,6 +60,23 @@ bool WinRWSocket::Write(const char* src, uint32_t len) {
         _write_buffer->Write(src, len);
         return Send();
     }
+}
+
+void WinRWSocket::Connect(const std::string& ip, uint16_t port) {
+    if (!_event) {
+        _event = _alloter->PoolNewSharePtr<RWEvent>();
+        _event->SetSocket(shared_from_this());
+    }
+    RWSocket::Connect(ip, port);
+}
+
+void WinRWSocket::Disconnect() {
+    if (!_event) {
+        _event = _alloter->PoolNewSharePtr<Event>();
+        _event->SetSocket(shared_from_this());
+    }
+
+    RWSocket::Disconnect();
 }
 
 void WinRWSocket::OnRead(uint32_t len) {

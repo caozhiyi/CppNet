@@ -1,4 +1,5 @@
 #include <winsock2.h>
+#include <Mswsock.h >
 #include "../socket.h"
 
 namespace cppnet {
@@ -13,7 +14,20 @@ int32_t ReusePort(uint64_t sock) {
 }
 
 bool CheckConnect(const uint64_t sock) {
-    return false;
+    int32_t seconds;
+    int32_t bytes = sizeof(seconds);
+    int32_t iResult = 0;
+
+    iResult = getsockopt(sock, SOL_SOCKET, SO_CONNECT_TIME, (char*)&seconds, (PINT)&bytes);
+    if (iResult != NO_ERROR) {
+        return false;
+
+    } else {
+        if (seconds == 0xFFFFFFFF) {
+            return false;
+        }
+    }
+    return true;
 }
 
 

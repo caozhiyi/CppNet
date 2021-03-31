@@ -13,7 +13,10 @@ public:
     WinRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter);
     virtual ~WinRWSocket();
 
+    virtual void Read();
     virtual bool Write(const char* src, uint32_t len);
+    virtual void Connect(const std::string& ip, uint16_t port);
+    virtual void Disconnect();
 
     virtual void OnRead(uint32_t len = 0);
     virtual void OnWrite(uint32_t len = 0);

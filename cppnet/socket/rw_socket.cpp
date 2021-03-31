@@ -136,8 +136,10 @@ void RWSocket::OnConnect(uint16_t err) {
     if (cppnet_base) {
         cppnet_base->OnConnect(sock, err);
     }
-    // wait for read
-    Read();
+
+    if (err == CEC_SUCCESS) {
+        Read();
+    }
 }
 
 void RWSocket::OnDisConnect(uint16_t err) {

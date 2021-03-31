@@ -213,6 +213,9 @@
     <ClInclude Include="cppnet\event\win\accept_event.h">
       <Filter>cppnet\event\win</Filter>
     </ClInclude>
+    <ClInclude Include="cppnet\event\win\rw_event.h">
+      <Filter>cppnet\event\win</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\alloter\normal_alloter.cpp">
@@ -316,9 +319,6 @@
     </ClCompile>
     <ClCompile Include="common\network\win\socket.cpp">
       <Filter>common\network\win</Filter>
-    </ClCompile>
-    <ClCompile Include="cppnet\event\win\accept_event.cpp">
-      <Filter>cppnet\event\win</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

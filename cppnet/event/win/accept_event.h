@@ -9,7 +9,12 @@ namespace cppnet {
 class AcceptEvent:
     public Event{
 public:
-    AcceptEvent();
+    AcceptEvent():
+        _client_sock(0),
+        _buf_offset(0) {
+        memset(_buf, 0, __iocp_buff_size);
+    }
+
     virtual ~AcceptEvent() {}
 
     char* GetBuf() { return _buf; }

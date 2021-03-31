@@ -23,7 +23,7 @@ static const uint16_t __log_level          = 0; // not print
 // log file name.
 static const char* __log_file_name         = "CppNetLog";
 // open log print.
-static const bool __open_log               = false;
+static const bool __open_log               = true;
 
 // every thread has a epoll handle.
 static const bool __epoll_use_et                   = true;

@@ -3,11 +3,13 @@
 
 #include "cppnet/cppnet_config.h"
 #include "cppnet/socket/rw_socket.h"
+#include "cppnet/event/win/rw_event.h"
 #include "cppnet/socket/connect_socket.h"
 #include "cppnet/event/win/accept_event.h"
 
 #include "common/log/log.h"
 #include "common/os/convert.h"
+#include "common/network/socket.h"
 #include "common/buffer/buffer_queue.h"
 
 
@@ -29,8 +31,9 @@ struct EventOverlapped {
     uint32_t      _event_type;
     void*         _event;
 
-    EventOverlapped() {
-        _event_type = 0;
+    EventOverlapped(): 
+        _event_type(0),
+        _event(nullptr){
         memset(&_overlapped, 0, sizeof(_overlapped));
     }
 
@@ -63,7 +66,7 @@ bool IOCPEventActions::Dealloc() {
 }
 
 bool IOCPEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
-    if (event->GetType() & ET_WRITE) {
+    if (event->GetType() & ET_WRITE || event->GetType() & ET_DISCONNECT) {
         return false;
     }
     
@@ -79,13 +82,13 @@ bool IOCPEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
         }
         event->AddType(ET_INACTIONS);
     }
-
-    EventOverlapped* context = (EventOverlapped*)event->GetData();
+    auto rw_event = std::dynamic_pointer_cast<RWEvent>(event);
+    EventOverlapped* context = (EventOverlapped*)rw_event->GetExData();
     auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
     if (!context) {
         context = rw_sock->GetAlloter()->PoolNew<EventOverlapped>();
         context->_event = (void*)&event;
-        event->SetData(context);
+        rw_event->SetExData(context);
     }
     
     context->_event_type = ET_WRITE;
@@ -100,13 +103,13 @@ bool IOCPEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
 
     if ((SOCKET_ERROR == ret) && (WSA_IO_PENDING != WSAGetLastError())) {
         LOG_WARN("IOCP post send event failed! error code:%d, info:%s", WSAGetLastError(), ErrnoInfo(WSAGetLastError()));
+        DelEvent(event);
         return false;
     }
 
+    // send some data immediately
     if (dwBytes > 0) {
         buffer->MoveReadPt(dwBytes);
-        DelEvent(event);
-
     } else {
         event->AddType(ET_WRITE);
     }
@@ -115,7 +118,7 @@ bool IOCPEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
 }
 
 bool IOCPEventActions::AddRecvEvent(std::shared_ptr<Event>& event) {
-    if (event->GetType() & ET_READ) {
+    if (event->GetType() & ET_READ || event->GetType() & ET_DISCONNECT) {
         return false;
     }
 
@@ -139,7 +142,6 @@ bool IOCPEventActions::AddRecvEvent(std::shared_ptr<Event>& event) {
         context->_event = (void*)&event;
         event->SetData(context);
     }
-
     context->_event_type = ET_READ;
 
     auto buffer = rw_sock->GetReadBuffer();
@@ -147,23 +149,15 @@ bool IOCPEventActions::AddRecvEvent(std::shared_ptr<Event>& event) {
     buffer->GetFreeMemoryBlock(bufs, __iocp_buff_size);
 
     DWORD dwFlags = 0;
-    DWORD dwBytes = 0; // Use NULL for this parameter if the lpOverlapped parameter is not NULL to avoid potentially erroneous results. 
+    DWORD dwBytes = 0;
     int32_t ret = WSARecv((SOCKET)sock->GetSocket(), (LPWSABUF)&(*bufs.begin()), (DWORD)bufs.size(), &dwBytes, &dwFlags, &context->_overlapped, nullptr);
-    //int32_t ret = WSARecv((SOCKET)sock->GetSocket(), &_wsa_buf, (DWORD)bufs.size(), &dwBytes, &dwFlags, &context->_overlapped, nullptr);
 
     if ((SOCKET_ERROR == ret) && (WSA_IO_PENDING != WSAGetLastError())) {
         LOG_WARN("IOCP post recv event failed! error code: %d, info:%s", WSAGetLastError(), ErrnoInfo(WSAGetLastError()));
+        DelEvent(event);
         return false;
     }
-
-    //send some data right off
-    if (dwBytes > 0) {
-        buffer->MoveWritePt(dwBytes);
-        DelEvent(event);
-
-    } else {
-        event->AddType(ET_READ);
-    }
+    event->AddType(ET_READ);
     LOG_DEBUG("post a new read event");
     return true;
 }
@@ -203,9 +197,12 @@ bool IOCPEventActions::AddAcceptEvent(std::shared_ptr<Event>& event) {
     if (0 == ret) {
         if (WSA_IO_PENDING != WSAGetLastError()) {
             LOG_ERROR("IOCP post accept failed! error code:%d", WSAGetLastError());
+            DelEvent(event);
             return false;
         }
     }
+
+    setsockopt((SOCKET)sock->GetSocket(), SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, NULL, 0);
 
     event->AddType(ET_ACCEPT);
     LOG_DEBUG("post a new accept event");
@@ -231,8 +228,6 @@ bool IOCPEventActions::AddConnection(std::shared_ptr<Event>& event, Address& add
         event->SetData(context);
     }
 
-    context->_event_type = ET_CONNECT;
-
     SOCKADDR_IN addr;
     addr.sin_family = AF_INET;
     addr.sin_port = htons(address.GetPort());
@@ -243,19 +238,32 @@ bool IOCPEventActions::AddConnection(std::shared_ptr<Event>& event, Address& add
     local.sin_port = htons(0);
     local.sin_addr.S_un.S_addr = INADDR_ANY;
 
-    if (SOCKET_ERROR == bind(sock->GetSocket(), (sockaddr*)&local, sizeof(local))) {
+    if (bind(sock->GetSocket(), (sockaddr*)&local, sizeof(local)) != 0) {
         LOG_FATAL("bind local host failed! error code:%d, info:%s", WSAGetLastError(), ErrnoInfo(WSAGetLastError()));
     }
 
-    int32_t ret = ConnectEx((SOCKET)sock->GetSocket(), (sockaddr*)&addr, sizeof(addr), nullptr, 0, nullptr, &context->_overlapped);
+    DWORD dwBytes = 0;
+    int32_t ret = ConnectEx((SOCKET)sock->GetSocket(), (sockaddr*)&addr, sizeof(addr), nullptr, 0, &dwBytes, &context->_overlapped);
 
-    if ((SOCKET_ERROR == ret) && (WSA_IO_PENDING != WSAGetLastError())) {
-        LOG_FATAL("IOCP post connect event failed! error code:%d, info:%s", WSAGetLastError(), ErrnoInfo(WSAGetLastError()));
-        return false;
+    setsockopt((SOCKET)sock->GetSocket(), SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, NULL, 0);
+
+    auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
+    if (ret) {
+        rw_sock->OnConnect(CEC_SUCCESS);
+        return true;
     }
-    LOG_DEBUG("post a new connect event");
+
+    int32_t err = WSAGetLastError();
+    if (WSA_IO_PENDING == err || ERROR_SUCCESS == err) {
+        if (CheckConnect(rw_sock->GetSocket())) {
+            rw_sock->OnConnect(CEC_SUCCESS);
+            return true;
+        }
+    }
+    context->_event_type = ET_CONNECT;
     DoEvent(context, 0);
-    return true;
+
+    return false;
 }
 
 bool IOCPEventActions::AddDisconnection(std::shared_ptr<Event>& event) {
@@ -285,7 +293,11 @@ bool IOCPEventActions::AddDisconnection(std::shared_ptr<Event>& event) {
         return false;
     }
     LOG_DEBUG("post a new disconnect event");
-    event->AddType(ET_DISCONNECT); 
+
+    event->AddType(ET_DISCONNECT);
+    DelEvent(event);
+    auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
+    rw_sock->OnDisConnect(CEC_CLOSED);
     return true;
 }
 
@@ -310,8 +322,7 @@ void IOCPEventActions::ProcessEvent(int32_t wait_ms) {
     EventOverlapped     *context = nullptr;
     OVERLAPPED          *over_lapped = nullptr;
     
-    int32_t ret = GetQueuedCompletionStatus(_iocp_handler, &bytes_transfered, PULONG_PTR(&context),
-            &over_lapped, wait_ms);
+    int32_t ret = GetQueuedCompletionStatus(_iocp_handler, &bytes_transfered, PULONG_PTR(&context), &over_lapped, wait_ms);
 
     if (((PULONG_PTR)context == (PULONG_PTR)INC_WEAK_UP)) {
         return;
@@ -322,17 +333,12 @@ void IOCPEventActions::ProcessEvent(int32_t wait_ms) {
         dw_err = GetLastError();
     }
 
-    if (NO_ERROR == dw_err) {
+    if (NO_ERROR == dw_err ||
+        ERROR_IO_PENDING == dw_err) {
         if (over_lapped) {
             context = CONTAINING_RECORD(over_lapped, EventOverlapped, _overlapped);
             LOG_DEBUG("Get a new event: %d", context->_event_type);
             DoEvent(context, bytes_transfered);
-        }
-
-    } else if (ERROR_IO_PENDING == dw_err) {
-        if (over_lapped) {
-            context = CONTAINING_RECORD(over_lapped, EventOverlapped, _overlapped);
-            LOG_WARN("Get a new event: %d, errno:%d, info:%s", context->_event_type, dw_err, ErrnoInfo(dw_err));;
         }
 
     } else if (ERROR_SEM_TIMEOUT == dw_err || 
@@ -361,7 +367,7 @@ void IOCPEventActions::ProcessEvent(int32_t wait_ms) {
             DoEvent(context, bytes_transfered);
         }
     } else {
-        LOG_ERROR("IOCP GetQueuedCompletionStatus return error:%d, info:%s", dw_err, ErrnoInfo(dw_err));
+        LOG_INFO("IOCP GetQueuedCompletionStatus return error:%d, info:%s", dw_err, ErrnoInfo(dw_err));
     }
 }
 
@@ -378,6 +384,10 @@ bool IOCPEventActions::AddToIOCP(uint64_t sock) {
 }
 
 void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
+    if (context->_event_type > INC_CONNECTION_CLOSE ||
+        context->_event_type < ET_READ) {
+        return;
+    }
     std::shared_ptr<Socket> sock;
     std::shared_ptr<Event> event;
 
@@ -391,6 +401,7 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
     switch (context->_event_type)
     {
     case ET_ACCEPT: {
+        context->_event_type = 0;
         event->RemoveType(ET_ACCEPT);
         auto accpet_event = std::dynamic_pointer_cast<AcceptEvent>(event);
         accpet_event->SetBufOffset(bytes);
@@ -399,18 +410,31 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
         break;
     }
     case ET_READ: {
+        context->_event_type = 0;
         event->RemoveType(ET_READ);
         std::shared_ptr<RWSocket> rw_socket = std::dynamic_pointer_cast<RWSocket>(sock);
-        rw_socket->OnRead(bytes);
+        if (bytes == 0) {
+            rw_socket->OnDisConnect(CEC_CLOSED);
+        } else {
+            rw_socket->OnRead(bytes);
+        }
         break;
     }
     case ET_WRITE: {
+        context->_event_type = 0;
         event->RemoveType(ET_WRITE);
         std::shared_ptr<RWSocket> rw_socket = std::dynamic_pointer_cast<RWSocket>(sock);
-        rw_socket->OnWrite(bytes);
+        if (bytes == 0) {
+            rw_socket->OnDisConnect(CEC_CLOSED);
+        }
+        else {
+            rw_socket->OnWrite(bytes);
+        }
+        
         break;
     }
     case ET_CONNECT: {
+        context->_event_type = 0;
         event->RemoveType(ET_CONNECT);
         std::shared_ptr<RWSocket> rw_socket = std::dynamic_pointer_cast<RWSocket>(sock);
         rw_socket->OnConnect(CEC_SUCCESS);
@@ -418,19 +442,21 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
     }
     case INC_CONNECTION_CLOSE:
     case ET_DISCONNECT: {
+        context->_event_type = 0;
         event->RemoveType(ET_DISCONNECT);
         std::shared_ptr<RWSocket> rw_socket = std::dynamic_pointer_cast<RWSocket>(sock);
         rw_socket->OnDisConnect(CEC_CLOSED);
         break;
     }
     case INC_CONNECTION_BREAK: {
+        context->_event_type = 0;
         event->RemoveType(ET_DISCONNECT);
         std::shared_ptr<RWSocket> rw_socket = std::dynamic_pointer_cast<RWSocket>(sock);
         rw_socket->OnDisConnect(CEC_CONNECT_BREAK);
-
         break;
     }
     case INC_CONNECTION_REFUSE: {
+        context->_event_type = 0;
         event->RemoveType(ET_CONNECT);
         std::shared_ptr<RWSocket> rw_socket = std::dynamic_pointer_cast<RWSocket>(sock);
         rw_socket->OnConnect(CEC_CONNECT_REFUSE);
@@ -440,7 +466,6 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
         LOG_ERROR("invalid event type. type:%d", context->_event_type);
         break;
     }
-    context->_event_type = 0;
 }
 
 }

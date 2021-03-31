@@ -15,7 +15,7 @@ enum EventType {
     ET_CONNECT          = 0x020,        // connect event
     ET_DISCONNECT       = 0x040,        // disconnect event
 
-    ET_INACTIONS        = 0x080,        // setted to actions
+    ET_INACTIONS        = 0x080,        // set to actions
 };
 
 class Socket;
