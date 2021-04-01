@@ -320,5 +320,8 @@
     <ClCompile Include="common\network\win\socket.cpp">
       <Filter>common\network\win</Filter>
     </ClCompile>
+    <ClCompile Include="cppnet\event\event_interface.cpp">
+      <Filter>cppnet\event</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

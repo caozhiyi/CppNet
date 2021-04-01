@@ -95,6 +95,8 @@ void RPCClient::_DoConnect(cppnet::Handle handle, uint32_t err) {
 }
 
 void RPCClient::_DoDisConnect(cppnet::Handle handle, uint32_t err) {
+	if (err != cppnet::CEC_CLOSED) {
+		_net.Connection(_ip, _port);
+	}
     cppnet::LOG_ERROR("disconnect with server!");
-    _net.Connection(_ip, _port);
 }

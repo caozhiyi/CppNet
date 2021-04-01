@@ -222,6 +222,7 @@
     <ClCompile Include="cppnet\cppnet_base.cpp" />
     <ClCompile Include="cppnet\cppnet_socket.cpp" />
     <ClCompile Include="cppnet\dispatcher.cpp" />
+    <ClCompile Include="cppnet\event\event_interface.cpp" />
     <ClCompile Include="cppnet\event\timer_event.cpp" />
     <ClCompile Include="cppnet\event\win\expend_func.cpp" />
     <ClCompile Include="cppnet\event\win\iocp_action.cpp" />
