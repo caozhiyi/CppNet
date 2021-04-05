@@ -4,8 +4,8 @@
 #include "cppnet/cppnet_config.h"
 #include "cppnet/socket/rw_socket.h"
 #include "cppnet/event/win/rw_event.h"
-#include "cppnet/socket/connect_socket.h"
 #include "cppnet/event/win/accept_event.h"
+#include "cppnet/socket/win/win_connect_socket.h"
 
 #include "common/log/log.h"
 #include "common/os/convert.h"
@@ -163,15 +163,16 @@ bool IOCPEventActions::AddAcceptEvent(std::shared_ptr<Event>& event) {
 
     auto sock = event->GetSocket();
     if (!sock) {
-        LOG_WARN("socket is already distroyed! event %s", "AddSendEvent");
+        LOG_WARN("socket is already distroyed! event %s", "AddAcceptEvent");
         return false;
     }
 
-    if (!(event->GetType() & ET_INACTIONS)) {
+    auto accept_sock = std::dynamic_pointer_cast<WinConnectSocket>(sock);
+    if (!accept_sock->GetInActions()) {
         if (!AddToIOCP(sock->GetSocket())) {
             return false;
         }
-        event->AddType(ET_INACTIONS);
+        accept_sock->SetInActions(true);
     }
 
     auto accept_event = std::dynamic_pointer_cast<AcceptEvent>(event);
@@ -388,8 +389,8 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
         event->RemoveType(ET_ACCEPT);
         auto accpet_event = std::dynamic_pointer_cast<AcceptEvent>(event);
         accpet_event->SetBufOffset(bytes);
-        std::shared_ptr<ConnectSocket> connect_sock = std::dynamic_pointer_cast<ConnectSocket>(sock);
-        connect_sock->OnAccept();
+        std::shared_ptr<WinConnectSocket> connect_sock = std::dynamic_pointer_cast<WinConnectSocket>(sock);
+        connect_sock->OnAccept(accpet_event);
         break;
     }
     case ET_READ: {

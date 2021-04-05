@@ -36,6 +36,8 @@ static const uint16_t __linux_write_buff_get       = 4096;
 
 // iocp buffer length.
 static const uint16_t __iocp_buff_size = 1024*4;
+// number of iocp accept event post when first call accept
+static const uint16_t __iocp_accept_event_num = 20;
 
 
 }

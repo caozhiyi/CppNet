@@ -11,7 +11,8 @@ class AcceptEvent:
 public:
     AcceptEvent():
         _client_sock(0),
-        _buf_offset(0) {
+        _buf_offset(0),
+        _index_in_socket(0) {
         memset(_buf, 0, __iocp_buff_size);
     }
 
@@ -25,10 +26,14 @@ public:
     void SetClientSocket(uint64_t sock) { _client_sock = sock; }
     uint64_t GetClientSocket() { return _client_sock;  }
 
+	void SetIndex(uint16_t index) { _index_in_socket = index; }
+    uint16_t GetIndex() { return _index_in_socket; }
+
 private:
-    uint64_t _client_sock;
-    char     _buf[__iocp_buff_size];
-    uint32_t _buf_offset;
+	uint64_t _client_sock;
+	char     _buf[__iocp_buff_size];
+	uint32_t _buf_offset;
+    uint16_t _index_in_socket;
 };
 
 }
