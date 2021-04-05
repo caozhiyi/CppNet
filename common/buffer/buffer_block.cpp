@@ -8,16 +8,19 @@ BufferBlock::BufferBlock(std::shared_ptr<BlockMemoryPool>& alloter) :
     _alloter(alloter), 
     _can_read(false) {
 
-    _buffer_start = (char*)_alloter->PoolLargeMalloc();
-    _total_size = _alloter->GetBlockLength();
+    _buffer_start = (char*)alloter->PoolLargeMalloc();
+    _total_size = alloter->GetBlockLength();
     _buffer_end = _buffer_start + _total_size;
     _read = _write = _buffer_start;
 }
 
 BufferBlock::~BufferBlock() {
     if (_buffer_start) {
-        void* m = (void*)_buffer_start;
-        _alloter->PoolLargeFree(m);
+        auto alloter = _alloter.lock();
+        if (alloter) {
+			void* m = (void*)_buffer_start;
+            alloter->PoolLargeFree(m);
+        }
     }
 }
 
@@ -464,7 +467,7 @@ uint32_t BufferBlock::FindStr(const char* s, uint32_t s_len) {
 }
 
 std::shared_ptr<BlockMemoryPool> BufferBlock::GetBlockMemoryPool() {
-    return _alloter;
+    return _alloter.lock();
 }
 
 const char* BufferBlock::_FindStrInMem(const char* buffer, const char* ch, uint32_t buffer_len, uint32_t ch_len) const {

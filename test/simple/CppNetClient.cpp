@@ -73,5 +73,6 @@ int main() {
 
     net.Connection("127.0.0.1", 8999);
 
+    net.Join();
     Sleep(8000);
 }

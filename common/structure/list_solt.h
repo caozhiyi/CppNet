@@ -15,10 +15,10 @@ public:
     std::shared_ptr<T> GetNext() { return _next; }
 
     void SetPrev(std::shared_ptr<T> v) { _prev = v; }
-    std::shared_ptr<T> GetPrev() { return _prev; }
+    std::shared_ptr<T> GetPrev() { return _prev.lock(); }
 
 protected:
-    std::shared_ptr<T> _prev;
+    std::weak_ptr<T>   _prev;
     std::shared_ptr<T> _next;
 };
 

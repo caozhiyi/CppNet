@@ -12,7 +12,7 @@ BlockMemoryPool::BlockMemoryPool(uint32_t large_sz, uint32_t add_num) :
 
 BlockMemoryPool::~BlockMemoryPool() {
     // free all memory
-    for (auto iter = _free_mem_vec.begin(); iter != _free_mem_vec.end(); ++iter) {
+    for (auto iter = _all_mem_vec.begin(); iter != _all_mem_vec.end(); ++iter) {
         free(*iter);
     }
 }
@@ -44,6 +44,11 @@ void BlockMemoryPool::ReleaseHalf() {
     size_t hale = size / 2;
     for (auto iter = _free_mem_vec.begin(); iter != _free_mem_vec.end();) {
         void* mem = *iter;
+
+        auto all_iter = std::find(_all_mem_vec.begin(), _all_mem_vec.end(), mem);
+        if (all_iter != _all_mem_vec.end()) {
+            _all_mem_vec.erase(all_iter);
+        }
         iter = _free_mem_vec.erase(iter);
         free(mem);
         
@@ -63,6 +68,7 @@ void BlockMemoryPool::Expansion(uint32_t num) {
         void* mem = malloc(_large_size);
         // not memset!
         _free_mem_vec.push_back(mem);
+        _all_mem_vec.push_back(mem);
     }
 }
 

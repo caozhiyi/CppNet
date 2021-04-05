@@ -102,6 +102,7 @@ bool IOCPEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
 
     if ((SOCKET_ERROR == ret) && (WSA_IO_PENDING != WSAGetLastError())) {
         LOG_WARN("IOCP post send event failed! error code:%d, info:%s", WSAGetLastError(), ErrnoInfo(WSAGetLastError()));
+        rw_sock->OnDisConnect(CEC_CLOSED);
         DelEvent(event);
         return false;
     }
@@ -148,6 +149,7 @@ bool IOCPEventActions::AddRecvEvent(std::shared_ptr<Event>& event) {
 
     if ((SOCKET_ERROR == ret) && (WSA_IO_PENDING != WSAGetLastError())) {
         LOG_WARN("IOCP post recv event failed! error code: %d, info:%s", WSAGetLastError(), ErrnoInfo(WSAGetLastError()));
+        rw_sock->OnDisConnect(CEC_CLOSED);
         DelEvent(event);
         return false;
     }

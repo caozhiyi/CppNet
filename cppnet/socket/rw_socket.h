@@ -44,12 +44,12 @@ public:
     std::shared_ptr<BufferQueue> GetWriteBuffer() { return _write_buffer; }
     
 protected:
+    std::shared_ptr<BlockMemoryPool> _block_pool;
+
     std::shared_ptr<Event>  _event;
 
     std::shared_ptr<BufferQueue> _write_buffer;
     std::shared_ptr<BufferQueue> _read_buffer;
-
-    std::shared_ptr<BlockMemoryPool> _block_pool;
 };
 
 std::shared_ptr<RWSocket> MakeRWSocket(std::shared_ptr<AlloterWrap> alloter);

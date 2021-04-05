@@ -80,11 +80,11 @@ void WinConnectSocket::OnAccept(std::shared_ptr<AcceptEvent> event) {
 	address->SetIp(inet_ntoa(client_addr->sin_addr));
 	address->SetPort(client_addr->sin_port);
 
-	auto sock = MakeRWSocket(event->GetClientSocket(), alloter);
+	auto sock = MakeRWSocket(event->GetClientSocket(), std::move(alloter));
 
 	sock->SetCppNetBase(cppnet_base);
 	sock->SetEventActions(_event_actions);
-	sock->SetAddress(address);
+	sock->SetAddress(std::move(address));
 	sock->SetDispatcher(GetDispatcher());
 
 	__all_socket_map[event->GetClientSocket()] = sock;

@@ -20,6 +20,7 @@ public:
 
     void Clear() {
         _size = 0;
+
         _head.reset();
         _tail.reset();
     }

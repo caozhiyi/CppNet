@@ -31,7 +31,8 @@ RWSocket::RWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter):
 }
 
 RWSocket::~RWSocket() {
-
+    int a = 0;
+    a++;
 }
 
 bool RWSocket::GetAddress(std::string& ip, uint16_t& port) {
@@ -145,7 +146,6 @@ void RWSocket::OnConnect(uint16_t err) {
 void RWSocket::OnDisConnect(uint16_t err) {
     auto sock = shared_from_this();
     __all_socket_map.erase(_sock);
-
     auto cppnet_base = _cppnet_base.lock();
     if (cppnet_base) {
         cppnet_base->OnDisConnect(sock, err);
