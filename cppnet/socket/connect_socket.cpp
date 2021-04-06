@@ -35,9 +35,10 @@ bool ConnectSocket::Bind(const std::string& ip, uint16_t port) {
         _sock = ret._return_value;
     }
 
-    _addr = std::make_shared<Address>(AT_IPV4, ip, port);
+    _addr.SetIp(ip);
+    _addr.SetPort(port);
 
-    auto ret = OsHandle::Bind(_sock, *_addr);
+    auto ret = OsHandle::Bind(_sock, _addr);
 
     if (ret._return_value < 0) {
         LOG_FATAL("linux bind socket filed! error code:%d", ret._errno);

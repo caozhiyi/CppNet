@@ -13,6 +13,10 @@
 #include "common/buffer/buffer_queue.h"
 #include "common/alloter/pool_alloter.h"
 
+#ifdef SetPort
+#undef SetPort
+#endif
+
 namespace cppnet {
 
 std::shared_ptr<ConnectSocket> MakeConnectSocket() {
@@ -75,16 +79,16 @@ void WinConnectSocket::OnAccept(std::shared_ptr<AcceptEvent> event) {
 
 	// create a new rw socket
 	std::shared_ptr<AlloterWrap> alloter = std::make_shared<AlloterWrap>(MakePoolAlloterPtr());
-	std::shared_ptr<Address> address = alloter->PoolNewSharePtr<Address>(AT_IPV4);
+	Address addr(AT_IPV4);
 
-	address->SetIp(inet_ntoa(client_addr->sin_addr));
-	address->SetPort(client_addr->sin_port);
+	addr.SetIp(inet_ntoa(client_addr->sin_addr));
+	addr.SetPort(client_addr->sin_port);
 
 	auto sock = MakeRWSocket(event->GetClientSocket(), std::move(alloter));
 
 	sock->SetCppNetBase(cppnet_base);
 	sock->SetEventActions(_event_actions);
-	sock->SetAddress(std::move(address));
+	sock->SetAddress(std::move(addr));
 	sock->SetDispatcher(GetDispatcher());
 
 	__all_socket_map[event->GetClientSocket()] = sock;

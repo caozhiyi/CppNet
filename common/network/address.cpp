@@ -3,9 +3,15 @@
 
 namespace cppnet {
 
-Address::Address(AddressType at): _address_type(at),
-                                _ip(""),
-                                _port(0) {
+Address::Address():
+    Address(AT_IPV4) {
+
+}
+
+Address::Address(AddressType at):
+    _address_type(at),    
+    _ip(""),           
+    _port(0) {
     
 }
 
@@ -13,6 +19,13 @@ Address::Address(AddressType at, const std::string& ip, uint16_t port):
                                 _address_type(at),
                                 _ip(ip),
                                 _port(port) {
+
+}
+
+Address::Address(const Address& addr):
+    _address_type(addr._address_type),
+    _ip(addr._ip),
+    _port(addr._port) {
 
 }
 

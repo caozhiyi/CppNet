@@ -36,12 +36,8 @@ RWSocket::~RWSocket() {
 }
 
 bool RWSocket::GetAddress(std::string& ip, uint16_t& port) {
-    if (!_addr) {
-        return false;
-    }
-    
-    ip = _addr->GetIp();
-    port = _addr->GetPort();
+    ip = _addr.GetIp();
+    port = _addr.GetPort();
 
     return true;
 }
@@ -78,17 +74,13 @@ void RWSocket::Connect(const std::string& ip, uint16_t port) {
         _sock = ret._return_value;
     }
 
-    if (!_addr) {
-        _addr = _alloter->PoolNewSharePtr<Address>(AT_IPV4, ip, port);
 
-    } else {
-        _addr->SetIp(ip);
-        _addr->SetPort(port);
-    }
+    _addr.SetIp(ip);
+    _addr.SetPort(port);
 
     auto actions = GetEventActions();
     if (actions) {
-        actions->AddConnection(_event, *_addr);
+        actions->AddConnection(_event, _addr);
     }
 }
 

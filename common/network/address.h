@@ -13,9 +13,11 @@ enum AddressType {
 
 class Address {
 public:
+    Address();
     Address(AddressType at);
     Address(AddressType at, const std::string& ip, uint16_t port);
-    ~Address();
+    Address(const Address& addr);
+    virtual ~Address();
 
     virtual void SetIp(const std::string& ip);
     virtual std::string GetIp();
