@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <algorithm>
 #include "pool_block.h"
 
 namespace cppnet {

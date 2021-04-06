@@ -28,9 +28,9 @@ PosixConnectSocket::~PosixConnectSocket() {
 void PosixConnectSocket::OnAccept() {
     while (true) {
         std::shared_ptr<AlloterWrap> alloter = std::make_shared<AlloterWrap>(MakePoolAlloterPtr());
-        std::shared_ptr<Address> address = alloter->PoolNewSharePtr<Address>(AT_IPV4);
+        Address address(AT_IPV4);
         //may get more than one connections
-        auto ret = OsHandle::Accept(_sock, *address);
+        auto ret = OsHandle::Accept(_sock, address);
         if (ret._return_value < 0) {
             if (errno == EAGAIN) {
                 break;
@@ -52,7 +52,7 @@ void PosixConnectSocket::OnAccept() {
 
         sock->SetCppNetBase(cppnet_base);
         sock->SetEventActions(_event_actions);
-        sock->SetAddress(address);
+        sock->SetAddress(std::move(address));
         sock->SetDispatcher(GetDispatcher());
 
         __all_socket_map[ret._return_value] = sock;

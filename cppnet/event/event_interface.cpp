@@ -2,7 +2,7 @@
 
 namespace cppnet {
 
-char* TypeString(EventType type) {
+const char* TypeString(EventType type) {
     switch (type)
     {
     case ET_READ:

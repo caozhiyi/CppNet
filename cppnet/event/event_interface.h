@@ -18,7 +18,7 @@ enum EventType {
     ET_INACTIONS        = 0x080,        // set to actions
 };
 
-char* TypeString(EventType type);
+const char* TypeString(EventType type);
 
 class Socket;
 class Event {
