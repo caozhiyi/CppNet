@@ -1,6 +1,12 @@
 #include <thread>
 #include <unistd.h>    // for close
 
+#include "kqueue_action.h"
+#include "include/cppnet_type.h"
+#include "cppnet/socket/rw_socket.h"
+#include "cppnet/socket/connect_socket.h"
+#include "cppnet/event/event_interface.h"
+
 #include "common/log/log.h"
 #include "common/util/time.h"
 #include "common/os/convert.h"
@@ -9,13 +15,6 @@
 #include "common/network/address.h"
 #include "common/network/io_handle.h"
 #include "common/timer/timer_interface.h"
-
-#include "kqueue_action.h"
-#include "include/cppnet_type.h"
-#include "cppnet/socket/rw_socket.h"
-#include "cppnet/socket/connect_socket.h"
-#include "cppnet/event/event_interface.h"
-
 
 namespace cppnet {
 

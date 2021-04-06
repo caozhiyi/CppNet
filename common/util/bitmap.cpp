@@ -1,8 +1,6 @@
 #include <cmath>
 #include "bitmap.h"
 
-#include <iostream>
-
 namespace cppnet {
 
 static const uint32_t __step_size = sizeof(int64_t) * 8;

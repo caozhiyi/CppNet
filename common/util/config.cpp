@@ -103,8 +103,8 @@ bool Config::GetBoolValue(const std::string& key) {
             return iter->second == "true" || iter->second == "1";
         }
         return false;
-    }
-    catch (...) {
+
+    } catch (...) {
         LOG_ERROR("get config double value failed.");
         return false;
     }

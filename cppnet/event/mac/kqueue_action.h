@@ -1,5 +1,5 @@
-#ifndef NET_EVENT_MAC_EPOLL_ACTION
-#define NET_EVENT_MAC_EPOLL_ACTION
+#ifndef NET_EVENT_MAC_KQUEUE_ACTION
+#define NET_EVENT_MAC_KQUEUE_ACTION
 
 #include <mutex>
 #include <vector>

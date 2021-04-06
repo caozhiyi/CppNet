@@ -16,9 +16,9 @@ Address::Address(AddressType at):
 }
 
 Address::Address(AddressType at, const std::string& ip, uint16_t port):
-                                _address_type(at),
-                                _ip(ip),
-                                _port(port) {
+    _address_type(at),
+    _ip(ip),
+    _port(port) {
 
 }
 

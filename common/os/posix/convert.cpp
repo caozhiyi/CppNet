@@ -1,5 +1,3 @@
-#if ((defined __linux__) || (defined __APPLE__)) 
-
 #include <time.h>
 #include <string.h>
 #include "../convert.h"
@@ -15,5 +13,3 @@ char* ErrnoInfo(uint32_t err) {
 }
 
 }
-
-#endif
