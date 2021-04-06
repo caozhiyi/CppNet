@@ -1,1 +1,2 @@
-[] iocp一次投递多个accept事件
+[x] IOCP supports multiple accept events
+[ ] update document
