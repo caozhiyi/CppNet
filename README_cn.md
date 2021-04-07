@@ -110,7 +110,7 @@ enum CPPNET_ERROR_CODE {
 
 ## 编译(Windows)
 
-你可以使用vs2019来编译CppNet库和示例。    
+你可以使用vs2019来编译Cppnet库和示例。    
 
 ## 编译(Linux & macOS)
 
