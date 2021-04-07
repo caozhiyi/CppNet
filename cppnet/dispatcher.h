@@ -23,7 +23,7 @@ class Dispatcher:
     public Thread,
     public std::enable_shared_from_this<Dispatcher> {
 public:
-	Dispatcher(std::shared_ptr<CppNetBase> base, uint32_t thread_num = 0, uint32_t base_id = 0);
+	Dispatcher(std::shared_ptr<CppNetBase> base, uint32_t thread_num, uint32_t base_id);
     Dispatcher(std::shared_ptr<CppNetBase> base, uint32_t base_id = 0);
     ~Dispatcher();
 

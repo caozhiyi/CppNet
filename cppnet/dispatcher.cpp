@@ -46,7 +46,6 @@ Dispatcher::Dispatcher(std::shared_ptr<CppNetBase> base, uint32_t thread_num, ui
 
 	// start thread
 	Start();
-
 }
 
 Dispatcher::Dispatcher(std::shared_ptr<CppNetBase> base, uint32_t base_id):
