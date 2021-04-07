@@ -22,6 +22,32 @@ std::unordered_map<std::thread::id, std::shared_ptr<std::thread>> Dispatcher::_w
 static std::map<uint32_t, std::shared_ptr<EventActions>> __unique_actions_map;
 #endif
 
+Dispatcher::Dispatcher(std::shared_ptr<CppNetBase> base, uint32_t thread_num, uint32_t base_id):
+	_cur_utc_time(0),
+	_timer_id_creater(0),
+	_cppnet_base(base) {
+
+	_timer = MakeTimer1Min();
+#ifdef __win__
+	auto iter = __unique_actions_map.find(base_id);
+	if (iter == __unique_actions_map.end()) {
+		_event_actions = MakeEventActions();
+		_event_actions->Init(thread_num);
+		__unique_actions_map[base_id] = _event_actions;
+
+	}
+	else {
+		_event_actions = iter->second;
+	}
+#else
+	_event_actions = MakeEventActions();
+	_event_actions->Init();
+#endif
+
+	// start thread
+	Start();
+
+}
 
 Dispatcher::Dispatcher(std::shared_ptr<CppNetBase> base, uint32_t base_id):
     _cur_utc_time(0),
@@ -214,7 +240,7 @@ void Dispatcher::DoTask() {
         func_vec.swap(_task_list);
     }
 
-    for (size_t i = 0; i < func_vec.size(); ++i) {
+    for (std::size_t i = 0; i < func_vec.size(); ++i) {
         func_vec[i]();
     }
 }

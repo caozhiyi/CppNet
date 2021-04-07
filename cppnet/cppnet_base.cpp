@@ -42,7 +42,7 @@ void CppNetBase::Init(uint32_t thread_num) {
     static uint32_t __cppnet_base_id = 0;
     __cppnet_base_id++;
     for (uint32_t i = 0; i < thread_num; i++) {
-        auto dispatcher = std::make_shared<Dispatcher>(shared_from_this(), __cppnet_base_id);
+        auto dispatcher = std::make_shared<Dispatcher>(shared_from_this(), thread_num, __cppnet_base_id);
         _dispatchers.push_back(dispatcher);
     }
 
