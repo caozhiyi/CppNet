@@ -9,75 +9,88 @@ See [chinese](/README_cn.md)
 See the details in chinese [Wiki](https://github.com/caozhiyi/CppNet/wiki)
 ## Introduction
 
-CppNet is a proactor mode and multithreaded network with C++11 on tcp.   
- Simple: only export a little interfaces, all net ios insterface are asynchronous callbacks, as much as possible like calling the socket API of the system. There is only one additional buffer object type for the client.       
- Fast: epoll and IOCP are used, in which epoll multithreaded threads are handled by the Linux kernel through port reuse. Each socket has a single memory pool object. All memory requested from the memory pool is managed by an intelligent pointer.    
- Clear：three layers: event-driven layer, session management layer and interface layer, upward notification through callbacks between layers. Clear division of responsibilities among modules, pay to Caesar what belongs to Caesar and God what belongs to God. The largest class does not exceed 500 lines of code.   
+Cppnet is a proactor mode and multithreaded network with C++11 on tcp. Support Window, Linux and macOS.    
+ Simple:    
+ + only export a little interfaces, all net ios insterface are asynchronous callbacks
+ + insterface as much as possible like calling the socket API of the system
+ + there is only one additional buffer object type for the client
+
+ Fast: 
+ + epoll, IOCP and kqueue are used
+ + multithreaded threads are handled by the kernel through port reuse
+ + each socket has a single memory pool object. All memory requested from the memory pool is managed by an intelligent pointer 
+ + using time wheel to realize timer   
+ 
+ Clear：
+ + three layers: event-driven layer, session management layer and interface layer
+ + upward notification through callbacks between layers. Clear division of responsibilities among modules, pay to Caesar what belongs to Caesar and God what belongs to God
+ + the interface decoupling module is used to meet the minimum interface principle and dependency inversion principle  
 
 ## Interface
 
 All the interface files are in [include](/include). The interface definitions for library initialization and timer are in [CppNet](/include/CppNet.h):    
 ```c++
-    class CCppNet {
-    public:
-        // common
-        // init cppnet library.
-        // thread_num : the number of running threads.
-        void Init(int32_t thread_num);
+class CCppNet {
+public:
+    // common
+    // init cppnet library.
+    // thread_num : the number of running threads.
+    void Init(int32_t thread_num);
+    void Destory();
 
-        // thread join
-        void Join();
+    // thread join
+    void Join();
 
-        // must set callback before listen
-        void SetReadCallback(const read_call_back& func);
-        void SetWriteCallback(const write_call_back& func);
-        void SetDisconnectionCallback(const connection_call_back& func);
+    // must set callback before listen
+    void SetReadCallback(const read_call_back& cb);
+    void SetWriteCallback(const write_call_back& cb);
+    void SetDisconnectionCallback(const connect_call_back& cb);
 
-        //timer
-        uint64_t SetTimer(int32_t interval, const timer_call_back& func, void* param = nullptr, bool always = false);
-        void RemoveTimer(uint64_t timer_id);
+    // return timer id
+    uint64_t AddTimer(int32_t interval, const user_timer_call_back& cb, void* param = nullptr, bool always = false);
+    void RemoveTimer(uint64_t timer_id);
 
-        //server
-        void SetAcceptCallback(const connection_call_back& func);
-        bool ListenAndAccept(const std::string& ip, int16_t port);
+    //server
+    void SetAcceptCallback(const connect_call_back& cb);
+    bool ListenAndAccept(const std::string& ip, int16_t port);
 
-        //client
-        void SetConnectionCallback(const connection_call_back& func);
-
-#ifndef __linux__
-        // sync connection. 
-        bool Connection(const std::string& ip, int16_t port, const char* buf, int32_t buf_len);
-#endif
-        bool Connection(const std::string& ip, int16_t port);
-    };
+    //client
+    void SetConnectionCallback(const connect_call_back& cb);
+    bool Connection(const std::string& ip, int16_t port);
+};
 ```
 Since all network IO interfaces are defined as callback notification modes, callback functions for each call need to be set when initializing the library.     
 By setting callbacks instead of providing virtual function inheritance, we hope to be as simple as possible, reduce the inheritance relationship of classes, and increase the flexibility of callbacks. You can set callbacks to any function.         
 The interface definition for network IO are in [Socket](/include/Socket.h):      
 ```c++
-    class CNSocket {
-    public:
-        // get socket ip and adress
-        int16_t GetAddress(std::string& ip, uint16_t& port);
-        // post sync write event.
-        int16_t Write(const char* src, int32_t len);
-        // close the connect
-        int16_t Close();
-    };
+class CNSocket {
+public:
+    // get socket ip and adress
+    virtual bool GetAddress(std::string& ip, uint16_t& port);
+    // post sync write event.
+    virtual bool Write(const char* src, uint32_t len);
+    // close the connect
+    virtual bool Close();
+    // add a timer. must set timer call back
+    // interval support max 1 minute
+    // return a timer id
+    virtual uint64_t AddTimer(uint32_t interval, bool always = false);
+    virtual void StopTimer(uint64_t timer_id);
+};
 ```
 The function of the interface is evident through declarations and annotations. Attention should be paid to the error code returned by the interface, defined in [CppDefine](/include/CppDefine.h):    
 ```c++
-    enum CPPNET_ERROR_CODE {
-        CEC_SUCCESS                = 1,    // success.
-        CEC_TIMEOUT                = 2,    // the event time out call back.
-        CEC_CLOSED                 = 3,    // remote close the socket.
-        CEC_INVALID_HANDLE         = 4,    // invalid cppnet handle, can't find in socket manager.
-        CEC_FAILED                 = 5,    // call function failed.
-        CEC_CONNECT_BREAK          = 6,    // connect break.
-        CEC_CONNECT_REFUSE         = 7     // remote refuse connect or server not exist.
-    };
+enum CPPNET_ERROR_CODE {
+    CEC_SUCCESS                = 0,    // success.
+    CEC_TIMEOUT                = 1,    // the event time out call back.
+    CEC_CLOSED                 = 2,    // remote close the socket.
+    CEC_INVALID_HANDLE         = 3,    // invalid cppnet handle, can find in socket manager.
+    CEC_FAILED                 = 4,    // call function failed.
+    CEC_CONNECT_BREAK          = 5,    // connect break.
+    CEC_CONNECT_REFUSE         = 6,    // remote refuse connect or server not exist.
+};
 ```
-When each interface takes the next action, you should first check the error code returned at present to know whether the current connection is normal. 
+All notifications about the connection status are called back to the connection related functions.     
 
 ## Example
 
@@ -95,11 +108,11 @@ Only use apache ab test HTTP echo，comparison with Muduo. The command executed 
 
 ## Build(Windows)
 
-You can compile CppNet library and example with vs2017.   
+You can compile Cppnet library and example with vs2019.   
 
-## Build(Linux)
+## Build((Linux & macOS)
 
-The CppNet library and examples can be compiled simply by executing make in the source directory.     
+The Cppnet library and examples can be compiled simply by executing make in the source directory.     
 Other examples need to make in local directories after compiling static libraries.     
 ```
 $ make -j4

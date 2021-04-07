@@ -17,7 +17,7 @@ Cppnet是一个封装在TCP协议上的proactor模式multi-thread C++11网络库
 
  快速：   
  + 分别采用epoll，IOCP，kqueue做底层事件驱动
- + 其中epoll多线程惊群通过端口复用交由Linux内核处理
+ + 多线程惊群通过端口复用交由内核处理
  + 参照SGI STL和Nginx实现了内存池，每个连接都独享一个内存池对象，所有从内存池中申请的内存都由智能指针管理
  + 用时间轮实现定时器
 
@@ -91,7 +91,7 @@ enum CPPNET_ERROR_CODE {
     CEC_CONNECT_REFUSE         = 6,    // remote refuse connect or server not exist.
 };
 ```
-关于连接状态的所有通知都会回调到关于connect的函数中。
+关于连接状态的所有通知都会回调到连接相关的函数中。    
 
 ## 示例
 
