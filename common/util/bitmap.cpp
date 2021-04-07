@@ -34,7 +34,7 @@ bool Bitmap::Insert(uint32_t index) {
     }
 
     uint32_t step = index;
-    for (size_t i = 0; i < _bitmap.size(); i++) {
+    for (std::size_t i = 0; i < _bitmap.size(); i++) {
         if (index < (i + 1) * __step_size) {
             _bitmap[i] = _bitmap[i] | (__bit_base << step);
             return true;
@@ -50,7 +50,7 @@ bool Bitmap::Remove(uint32_t index) {
     }
 
     uint32_t step = index;
-    for (size_t i = 0; i < _bitmap.size(); i++) {
+    for (std::size_t i = 0; i < _bitmap.size(); i++) {
         if (index < (i + 1) * __step_size) {
             _bitmap[i] = _bitmap[i] & (~(__bit_base << step));
             return true;
@@ -70,7 +70,7 @@ int32_t Bitmap::GetMinAfter(uint32_t index) {
     }
 
     uint32_t ret = 0;
-    for (size_t i = 0; i < _bitmap.size(); i++) {
+    for (std::size_t i = 0; i < _bitmap.size(); i++) {
         if (index > (i + 1) * __step_size) {
             ret += __step_size;
 
