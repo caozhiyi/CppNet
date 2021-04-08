@@ -24,9 +24,9 @@ static const uint32_t __max_write_cache    = 1024 * 1024 * 4;
 // address buffer length in socket.
 static const uint16_t __addr_str_len       = 16;
 // log level. 
-static const uint16_t __log_level          = 0; // not print
+static const uint16_t __log_level          = 15; // info level
 // log file name.
-static const char* __log_file_name         = "CppNetLog";
+static const char* __log_file_name         = "cppnet_log";
 // open log print.
 static const bool __open_log               = false;
 

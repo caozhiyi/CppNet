@@ -29,7 +29,7 @@ void CppNet::Init(int32_t thread_num) {
         std::shared_ptr<Logger> std_log = std::make_shared<StdoutLogger>();
         file_log->SetLogger(std_log);
         LOG_SET(file_log);
-        LOG_SET_LEVEL(LL_DEBUG);
+        LOG_SET_LEVEL((LogLevel)__log_level);
     } else {
         LOG_SET_LEVEL(LL_NULL);
     }
