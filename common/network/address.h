@@ -22,18 +22,26 @@ public:
     Address(AddressType at);
     Address(AddressType at, const std::string& ip, uint16_t port);
     Address(const Address& addr);
-    virtual ~Address();
+    ~Address();
 
-    virtual void SetIp(const std::string& ip);
-    virtual std::string GetIp();
+    void SetType(AddressType at) { _address_type = at; }
+    AddressType GetType() { return _address_type; }
 
-    virtual void SetPort(uint16_t port);
-    virtual uint16_t GetPort();
+    void SetIp(const std::string& ip);
+    const std::string& GetIp() { return _ip; }
 
-    virtual const std::string AsString();
+    void SetPort(uint16_t port) { _port = port; }
+    uint16_t GetPort() { return _port; }
+
+    const std::string AsString();
 
     friend std::ostream& operator<< (std::ostream &out, Address &addr);
     friend bool operator==(const Address &addr1, const Address &addr2);
+
+private:
+    bool IsIpv4(const std::string& ip);
+    std::string ToIpv6(const std::string& ip);
+    std::string ToIpv4(const std::string& ip);
 
 protected:
     AddressType _address_type;

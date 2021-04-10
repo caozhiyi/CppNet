@@ -33,7 +33,7 @@ PosixConnectSocket::~PosixConnectSocket() {
 void PosixConnectSocket::OnAccept() {
     while (true) {
         std::shared_ptr<AlloterWrap> alloter = std::make_shared<AlloterWrap>(MakePoolAlloterPtr());
-        Address address(AT_IPV4);
+        Address address;
         //may get more than one connections
         auto ret = OsHandle::Accept(_sock, address);
         if (ret._return_value < 0) {

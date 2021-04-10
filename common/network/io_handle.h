@@ -25,7 +25,7 @@ struct Iovec {
 
 class OsHandle {
 public:
-static SysCallInt64Result TcpSocket();
+static SysCallInt64Result TcpSocket(bool ipv4 = false);
 
 static SysCallInt32Result Bind(int64_t sockfd, Address& addr);
 

@@ -9,7 +9,7 @@
 namespace cppnet {
 
 Address::Address():
-    Address(AT_IPV4) {
+    Address(AT_IPV6) {
 
 }
 
@@ -39,19 +39,12 @@ Address::~Address() {
 }
 
 void Address::SetIp(const std::string& ip) {
-    _ip = ip;
-}
-
-std::string Address::GetIp() {
-    return _ip;
-}
-
-void Address::SetPort(uint16_t port) {
-    _port = port;
-}
-
-uint16_t Address::GetPort() {
-    return _port;
+    if (_address_type == AT_IPV6) {
+        _ip = ToIpv6(ip);
+    
+    } else {
+        _ip = ToIpv4(ip);
+    }
 }
 
 const std::string Address::AsString() {
@@ -66,6 +59,33 @@ std::ostream& operator<< (std::ostream &out, Address &addr) {
 
 bool operator==(const Address &addr1, const Address &addr2) {
     return addr1._ip == addr2._ip && addr1._port == addr2._port && addr1._port != 0;
+}
+
+bool Address::IsIpv4(const std::string& ip) {
+    if (ip.find(':') == std::string::npos) {
+        return true;
+    }
+    
+    return false;
+}
+
+std::string Address::ToIpv6(const std::string& ip) {
+    if (!IsIpv4(ip)) {
+        return ip;
+    }
+    
+    std::string ret("::FFFF:");
+    ret.append(ip);
+    return std::move(ret);
+}
+
+std::string Address::ToIpv4(const std::string& ip) {
+    if (IsIpv4(ip)) {
+        return ip;
+    }
+    std::size_t pos = ip.rfind(':');
+
+    return std::string(&ip[pos], ip.length() - pos);
 }
 
 }

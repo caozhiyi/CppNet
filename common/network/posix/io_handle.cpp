@@ -15,8 +15,13 @@
 
 namespace cppnet {
 
-SysCallInt64Result OsHandle::TcpSocket() {
-    int64_t sock = socket(PF_INET, SOCK_STREAM, 0);
+SysCallInt64Result OsHandle::TcpSocket(bool ipv4) {
+    int domain = PF_INET6;
+    if (ipv4) {
+        domain = PF_INET;
+    }
+
+    int64_t sock = socket(domain, SOCK_STREAM, 0);
     if (sock < 0) {
         return {sock, errno};
     }
@@ -24,12 +29,23 @@ SysCallInt64Result OsHandle::TcpSocket() {
 }
 
 SysCallInt32Result OsHandle::Bind(int64_t sockfd, Address& address) {
-    struct sockaddr_in addr;
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(address.GetPort());
-    addr.sin_addr.s_addr = inet_addr(address.GetIp().c_str());
+    int32_t ret = -1;
+    if (address.GetType() == AT_IPV4) {
+        struct sockaddr_in addr;
+        addr.sin_family = AF_INET;
+        addr.sin_port = htons(address.GetPort());
+        addr.sin_addr.s_addr = inet_addr(address.GetIp().c_str());
+        ret = bind(sockfd, (sockaddr *)&addr, sizeof(sockaddr_in));
 
-    int32_t ret = bind(sockfd, (sockaddr *)&addr, sizeof(sockaddr));
+    } else {
+        struct sockaddr_in6 addr;
+        addr.sin6_flowinfo = 0;
+        addr.sin6_scope_id = 0;
+        addr.sin6_family = AF_INET6;
+        addr.sin6_port = htons(address.GetPort());
+        inet_pton(AF_INET6, address.GetIp().c_str(), &addr.sin6_addr);
+        ret = bind(sockfd, (sockaddr *)&addr, sizeof(sockaddr_in6));
+    }
 
     if (ret < 0) {
         return {ret, errno};
@@ -50,12 +66,21 @@ SysCallInt32Result OsHandle::Listen(int64_t sockfd, uint32_t len) {
 }
 
 SysCallInt32Result OsHandle::Connect(int64_t sockfd, Address& address) {
-    struct sockaddr_in addr;
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(address.GetPort());
-    addr.sin_addr.s_addr = inet_addr(address.GetIp().c_str());
+   int32_t ret = -1;
+    if (address.GetType() == AT_IPV4) {
+        struct sockaddr_in addr;
+        addr.sin_family = AF_INET;
+        addr.sin_port = htons(address.GetPort());
+        addr.sin_addr.s_addr = inet_addr(address.GetIp().c_str());
+        ret = connect(sockfd, (sockaddr *)&addr, sizeof(addr));
 
-    int32_t ret = connect(sockfd, (sockaddr *)&addr, sizeof(addr));
+    } else {
+        struct sockaddr_in6 addr;
+        addr.sin6_family = AF_INET6;
+        addr.sin6_port = htons(address.GetPort());
+        inet_pton(AF_INET6, address.GetIp().c_str(), &addr.sin6_addr);
+        ret = connect(sockfd, (sockaddr *)&addr, sizeof(addr));
+    }
 
     if (ret < 0) {
         return {ret, errno};
@@ -73,17 +98,34 @@ SysCallInt32Result OsHandle::Close(int64_t sockfd) {
 }
 
 SysCallInt64Result OsHandle::Accept(int64_t sockfd, Address& address) {
-    sockaddr_in client_addr;
-    socklen_t addr_size = 0;
+    struct sockaddr_storage client_addr;
+    socklen_t addr_size = sizeof(client_addr);
     int64_t ret = accept(sockfd, (sockaddr*)&client_addr, &addr_size);
     if (ret < 0) {
         return {ret, errno};
     }
 
-    getpeername(ret, (struct sockaddr*)&client_addr, &addr_size);
+    struct sockaddr* addr_pt = (struct sockaddr*)&client_addr;
 
-    address.SetIp(inet_ntoa(client_addr.sin_addr));
-    address.SetPort(ntohs(client_addr.sin_port));
+    void *addr = nullptr;
+    switch (addr_pt->sa_family) {
+        case AF_INET:
+            addr = &((struct sockaddr_in *)addr_pt)->sin_addr;
+            address.SetPort(ntohs(((struct sockaddr_in *)addr_pt)->sin_port));
+            address.SetType(AT_IPV4);
+            break;
+        case AF_INET6:
+            addr = &((struct sockaddr_in6 *)addr_pt)->sin6_addr;
+            address.SetPort((((struct sockaddr_in6 *)addr_pt)->sin6_port));
+            address.SetType(AT_IPV6);
+        break;
+        default:
+            return {-1, errno};
+    }
+
+    char str_addr[INET6_ADDRSTRLEN] = {0};
+    inet_ntop(AF_INET6, addr, str_addr, sizeof(str_addr));
+    address.SetIp(str_addr);
     
     return {ret, 0};
 }

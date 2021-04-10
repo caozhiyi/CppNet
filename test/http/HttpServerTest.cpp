@@ -63,12 +63,12 @@ std::string GetFile() {
 }
 
 void DisConnectionFunc(const cppnet::Handle& , uint32_t ) {
-    std::cout << "[DisConnectionFunc]" << std::endl;
+    //std::cout << "[DisConnectionFunc]" << std::endl;
 }
 
 int main() {
     cppnet::CppNet net;
-    net.Init(2);
+    net.Init(1);
 
     CHttpServer server;
     server.SetHttpCallback(OnRequest);
