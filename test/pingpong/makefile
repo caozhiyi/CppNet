@@ -1,5 +1,5 @@
-SER = Server.cpp
-CLI = Client.cpp
+SER = server.cpp
+CLI = client.cpp
 
 CC = g++
 
@@ -11,8 +11,8 @@ INCLUDES = -I../../
 CCFLAGS = -lpthread -fPIC -m64 -O2 -std=c++11 -lstdc++ -pipe -march=corei7
 
 TARGET = ../../libcppnet.a
-SERBIN = pingpongserver
-CLIBIN = pingpongclient
+SERBIN = pp_server
+CLIBIN = pp_client
 
 all:$(SERBIN) $(CLIBIN)
 

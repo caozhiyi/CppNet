@@ -1,5 +1,5 @@
-SER = SendFileServer.cpp md5.cpp
-CLI = SendFileClient.cpp md5.cpp
+SER = send_file_server.cpp md5.cpp
+CLI = send_file_client.cpp md5.cpp
 
 CC = g++
 

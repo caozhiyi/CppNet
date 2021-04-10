@@ -1,5 +1,5 @@
-SER = CppNetServer.cpp
-CLI = CppNetClient.cpp
+SER = cppnet_server.cpp
+CLI = cppnet_client.cpp
 
 CC = g++
 
