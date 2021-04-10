@@ -41,7 +41,7 @@ bool ConnectSocket::Bind(const std::string& ip, uint16_t port) {
     }
 
     _addr.SetIp(ip);
-    _addr.SetPort(port);
+    _addr.SetAddrPort(port);
 
     auto ret = OsHandle::Bind(_sock, _addr);
 

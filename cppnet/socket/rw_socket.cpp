@@ -42,7 +42,7 @@ RWSocket::~RWSocket() {
 
 bool RWSocket::GetAddress(std::string& ip, uint16_t& port) {
     ip = _addr.GetIp();
-    port = _addr.GetPort();
+    port = _addr.GetAddrPort();
 
     return true;
 }
@@ -81,7 +81,7 @@ void RWSocket::Connect(const std::string& ip, uint16_t port) {
 
 
     _addr.SetIp(ip);
-    _addr.SetPort(port);
+    _addr.SetAddrPort(port);
 
     auto actions = GetEventActions();
     if (actions) {

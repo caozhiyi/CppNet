@@ -27,7 +27,7 @@ public:
     
     LPFN_ACCEPTEX             _AcceptEx;
     LPFN_CONNECTEX            _ConnectEx;
-    LPFN_GETACCEPTEXSOCKADDRS _AcceptExScokAddrs;
+    LPFN_GETACCEPTEXSOCKADDRS _AcceptExSockAddrs;
     LPFN_DISCONNECTEX         _DisconnectionEx;
  
 };
@@ -35,7 +35,7 @@ public:
 #define WinSockInit        WinExpendFunc::Instance().Init
 #define AcceptEx           WinExpendFunc::Instance()._AcceptEx
 #define ConnectEx          WinExpendFunc::Instance()._ConnectEx
-#define AcceptExScokAddrs  WinExpendFunc::Instance()._AcceptExScokAddrs
+#define AcceptExSockAddrs  WinExpendFunc::Instance()._AcceptExSockAddrs
 #define DisconnectionEx    WinExpendFunc::Instance()._DisconnectionEx
 
 }

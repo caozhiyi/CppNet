@@ -33,7 +33,7 @@ SysCallInt32Result OsHandle::Bind(int64_t sockfd, Address& address) {
     if (address.GetType() == AT_IPV4) {
         struct sockaddr_in addr;
         addr.sin_family = AF_INET;
-        addr.sin_port = htons(address.GetPort());
+        addr.sin_port = htons(address.GetAddrPort());
         addr.sin_addr.s_addr = inet_addr(address.GetIp().c_str());
         ret = bind(sockfd, (sockaddr *)&addr, sizeof(sockaddr_in));
 
@@ -42,7 +42,7 @@ SysCallInt32Result OsHandle::Bind(int64_t sockfd, Address& address) {
         addr.sin6_flowinfo = 0;
         addr.sin6_scope_id = 0;
         addr.sin6_family = AF_INET6;
-        addr.sin6_port = htons(address.GetPort());
+        addr.sin6_port = htons(address.GetAddrPort());
         inet_pton(AF_INET6, address.GetIp().c_str(), &addr.sin6_addr);
         ret = bind(sockfd, (sockaddr *)&addr, sizeof(sockaddr_in6));
     }
@@ -70,14 +70,14 @@ SysCallInt32Result OsHandle::Connect(int64_t sockfd, Address& address) {
     if (address.GetType() == AT_IPV4) {
         struct sockaddr_in addr;
         addr.sin_family = AF_INET;
-        addr.sin_port = htons(address.GetPort());
+        addr.sin_port = htons(address.GetAddrPort());
         addr.sin_addr.s_addr = inet_addr(address.GetIp().c_str());
         ret = connect(sockfd, (sockaddr *)&addr, sizeof(addr));
 
     } else {
         struct sockaddr_in6 addr;
         addr.sin6_family = AF_INET6;
-        addr.sin6_port = htons(address.GetPort());
+        addr.sin6_port = htons(address.GetAddrPort());
         inet_pton(AF_INET6, address.GetIp().c_str(), &addr.sin6_addr);
         ret = connect(sockfd, (sockaddr *)&addr, sizeof(addr));
     }
@@ -111,12 +111,12 @@ SysCallInt64Result OsHandle::Accept(int64_t sockfd, Address& address) {
     switch (addr_pt->sa_family) {
         case AF_INET:
             addr = &((struct sockaddr_in *)addr_pt)->sin_addr;
-            address.SetPort(ntohs(((struct sockaddr_in *)addr_pt)->sin_port));
+            address.SetAddrPort(ntohs(((struct sockaddr_in *)addr_pt)->sin_port));
             address.SetType(AT_IPV4);
             break;
         case AF_INET6:
             addr = &((struct sockaddr_in6 *)addr_pt)->sin6_addr;
-            address.SetPort((((struct sockaddr_in6 *)addr_pt)->sin6_port));
+            address.SetAddrPort((((struct sockaddr_in6 *)addr_pt)->sin6_port));
             address.SetType(AT_IPV6);
         break;
         default:

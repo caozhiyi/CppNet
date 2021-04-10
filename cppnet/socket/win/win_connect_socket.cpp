@@ -3,6 +3,7 @@
 
 // Author: caozhiyi (caozhiyi5@gmail.com)
 
+#include <WS2tcpip.h>
 #include "win_connect_socket.h"
 
 #include "cppnet/cppnet_base.h"
@@ -18,8 +19,8 @@
 #include "common/buffer/buffer_queue.h"
 #include "common/alloter/pool_alloter.h"
 
-#ifdef SetPort
-#undef SetPort
+#ifdef SetAddrPort
+#undef SetAddrPort
 #endif
 
 namespace cppnet {
@@ -73,27 +74,45 @@ void WinConnectSocket::OnAccept(std::shared_ptr<AcceptEvent> event) {
 		return;
 	}
 
-	SOCKADDR_IN* client_addr = NULL;
-	int remote_len = sizeof(SOCKADDR_IN);
-	SOCKADDR_IN* LocalAddr = NULL;
-	int localLen = sizeof(SOCKADDR_IN);
+	SOCKADDR_STORAGE* client_addr = NULL;
+	int remote_len = sizeof(SOCKADDR_STORAGE);
+	SOCKADDR_STORAGE* LocalAddr = NULL;
+	int localLen = sizeof(SOCKADDR_STORAGE);
 
 	// accept a socket and read msg
-	AcceptExScokAddrs(event->GetBuf(), __iocp_buff_size - ((sizeof(SOCKADDR_IN) + 16) * 2),
-		sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, (LPSOCKADDR*)&LocalAddr, &localLen, (LPSOCKADDR*)&client_addr, &remote_len);
+	AcceptExSockAddrs(event->GetBuf(), __iocp_buff_size - ((sizeof(SOCKADDR_STORAGE) + 16) * 2),
+		sizeof(SOCKADDR_STORAGE) + 16, sizeof(SOCKADDR_STORAGE) + 16, (LPSOCKADDR*)&LocalAddr, &localLen, (LPSOCKADDR*)&client_addr, &remote_len);
 
 	// create a new rw socket
 	std::shared_ptr<AlloterWrap> alloter = std::make_shared<AlloterWrap>(MakePoolAlloterPtr());
-	Address addr(AT_IPV4);
+	Address address;
 
-	addr.SetIp(inet_ntoa(client_addr->sin_addr));
-	addr.SetPort(client_addr->sin_port);
+	SOCKADDR* addr_pt = (SOCKADDR*)client_addr;
+	void* addr = nullptr;
+	switch (addr_pt->sa_family) {
+	case AF_INET:
+		addr = &((SOCKADDR_IN*)addr_pt)->sin_addr;
+		address.SetAddrPort(ntohs(((SOCKADDR_IN*)addr_pt)->sin_port));
+		address.SetType(AT_IPV4);
+		break;
+	case AF_INET6:
+		addr = &((SOCKADDR_IN6*)addr_pt)->sin6_addr;
+		address.SetAddrPort((((struct sockaddr_in6*)addr_pt)->sin6_port));
+		address.SetType(AT_IPV6);
+		break;
+	default:
+		LOG_ERROR("invalid socket address family. family:%d", addr_pt->sa_family);
+		return;
+	}
+	char str_addr[INET6_ADDRSTRLEN] = { 0 };
+	inet_ntop(AF_INET6, addr, str_addr, sizeof(str_addr));
+	address.SetIp(str_addr);
 
 	auto sock = MakeRWSocket(event->GetClientSocket(), std::move(alloter));
 
 	sock->SetCppNetBase(cppnet_base);
 	sock->SetEventActions(_event_actions);
-	sock->SetAddress(std::move(addr));
+	sock->SetAddress(std::move(address));
 	sock->SetDispatcher(GetDispatcher());
 
 	__all_socket_map[event->GetClientSocket()] = sock;

@@ -3,6 +3,7 @@
 
 // Author: caozhiyi (caozhiyi5@gmail.com)
 
+#include <WS2tcpip.h>
 #include "expend_func.h"
 #include "iocp_action.h"
 
@@ -193,8 +194,8 @@ bool IOCPEventActions::AddAcceptEvent(std::shared_ptr<Event>& event) {
     context->_event_type = ET_ACCEPT;
    
     DWORD dwBytes = 0;
-    uint32_t ret = AcceptEx((SOCKET)sock->GetSocket(), (SOCKET)accept_event->GetClientSocket(), accept_event->GetBuf(), __iocp_buff_size - ((sizeof(SOCKADDR_IN) + 16) * 2),
-        sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, &dwBytes, &context->_overlapped);
+    uint32_t ret = AcceptEx((SOCKET)sock->GetSocket(), (SOCKET)accept_event->GetClientSocket(), accept_event->GetBuf(), __iocp_buff_size - ((sizeof(SOCKADDR_STORAGE) + 16) * 2),
+        sizeof(SOCKADDR_STORAGE) + 16, sizeof(SOCKADDR_STORAGE) + 16, &dwBytes, &context->_overlapped);
 
     if (0 == ret) {
         if (WSA_IO_PENDING != WSAGetLastError()) {
@@ -228,23 +229,47 @@ bool IOCPEventActions::AddConnection(std::shared_ptr<Event>& event, Address& add
         event->SetData(context);
     }
 
-    SOCKADDR_IN addr;
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(address.GetPort());
-    addr.sin_addr.S_un.S_addr = inet_addr(address.GetIp().c_str());
+    
+	if (address.GetType() == AT_IPV4) {
+		SOCKADDR_IN local;
+		local.sin_family = AF_INET;
+		local.sin_port = htons(0);
+		local.sin_addr.S_un.S_addr = INADDR_ANY;
+		if (bind(sock->GetSocket(), (sockaddr*)&local, sizeof(local)) != 0) {
+			LOG_FATAL("bind local host failed! error code:%d, info:%s", WSAGetLastError(), ErrnoInfo(WSAGetLastError()));
+		}
 
-    SOCKADDR_IN local;
-    local.sin_family = AF_INET;
-    local.sin_port = htons(0);
-    local.sin_addr.S_un.S_addr = INADDR_ANY;
-
-    if (bind(sock->GetSocket(), (sockaddr*)&local, sizeof(local)) != 0) {
-        LOG_FATAL("bind local host failed! error code:%d, info:%s", WSAGetLastError(), ErrnoInfo(WSAGetLastError()));
-    }
+	} else {
+		SOCKADDR_IN6 local;
+        local.sin6_flowinfo = 0;
+        local.sin6_scope_id = 0;
+        local.sin6_family = AF_INET6;
+        local.sin6_port = 0;
+        local.sin6_addr = in6addr_any;
+		if (bind(sock->GetSocket(), (sockaddr*)&local, sizeof(local)) != 0) {
+			LOG_FATAL("bind local host failed! error code:%d, info:%s", WSAGetLastError(), ErrnoInfo(WSAGetLastError()));
+		}
+	}
 
     DWORD dwBytes = 0;
-    int32_t ret = ConnectEx((SOCKET)sock->GetSocket(), (sockaddr*)&addr, sizeof(addr), nullptr, 0, &dwBytes, &context->_overlapped);
+    int32_t ret = -1;
+    if (address.GetType() == AT_IPV4) {
+		SOCKADDR_IN addr;
+		addr.sin_family = AF_INET6;
+		addr.sin_port = htons(address.GetAddrPort());
+		addr.sin_addr.S_un.S_addr = inet_addr(address.GetIp().c_str());
+        ConnectEx((SOCKET)sock->GetSocket(), (sockaddr*)&addr, sizeof(addr), nullptr, 0, &dwBytes, &context->_overlapped);
 
+    } else {
+		SOCKADDR_IN6 addr;
+		addr.sin6_flowinfo = 0;
+		addr.sin6_scope_id = 0;
+		addr.sin6_family = AF_INET6;
+		addr.sin6_port = htons(address.GetAddrPort());
+		inet_pton(AF_INET6, address.GetIp().c_str(), &addr.sin6_addr);
+        ConnectEx((SOCKET)sock->GetSocket(), (sockaddr*)&addr, sizeof(addr), nullptr, 0, &dwBytes, &context->_overlapped);
+    }
+    
     setsockopt((SOCKET)sock->GetSocket(), SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, NULL, 0);
 
     auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);

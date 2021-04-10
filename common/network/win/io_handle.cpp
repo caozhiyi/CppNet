@@ -4,27 +4,49 @@
 // Author: caozhiyi (caozhiyi5@gmail.com)
 
 #include <winsock2.h>
+#include <WS2tcpip.h>
 
 #include "../io_handle.h"
 
-
 namespace cppnet {
 
-SysCallInt64Result OsHandle::TcpSocket() {
-    int64_t sock = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
+SysCallInt64Result OsHandle::TcpSocket(bool ipv4) {
+    int32_t af = AF_INET6;
+    if (ipv4) {
+        af = AF_INET;
+    }
+    int64_t sock = WSASocket(af, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
     if (sock == INVALID_SOCKET) {
         return {sock, WSAGetLastError()};
     }
+
+    // both ipv6 and ipv4
+    int32_t opt = 0;
+	if (setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&opt, sizeof(opt)) != 0) {
+        return { sock, WSAGetLastError() };
+	}
     return {sock, 0};
 }
 
 SysCallInt32Result OsHandle::Bind(int64_t sockfd, Address& address) {
-    SOCKADDR_IN addr;
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(address.GetPort());
-    addr.sin_addr.S_un.S_addr = inet_addr(address.GetIp().c_str());
+    int32_t ret = -1;
+    if (address.GetType() == AT_IPV4) {
+		SOCKADDR_IN addr;
+		addr.sin_family = AF_INET;
+		addr.sin_port = htons(address.GetAddrPort());
+		addr.sin_addr.S_un.S_addr = inet_addr(address.GetIp().c_str());
+        ret = bind((SOCKET)sockfd, (sockaddr*)&addr, sizeof(addr));
 
-    int32_t ret = bind((SOCKET)sockfd, (sockaddr*)&addr, sizeof(addr));
+    } else {
+        SOCKADDR_IN6 addr;
+        addr.sin6_flowinfo = 0;
+        addr.sin6_scope_id = 0;
+        addr.sin6_family = AF_INET6;
+        addr.sin6_port = htons(address.GetAddrPort());
+        inet_pton(AF_INET6, address.GetIp().c_str(), &addr.sin6_addr);
+        ret = bind((SOCKET)sockfd, (sockaddr*)&addr, sizeof(addr));
+    }
+    
     if (SOCKET_ERROR == ret) {
         return {ret, (int32_t)GetLastError()};
     }

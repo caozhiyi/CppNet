@@ -18,7 +18,7 @@ static void* GetExFunctnion(const uint64_t& socket, const GUID& which) {
 }
 
 WinExpendFunc::WinExpendFunc():
-    _AcceptExScokAddrs(nullptr),
+    _AcceptExSockAddrs(nullptr),
     _ConnectEx(),
     _AcceptEx(),
     _DisconnectionEx() {
@@ -33,12 +33,12 @@ WinExpendFunc::WinExpendFunc():
 
     _AcceptEx = (LPFN_ACCEPTEX)GetExFunctnion((uint64_t)socket, WSAID_ACCEPTEX);
     _ConnectEx = (LPFN_CONNECTEX)GetExFunctnion((uint64_t)socket, WSAID_CONNECTEX);
-    _AcceptExScokAddrs = (LPFN_GETACCEPTEXSOCKADDRS)GetExFunctnion((uint64_t)socket, WSAID_GETACCEPTEXSOCKADDRS);
+    _AcceptExSockAddrs = (LPFN_GETACCEPTEXSOCKADDRS)GetExFunctnion((uint64_t)socket, WSAID_GETACCEPTEXSOCKADDRS);
     _DisconnectionEx = (LPFN_DISCONNECTEX)GetExFunctnion((uint64_t)socket, WSAID_DISCONNECTEX);
     
     closesocket(socket);
 
-    if (!_AcceptExScokAddrs || !_ConnectEx || !_AcceptEx || !_DisconnectionEx) {
+    if (!_AcceptExSockAddrs || !_ConnectEx || !_AcceptEx || !_DisconnectionEx) {
         throw "get expand function failed!";
     }
 }
