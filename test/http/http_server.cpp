@@ -1,34 +1,34 @@
-#include "HttpServer.h"
-#include "HttpRequest.h"
-#include "HttpContext.h"
-#include "HttpResponse.h"
+#include "http_server.h"
+#include "http_request.h"
+#include "http_context.h"
+#include "http_response.h"
 
 #include "common/util/time.h"
 
 using namespace cppnet;
 
-CHttpServer::CHttpServer() {
+HttpServer::HttpServer() {
 
 }
 
-CHttpServer::~CHttpServer() {
+HttpServer::~HttpServer() {
 
 }
 
-void CHttpServer::OnConnection(cppnet::Handle handle, uint32_t err) {
+void HttpServer::OnConnection(cppnet::Handle handle, uint32_t err) {
     if (err == CEC_SUCCESS) {
         std::unique_lock<std::mutex> lock(_mutex);
         if (_context_map.find(handle) == _context_map.end()) {
-            _context_map[handle] = CHttpContext();
+            _context_map[handle] = HttpContext();
         }
     }
 }
 
-void CHttpServer::OnMessage(cppnet::Handle handle, cppnet::BufferPtr data, 
+void HttpServer::OnMessage(cppnet::Handle handle, cppnet::BufferPtr data, 
                           uint32_t) {
     
     _mutex.lock();
-    CHttpContext& context = _context_map[handle];
+    HttpContext& context = _context_map[handle];
     _mutex.unlock();
 
     if (!context.ParseRequest(data, cppnet::UTCTimeMsec())) {
@@ -42,16 +42,16 @@ void CHttpServer::OnMessage(cppnet::Handle handle, cppnet::BufferPtr data,
     }
 }
 
-void CHttpServer::OnMessageSend(cppnet::Handle , uint32_t) {
+void HttpServer::OnMessageSend(cppnet::Handle , uint32_t) {
     // do nothing.
 }
 
-void CHttpServer::OnRequest(cppnet::Handle handle, const CHttpRequest& req) {
+void HttpServer::OnRequest(cppnet::Handle handle, const HttpRequest& req) {
     const std::string& connection = req.GetHeader("Connection");
     bool close = connection == "close" ||
       (req.GetVersion() == Http10 && connection != "Keep-Alive");
 
-    CHttpResponse response(close);
+    HttpResponse response(close);
     _http_call_back(req, response);
 
     std::string res = response.GetSendBuffer();

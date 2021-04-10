@@ -23,9 +23,9 @@ enum Version {
     Http11
 };
 
-class CHttpRequest {
+class HttpRequest {
   public:
-  CHttpRequest() : _method(Invalid), _version(Unknown) {}
+  HttpRequest() : _method(Invalid), _version(Unknown) {}
 
   void SetVersion(Version v) {
     _version = v;
@@ -138,7 +138,7 @@ class CHttpRequest {
     return _headers_map;
   }
 
-  void Swap(CHttpRequest& that) {
+  void Swap(HttpRequest& that) {
     std::swap(_method, that._method);
     std::swap(_version, that._version);
     std::swap(_receive_time, that._receive_time);

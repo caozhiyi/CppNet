@@ -1,7 +1,7 @@
 #ifndef TEST_HTTP_HTTP_CONTEXT_HEADER
 #define TEST_HTTP_HTTP_CONTEXT_HEADER
 
-#include "HttpRequest.h"
+#include "http_request.h"
 #include "include/cppnet_type.h"
 
 enum HttpRequestParseState{
@@ -11,9 +11,9 @@ enum HttpRequestParseState{
     GotAll,
 };
 
-class CHttpContext {
+class HttpContext {
     public:
-        CHttpContext() : _state(ExpectRequestLine) { }
+        HttpContext() : _state(ExpectRequestLine) { }
 
         // default copy-ctor, dtor and assignment are fine
         // return false if any error
@@ -25,15 +25,15 @@ class CHttpContext {
 
         void Reset() {
             _state = ExpectRequestLine;
-            CHttpRequest dummy;
+            HttpRequest dummy;
             _request.Swap(dummy);
         }
 
-        const CHttpRequest& GetRequest() const { 
+        const HttpRequest& GetRequest() const { 
             return _request;
         }
 
-        CHttpRequest& GetRequest(){ 
+        HttpRequest& GetRequest(){ 
             return _request;
         }
 
@@ -41,7 +41,7 @@ class CHttpContext {
         bool processRequestLine(const char* begin, const char* end);
     private:
         HttpRequestParseState _state;
-        CHttpRequest _request;
+        HttpRequest _request;
 };
 
 #endif

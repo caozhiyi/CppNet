@@ -18,6 +18,18 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="http_context.cpp" />
+    <ClCompile Include="http_response.cpp" />
+    <ClCompile Include="http_server.cpp" />
+    <ClCompile Include="http_server_test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="http_context.h" />
+    <ClInclude Include="http_request.h" />
+    <ClInclude Include="http_response.h" />
+    <ClInclude Include="http_server.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{1C9F6CAE-56CD-4508-A3C0-0FC1A4A3DF72}</ProjectGuid>
@@ -143,18 +155,6 @@
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="HttpContext.cpp" />
-    <ClCompile Include="HttpResponse.cpp" />
-    <ClCompile Include="HttpServer.cpp" />
-    <ClCompile Include="HttpServerTest.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="HttpContext.h" />
-    <ClInclude Include="HttpRequest.h" />
-    <ClInclude Include="HttpResponse.h" />
-    <ClInclude Include="HttpServer.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

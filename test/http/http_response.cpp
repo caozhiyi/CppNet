@@ -1,8 +1,8 @@
 #include <string>
 #include <stdio.h>
-#include "HttpResponse.h"
+#include "http_response.h"
 
-std::string CHttpResponse::GetSendBuffer() const {
+std::string HttpResponse::GetSendBuffer() const {
     std::string ret;
     ret.append("HTTP/1.1 ");
     ret.append(std::to_string(_status_code));

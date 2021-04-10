@@ -1,11 +1,11 @@
 #include <algorithm>
-#include "HttpContext.h"
+#include "http_context.h"
 
 const char CRLF[] = "\r\n";
 const int CRLF_LEN = 2;
 const int VERSION_LEN = sizeof("HTTP/1.1");
 
-bool CHttpContext::processRequestLine(const char* begin, const char* end) {
+bool HttpContext::processRequestLine(const char* begin, const char* end) {
     bool succeed = false;
     const char* start = begin;
     const char* space = std::find(start, end, ' ');
@@ -40,7 +40,7 @@ bool CHttpContext::processRequestLine(const char* begin, const char* end) {
 }
 
 // return false if any error
-bool CHttpContext::ParseRequest(cppnet::BufferPtr buf, uint64_t receive_time) {
+bool HttpContext::ParseRequest(cppnet::BufferPtr buf, uint64_t receive_time) {
     bool ok = true;
     bool hasMore = true;
     while (hasMore) {

@@ -5,19 +5,19 @@
 #include <functional>
 #include <mutex>
 
-#include "HttpContext.h"
-#include "HttpRequest.h"
-#include "HttpResponse.h"
+#include "http_context.h"
+#include "http_request.h"
+#include "http_response.h"
 
 #include "include/cppnet.h"
 #include "include/cppnet_socket.h"
 
-typedef std::function<void (const CHttpRequest&, CHttpResponse&)> HttpCallback;
+typedef std::function<void (const HttpRequest&, HttpResponse&)> HttpCallback;
 
-class CHttpServer {
+class HttpServer {
     public:
-        CHttpServer();
-        ~CHttpServer();
+        HttpServer();
+        ~HttpServer();
 
         void SetHttpCallback(const HttpCallback& cb) {
             _http_call_back = cb;
@@ -31,11 +31,11 @@ class CHttpServer {
         void OnMessageSend(cppnet::Handle handle, uint32_t len);
       
     private:
-        void OnRequest(cppnet::Handle handle, const CHttpRequest&);
+        void OnRequest(cppnet::Handle handle, const HttpRequest&);
 
     private:
         std::mutex _mutex;
-        std::unordered_map<cppnet::Handle, CHttpContext> _context_map;
+        std::unordered_map<cppnet::Handle, HttpContext> _context_map;
         HttpCallback _http_call_back;
 };
 

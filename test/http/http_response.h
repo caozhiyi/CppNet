@@ -11,13 +11,9 @@ enum HttpStatusCode {
     k404NotFound = 404,
 };
 
-namespace base {
-    class CBuffer;
-}
-
-class CHttpResponse {
+class HttpResponse {
     public:
-        explicit CHttpResponse(bool close) : _status_code(kUnknown), _close_connection(close) {
+        explicit HttpResponse(bool close) : _status_code(kUnknown), _close_connection(close) {
         }
 
         void SetStatusCode(HttpStatusCode code) {

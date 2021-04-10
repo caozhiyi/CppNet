@@ -3,9 +3,9 @@
 #include <iostream>
 #include <unordered_map>
 
-#include "HttpServer.h"
-#include "HttpRequest.h"
-#include "HttpResponse.h"
+#include "http_server.h"
+#include "http_request.h"
+#include "http_response.h"
 
 #include "common/util/time.h"
 
@@ -13,7 +13,7 @@ std::string image;
 bool benchmark = true;
 
 std::string GetFile();
-void OnRequest(const CHttpRequest& req, CHttpResponse& resp) {
+void OnRequest(const HttpRequest& req, HttpResponse& resp) {
     //std::cout << "Headers " << req.GetMethodString() << " " << req.GetPath() << std::endl;
     if (!benchmark) {
         const std::unordered_map<std::string, std::string>& headers = req.GetHeaders();
@@ -70,12 +70,12 @@ int main() {
     cppnet::CppNet net;
     net.Init(1);
 
-    CHttpServer server;
+    HttpServer server;
     server.SetHttpCallback(OnRequest);
 
-    net.SetAcceptCallback(std::bind(&CHttpServer::OnConnection, &server, std::placeholders::_1, std::placeholders::_2));
-    net.SetWriteCallback(std::bind(&CHttpServer::OnMessageSend, &server, std::placeholders::_1, std::placeholders::_2));
-    net.SetReadCallback(std::bind(&CHttpServer::OnMessage, &server, std::placeholders::_1, std::placeholders::_2, 
+    net.SetAcceptCallback(std::bind(&HttpServer::OnConnection, &server, std::placeholders::_1, std::placeholders::_2));
+    net.SetWriteCallback(std::bind(&HttpServer::OnMessageSend, &server, std::placeholders::_1, std::placeholders::_2));
+    net.SetReadCallback(std::bind(&HttpServer::OnMessage, &server, std::placeholders::_1, std::placeholders::_2, 
                                               std::placeholders::_3));
     net.SetDisconnectionCallback(DisConnectionFunc);
 
