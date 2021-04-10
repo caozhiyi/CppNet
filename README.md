@@ -11,20 +11,21 @@ See the details in chinese [Wiki](https://github.com/caozhiyi/CppNet/wiki)
 
 Cppnet is a proactor mode and multithreaded network with C++11 on tcp. Support Window, Linux and macOS.    
  Simple:    
- + only export a little interfaces, all net ios insterface are asynchronous callbacks
- + insterface as much as possible like calling the socket API of the system
- + there is only one additional buffer object type for the client
+ + Only export a little interfaces, all net ios insterface are asynchronous callbacks
+ + Insterface as much as possible like calling the socket API of the system
+ + There is only one additional buffer object type for the client
+ + Support both IPv4 and IPv6
 
  Fast: 
- + epoll, IOCP and kqueue are used
- + multithreaded threads are handled by the kernel through port reuse
- + each socket has a single memory pool object. All memory requested from the memory pool is managed by an intelligent pointer 
- + using time wheel to realize timer   
+ + Use epoll, IOCP and kqueue
+ + Multithreaded threads are handled by the kernel through port reuse
+ + Each socket has a single memory pool object. All memory requested from the memory pool is managed by an intelligent pointer 
+ + Using time wheel to realize timer   
  
  Clear：
- + three layers: event-driven layer, session management layer and interface layer
- + upward notification through callbacks between layers. Clear division of responsibilities among modules, pay to Caesar what belongs to Caesar and God what belongs to God
- + the interface decoupling module is used to meet the minimum interface principle and dependency inversion principle  
+ + Three layers: event-driven layer, session management layer and interface layer
+ + Upward notification through callbacks between layers. Clear division of responsibilities among modules, pay to Caesar what belongs to Caesar and God what belongs to God
+ + The interface decoupling module is used to meet the minimum interface principle and dependency inversion principle  
 
 ## Interface
 

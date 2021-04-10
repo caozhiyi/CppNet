@@ -14,6 +14,7 @@ Cppnet是一个封装在TCP协议上的proactor模式multi-thread C++11网络库
  + 对外只导出了少量的调用接口，所有的网络IO都封装为异步回调的形式
  + 接口声明都尽可能的像是调用系统socket API
  + 对客户端而言，只多了一个新增的buffer对象类型
+ + 支持IPv6和IPv4
 
  快速：   
  + 分别采用epoll，IOCP，kqueue做底层事件驱动
