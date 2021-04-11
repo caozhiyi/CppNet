@@ -76,6 +76,8 @@ SysCallInt32Result OsHandle::Connect(int64_t sockfd, Address& address) {
 
     } else {
         struct sockaddr_in6 addr;
+        addr.sin6_flowinfo = 0;
+        addr.sin6_scope_id = 0;
         addr.sin6_family = AF_INET6;
         addr.sin6_port = htons(address.GetAddrPort());
         inet_pton(AF_INET6, address.GetIp().c_str(), &addr.sin6_addr);
