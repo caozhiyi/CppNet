@@ -48,7 +48,12 @@ void Address::SetIp(const std::string& ip) {
 }
 
 const std::string Address::AsString() {
-    return std::move(_ip + ":" + std::to_string(_port));
+    if (_address_type == AT_IPV6) {
+        return std::move("[" + _ip + "]:" + std::to_string(_port));
+
+    } else {
+        return std::move(_ip + ":" + std::to_string(_port));
+    }
 }
 
 std::ostream& operator<< (std::ostream &out, Address &addr) {
