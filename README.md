@@ -31,7 +31,7 @@ Cppnet is a proactor mode and multithreaded network with C++11 on tcp. Support W
 
 All the interface files are in [include](/include). The interface definitions for library initialization and timer are in [CppNet](/include/CppNet.h):    
 ```c++
-class CCppNet {
+class CppNet {
 public:
     // common
     // init cppnet library.

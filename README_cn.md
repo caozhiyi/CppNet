@@ -31,7 +31,7 @@ Cppnet是一个封装在TCP协议上的proactor模式multi-thread C++11网络库
 
 所有的接口文件都在 [include](/include) 中，其中关于库初始化和用户自定义定时器的接口定义在 [CppNet](/include/CppNet.h) 中：   
 ```c++
-class CCppNet {
+class CppNet {
 public:
     // common
     // init cppnet library.
