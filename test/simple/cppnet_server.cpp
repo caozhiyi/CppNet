@@ -64,7 +64,7 @@ int main() {
     net.SetReadCallback(ReadFunc);
     net.SetDisconnectionCallback(DisConnectionFunc);
 
-    net.ListenAndAccept("0.0.0.0", 8999);
+    net.ListenAndAccept("::0:0", 8999);
 
     net.Join();
 }
