@@ -11,6 +11,7 @@
 #include <stdarg.h>
 
 #include "log.h"
+#include "log_stream.h"
 #include "common/structure/thread_safe_queue.h"
 
 namespace cppnet {
@@ -33,6 +34,8 @@ public:
     void Warn(const char* file, uint32_t line, const char* content, va_list list);
     void Error(const char* file, uint32_t line, const char* content, va_list list);
     void Fatal(const char* file, uint32_t line, const char* content, va_list list);
+
+    LogStreamParam GetStreamParam(LogLevel level, const char* file, uint32_t line);
 
 private:
     std::shared_ptr<Log> GetLog();

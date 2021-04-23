@@ -1,6 +1,6 @@
 [x] IOCP supports multiple accept events
 [x] update document
-[ ] logger support stream 
+[x] logger support stream 
 [x] support IPV6 
 [x] remove default thread number to iocp
 [x] format files name

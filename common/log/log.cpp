@@ -61,5 +61,8 @@ void SingletonLogger::Fatal(const char* file, uint32_t line, const char* log...)
     va_end(list);
 }
 
+LogStreamParam SingletonLogger::GetStreamParam(LogLevel level, const char* file, uint32_t line) {
+    return _logger->GetStreamParam(level, file, line);
+}
 
 }
