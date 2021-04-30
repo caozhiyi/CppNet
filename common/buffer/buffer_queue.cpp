@@ -99,6 +99,7 @@ uint32_t BufferQueue::Read(std::shared_ptr<Buffer> buffer, uint32_t len) {
         }
     }
     _can_read_length -= total_read_len;
+    buffer_queue->_can_read_length += total_read_len;
     return total_read_len;
 }
 
@@ -160,6 +161,7 @@ uint32_t BufferQueue::Write(std::shared_ptr<Buffer> buffer, uint32_t len) {
         }
     }
     _can_read_length += total_write_len;
+    buffer_queue->_can_read_length -= total_write_len;
     return total_write_len;
 }
 
