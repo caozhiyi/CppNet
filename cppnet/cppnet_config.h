@@ -11,14 +11,13 @@
 namespace cppnet {
 
 // on linux, we have two ways to avoid thundering herd:
-// 1. use tcp flag set reuse port flag, mulit socket listen to one same port.
-// 2. only use one socket but set EPOLLEXCLUSIVE when add to epoll.(require linux kernal > 4.5)
+// 1. use tcp flag reuse port flag, multi socket listen to one same port.
+// 2. only use one socket but set EPOLLEXCLUSIVE flag when add to epoll.(require linux kernal > 4.5)
 
 // use reuse port tcp flag. must set true on windows and macOS.
 static const bool __reuse_port             = true;
 // use EPOLLEXCLUSIVE flag. must set false on windows and macOS.
-// if __epoll_exclusive set ture on linux, please set __reuse_port false.
-static const bool __epoll_exclusive        = false;
+static const bool __epoll_exclusive        = !__reuse_port;
 
 // size of block memory in block memory pool.
 static const uint16_t __mem_block_size     = 1024;
