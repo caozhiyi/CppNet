@@ -290,6 +290,9 @@ bool EpollEventActions::AddEvent(epoll_event* ev, int32_t event_flag, uint64_t s
         } else {
              ev->events |= event_flag;
         }
+        if (__epoll_exclusive) {
+            ev->events |= EPOLLEXCLUSIVE;
+        }
             
         int32_t ret = 0;
         if (in_actions) {
