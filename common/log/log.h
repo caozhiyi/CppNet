@@ -28,11 +28,11 @@ enum LogLevel {
 #define LOG_SET(log)         SingletonLogger::Instance().SetLogger(log);
 #define LOG_SET_LEVEL(level) SingletonLogger::Instance().SetLevel(level);
 
-#define LOG_DEBUG(log, ...)  SingletonLogger::Instance().Debug(__FILE__, __LINE__, log, ##__VA_ARGS__);
-#define LOG_INFO(log, ...)   SingletonLogger::Instance().Info(__FILE__, __LINE__, log, ##__VA_ARGS__);
-#define LOG_WARN(log, ...)   SingletonLogger::Instance().Warn(__FILE__, __LINE__, log, ##__VA_ARGS__);
-#define LOG_ERROR(log, ...)  SingletonLogger::Instance().Error(__FILE__, __LINE__, log, ##__VA_ARGS__);
-#define LOG_FATAL(log, ...)  SingletonLogger::Instance().Fatal(__FILE__, __LINE__, log, ##__VA_ARGS__);
+#define LOG_DEBUG(log, ...)  SingletonLogger::Instance().Debug(__FILE__, __LINE__, log, ##__VA_ARGS__)
+#define LOG_INFO(log, ...)   SingletonLogger::Instance().Info(__FILE__, __LINE__, log, ##__VA_ARGS__)
+#define LOG_WARN(log, ...)   SingletonLogger::Instance().Warn(__FILE__, __LINE__, log, ##__VA_ARGS__)
+#define LOG_ERROR(log, ...)  SingletonLogger::Instance().Error(__FILE__, __LINE__, log, ##__VA_ARGS__)
+#define LOG_FATAL(log, ...)  SingletonLogger::Instance().Fatal(__FILE__, __LINE__, log, ##__VA_ARGS__)
 
 #define LOG_DEBUG_S LogStream(cppnet::SingletonLogger::Instance().GetStreamParam(cppnet::LL_DEBUG, __FILE__, __LINE__))
 #define LOG_INFO_S  LogStream(cppnet::SingletonLogger::Instance().GetStreamParam(cppnet::LL_INFO, __FILE__, __LINE__))
