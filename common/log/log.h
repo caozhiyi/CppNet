@@ -25,8 +25,8 @@ enum LogLevel {
 };
 
 // log interface for user
-#define LOG_SET(log)         SingletonLogger::Instance().SetLogger(log);
-#define LOG_SET_LEVEL(level) SingletonLogger::Instance().SetLevel(level);
+#define LOG_SET(log)         SingletonLogger::Instance().SetLogger(log)
+#define LOG_SET_LEVEL(level) SingletonLogger::Instance().SetLevel(level)
 
 #define LOG_DEBUG(log, ...)  SingletonLogger::Instance().Debug(__FILE__, __LINE__, log, ##__VA_ARGS__)
 #define LOG_INFO(log, ...)   SingletonLogger::Instance().Info(__FILE__, __LINE__, log, ##__VA_ARGS__)
