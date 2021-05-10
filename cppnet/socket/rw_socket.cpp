@@ -36,8 +36,10 @@ RWSocket::RWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter):
 }
 
 RWSocket::~RWSocket() {
-    int a = 0;
-    a++;
+    // free buffer early than pool
+    _write_buffer.reset();
+    _read_buffer.reset();
+    _block_pool.reset();
 }
 
 bool RWSocket::GetAddress(std::string& ip, uint16_t& port) {
