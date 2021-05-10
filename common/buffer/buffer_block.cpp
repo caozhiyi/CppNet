@@ -480,14 +480,16 @@ const char* BufferBlock::_FindStrInMem(const char* buffer, const char* ch, uint3
         return nullptr;
     }
 
+    const char* buffer_end = buffer + buffer_len;
     const char* buff = buffer;
     const char* find = nullptr;
     size_t finded = 0;
     while(true) {
         find = (char*)memchr(buff, *ch, buffer_len - finded);
-        if (!find) {
+        if (!find || find > buffer_end - ch_len) {
             break;
         }
+        
         if (memcmp(find, ch, ch_len) == 0) {
             return find;
         }

@@ -35,7 +35,7 @@ std::shared_ptr<EventActions> MakeEventActions() {
 EpollEventActions::EpollEventActions():
     _epoll_handler(-1) {
     _active_list.resize(1024);
-
+    memset(_pipe, 0, sizeof(_pipe));
 }
 
 EpollEventActions::~EpollEventActions() {
@@ -134,6 +134,7 @@ bool EpollEventActions::AddAcceptEvent(std::shared_ptr<Event>& event) {
     if (sock) {
         epoll_event* ep_event = (epoll_event*)event->GetData();
         if (!ep_event) {
+            // TODO where to delete it.
             ep_event = new epoll_event;
             memset(ep_event, 0, sizeof(epoll_event));
             event->SetData(ep_event);
