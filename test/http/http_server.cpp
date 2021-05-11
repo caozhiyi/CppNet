@@ -24,6 +24,11 @@ void HttpServer::OnConnection(cppnet::Handle handle, uint32_t err) {
     }
 }
 
+void HttpServer::OnDisConnection(cppnet::Handle handle, uint32_t err) {
+    std::unique_lock<std::mutex> lock(_mutex);
+    _context_map.erase(handle);
+}
+
 void HttpServer::OnMessage(cppnet::Handle handle, cppnet::BufferPtr data, 
                           uint32_t) {
     

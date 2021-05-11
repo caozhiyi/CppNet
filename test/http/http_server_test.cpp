@@ -77,7 +77,7 @@ int main() {
     net.SetWriteCallback(std::bind(&HttpServer::OnMessageSend, &server, std::placeholders::_1, std::placeholders::_2));
     net.SetReadCallback(std::bind(&HttpServer::OnMessage, &server, std::placeholders::_1, std::placeholders::_2, 
                                               std::placeholders::_3));
-    net.SetDisconnectionCallback(DisConnectionFunc);
+    net.SetDisconnectionCallback(std::bind(&HttpServer::OnDisConnection, &server, std::placeholders::_1, std::placeholders::_2));
 
     net.ListenAndAccept("0.0.0.0", 8921);
 

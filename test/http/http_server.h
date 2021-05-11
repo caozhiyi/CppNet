@@ -25,6 +25,8 @@ class HttpServer {
 
         void OnConnection(cppnet::Handle handle, uint32_t err);
 
+        void OnDisConnection(cppnet::Handle handle, uint32_t err);
+
         void OnMessage(cppnet::Handle handle, cppnet::BufferPtr data, 
                           uint32_t len);
       
