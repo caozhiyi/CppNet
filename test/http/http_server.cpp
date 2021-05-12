@@ -19,7 +19,7 @@ void HttpServer::OnConnection(cppnet::Handle handle, uint32_t err) {
     if (err == CEC_SUCCESS) {
         std::unique_lock<std::mutex> lock(_mutex);
         if (_context_map.find(handle) == _context_map.end()) {
-            _context_map[handle] = HttpContext();
+            _context_map[handle] = std::make_shared<HttpContext>();
         }
     }
 }
@@ -33,17 +33,17 @@ void HttpServer::OnMessage(cppnet::Handle handle, cppnet::BufferPtr data,
                           uint32_t) {
     
     _mutex.lock();
-    HttpContext& context = _context_map[handle];
+    auto context = _context_map[handle];
     _mutex.unlock();
 
-    if (!context.ParseRequest(data, cppnet::UTCTimeMsec())) {
+    if (!context->ParseRequest(data, cppnet::UTCTimeMsec())) {
         handle->Write("HTTP/1.1 400 Bad Request\r\n\r\n", sizeof("HTTP/1.1 400 Bad Request\r\n\r\n"));
         handle->Close();
     }
 
-    if (context.IsGotAll()) {
-        OnRequest(handle, context.GetRequest());
-        context.Reset();
+    if (context->IsGotAll()) {
+        OnRequest(handle, context->GetRequest());
+        context->Reset();
     }
 }
 
@@ -60,7 +60,7 @@ void HttpServer::OnRequest(cppnet::Handle handle, const HttpRequest& req) {
     _http_call_back(req, response);
 
     std::string res = response.GetSendBuffer();
-    handle->Write(res.c_str(), res.length());
+    handle->Write(res.c_str(), (uint32_t)res.length());
     if (response.GetCloseConnection()) {
         handle->Close();
     }

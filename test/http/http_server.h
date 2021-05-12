@@ -37,7 +37,7 @@ class HttpServer {
 
     private:
         std::mutex _mutex;
-        std::unordered_map<cppnet::Handle, HttpContext> _context_map;
+        std::unordered_map<cppnet::Handle, std::shared_ptr<HttpContext>> _context_map;
         HttpCallback _http_call_back;
 };
 
