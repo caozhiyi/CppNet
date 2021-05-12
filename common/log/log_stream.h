@@ -7,6 +7,7 @@
 #define QUIC_COMMON_LOG_LOG_STREAM
 
 #include <memory>
+#include <string>
 #include <cstdint>
 #include <functional>
 

@@ -10,8 +10,7 @@ std::string HttpResponse::GetSendBuffer() const {
     ret.append(_status_message);
     ret.append("\r\n");
 
-    if (_close_connection)
-    {
+    if (_close_connection) {
         ret.append("Connection: close\r\n");
 
     } else {

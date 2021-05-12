@@ -153,6 +153,7 @@
     <ClInclude Include="common\log\file_logger.h" />
     <ClInclude Include="common\log\log.h" />
     <ClInclude Include="common\log\logger_interface.h" />
+    <ClInclude Include="common\log\log_stream.h" />
     <ClInclude Include="common\log\stdout_logger.h" />
     <ClInclude Include="common\network\address.h" />
     <ClInclude Include="common\network\io_handle.h" />
@@ -205,6 +206,7 @@
     <ClCompile Include="common\log\base_logger.cpp" />
     <ClCompile Include="common\log\file_logger.cpp" />
     <ClCompile Include="common\log\log.cpp" />
+    <ClCompile Include="common\log\log_stream.cpp" />
     <ClCompile Include="common\log\stdout_logger.cpp" />
     <ClCompile Include="common\network\address.cpp" />
     <ClCompile Include="common\network\win\io_handle.cpp" />

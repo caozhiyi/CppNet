@@ -107,7 +107,6 @@ LogStream& LogStream::operator<<(double v) {
     return *this;
 }
 
-
 LogStream& LogStream::operator<<(const std::string& v) {
     CHECK_CONTINUE()
 
