@@ -31,7 +31,7 @@ public:
         auto ret = std::move(_queue.front());
         _queue.pop();
  
-        return std::move(ret);
+        return ret;
     }
 
     void Clear() {

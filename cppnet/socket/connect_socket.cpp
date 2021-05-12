@@ -27,7 +27,10 @@ ConnectSocket::ConnectSocket() {
 }
 
 ConnectSocket::~ConnectSocket() {
-
+    if (_sock > 0) {
+        __all_socket_map.erase(_sock);
+        OsHandle::Close(_sock);
+    }
 }
 
 bool ConnectSocket::Bind(const std::string& ip, uint16_t port) {

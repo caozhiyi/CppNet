@@ -247,7 +247,7 @@ void EpollEventActions::OnEvent(std::vector<epoll_event>& event_vec, int16_t num
     std::shared_ptr<Event> event;
 
     for (int i = 0; i < num; i++) {
-        if (event_vec[i].data.fd == _pipe[0]) {
+        if ((uint32_t)event_vec[i].data.fd == _pipe[0]) {
             LOG_WARN("weak up the io thread, index : %d", i);
             char buf[4];
             read(_pipe[0], buf, 1);

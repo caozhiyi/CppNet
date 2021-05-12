@@ -24,7 +24,7 @@ enum FileLoggerSpiltUnit {
 
 class FileLogger: public Logger, public ThreadWithQueue<std::shared_ptr<Log>> {
 public:
-    FileLogger(const std::string& file = "cppnet", 
+    FileLogger(const std::string& file, 
         FileLoggerSpiltUnit unit = FLSU_DAY, 
         uint16_t max_store_days = 3,
         uint16_t time_offset = 5);

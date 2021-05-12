@@ -114,7 +114,7 @@ bool PosixRWSocket::Recv(uint32_t len) {
             _read_buffer->MoveWritePt(ret._return_value);
             off_set += ret._return_value;
             // read all
-            if (ret._return_value < buff_len) {
+            if ((uint32_t)ret._return_value < buff_len) {
                 break;
             }
             need_expend = true;
@@ -133,7 +133,7 @@ bool PosixRWSocket::Send() {
     uint32_t off_set = 0;
     while(_write_buffer && _write_buffer->GetCanReadLength() > 0) {
         std::vector<Iovec> io_vec;
-        uint32_t data_len = _write_buffer->GetUseMemoryBlock(io_vec, __linux_write_buff_get);
+        _write_buffer->GetUseMemoryBlock(io_vec, __linux_write_buff_get);
         auto ret = OsHandle::Writev(_sock, &*io_vec.begin(), io_vec.size());
         if (ret._return_value >= 0) {
             _write_buffer->MoveReadPt(ret._return_value);

@@ -49,10 +49,10 @@ void Address::SetIp(const std::string& ip) {
 
 const std::string Address::AsString() {
     if (_address_type == AT_IPV6) {
-        return std::move("[" + _ip + "]:" + std::to_string(_port));
+        return "[" + _ip + "]:" + std::to_string(_port);
 
     } else {
-        return std::move(_ip + ":" + std::to_string(_port));
+        return _ip + ":" + std::to_string(_port);
     }
 }
 
@@ -81,7 +81,7 @@ std::string Address::ToIpv6(const std::string& ip) {
     
     std::string ret("::FFFF:");
     ret.append(ip);
-    return std::move(ret);
+    return ret;
 }
 
 std::string Address::ToIpv4(const std::string& ip) {

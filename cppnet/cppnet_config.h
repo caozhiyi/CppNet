@@ -6,6 +6,7 @@
 #ifndef CPPNET_CPPNET_CONFIGE
 #define CPPNET_CPPNET_CONFIGE
 
+#include <string>
 #include <cstdint>
 
 namespace cppnet {
@@ -33,7 +34,7 @@ static const uint16_t __addr_str_len       = 16;
 // log level. 
 static const uint16_t __log_level          = 15; // info level
 // log file name.
-static const char* __log_file_name         = "cppnet_log";
+static const std::string __log_file_name   = "cppnet_log";
 // open log print.
 static const bool __open_log               = false;
 

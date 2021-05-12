@@ -38,7 +38,6 @@ private:
     uint32_t                  _number_large_add_nodes; //every time add nodes num
     uint32_t                  _large_size;             //bulk memory size
     std::vector<void*>        _free_mem_vec;           //free bulk memory list
-    std::vector<void*>        _all_mem_vec;
 };
 
 std::shared_ptr<BlockMemoryPool> MakeBlockMemoryPoolPtr(uint32_t large_sz, uint32_t add_num);
