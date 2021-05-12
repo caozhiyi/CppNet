@@ -76,21 +76,14 @@ LogStream& LogStream::operator<<(uint32_t v) {
 LogStream& LogStream::operator<<(int64_t v) {
     CHECK_CONTINUE()
 
-    _log->_len += snprintf(_log->_log + _log->_len, __log_block_size - _log->_len, "%ld", v);
+    _log->_len += snprintf(_log->_log + _log->_len, __log_block_size - _log->_len, "%I64d", v);
     return *this;
 }
 
 LogStream& LogStream::operator<<(uint64_t v) {
     CHECK_CONTINUE()
 
-    _log->_len += snprintf(_log->_log + _log->_len, __log_block_size - _log->_len, "%lu", v);
-    return *this;
-}
-
-LogStream& LogStream::operator<<(long long v) {
-    CHECK_CONTINUE()
-
-    _log->_len += snprintf(_log->_log + _log->_len, __log_block_size - _log->_len, "%lld", v);
+    _log->_len += snprintf(_log->_log + _log->_len, __log_block_size - _log->_len, "%I64u", v);
     return *this;
 }
 

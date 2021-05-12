@@ -12,7 +12,7 @@
 
 namespace cppnet {
 
-class Log;
+struct Log;
 typedef std::pair<std::shared_ptr<Log>, std::function<void(std::shared_ptr<Log>)>> LogStreamParam;
 
 class LogStream {
@@ -31,7 +31,6 @@ public:
     LogStream& operator<<(uint32_t v);
     LogStream& operator<<(int64_t v);
     LogStream& operator<<(uint64_t v);
-    LogStream& operator<<(long long v);
     LogStream& operator<<(float v);
     LogStream& operator<<(double v);
     LogStream& operator<<(const std::string& v);
