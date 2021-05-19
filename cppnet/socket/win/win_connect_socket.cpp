@@ -32,7 +32,7 @@ std::shared_ptr<ConnectSocket> MakeConnectSocket() {
 WinConnectSocket::WinConnectSocket():
 	_in_actions(false) {
 	for (uint16_t i = 0; i < __iocp_accept_event_num; i++) {
-		auto event = std::make_shared<AcceptEvent>();
+		auto event = std::make_shared<AcceptEvent>(i);
 		_accept_event_vec.emplace_back(event);
 	}
 }

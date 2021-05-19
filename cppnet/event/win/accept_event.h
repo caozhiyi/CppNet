@@ -21,6 +21,13 @@ public:
         memset(_buf, 0, __iocp_buff_size);
     }
 
+    AcceptEvent(uint16_t index) :
+        _client_sock(0),
+        _buf_offset(0),
+        _index_in_socket(index) {
+        memset(_buf, 0, __iocp_buff_size);
+    }
+
     virtual ~AcceptEvent() {}
 
     char* GetBuf() { return _buf; }
