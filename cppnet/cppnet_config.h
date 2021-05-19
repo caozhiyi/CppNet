@@ -36,7 +36,7 @@ static const uint16_t __log_level          = 15; // info level
 // log file name.
 static const std::string __log_file_name   = "cppnet_log";
 // open log print.
-static const bool __open_log               = false;
+static const bool __open_log               = true;
 
 // epoll use et model.
 static const bool __epoll_use_et                   = true;

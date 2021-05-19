@@ -26,6 +26,7 @@ public:
 
     virtual void OnRead(uint32_t len = 0);
     virtual void OnWrite(uint32_t len = 0);
+    virtual void OnDisConnect(uint16_t err);
 
     void Incref() { _ref_count.fetch_add(1); }
     int16_t Decref() { return _ref_count.fetch_sub(1) - 1; }

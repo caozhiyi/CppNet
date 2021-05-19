@@ -385,7 +385,7 @@ void IOCPEventActions::ProcessEvent(int32_t wait_ms) {
         ERROR_IO_PENDING == dw_err) {
 
     } else if (ERROR_SEM_TIMEOUT == dw_err || 
-               WSAENOTCONN == dw_err || 
+               //WSAENOTCONN == dw_err || 
                ERROR_OPERATION_ABORTED == dw_err) {
         context->_event_type = INC_CONNECTION_BREAK;
 
@@ -440,9 +440,8 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
         event->RemoveType(ET_READ);
         std::shared_ptr<WinRWSocket> rw_socket = std::dynamic_pointer_cast<WinRWSocket>(sock);
         if (bytes == 0) {
-            if (rw_socket->IsShutdown() && rw_socket->Decref() == 0) {
-                rw_socket->OnDisConnect(CEC_CLOSED);
-            }
+            rw_socket->SetShutdown();
+            rw_socket->OnDisConnect(CEC_CLOSED);
             
         } else {
             rw_socket->OnRead(bytes);
@@ -454,9 +453,8 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
         event->RemoveType(ET_WRITE);
         std::shared_ptr<WinRWSocket> rw_socket = std::dynamic_pointer_cast<WinRWSocket>(sock);
         if (bytes == 0) {
-            if (rw_socket->IsShutdown() && rw_socket->Decref() == 0) {
-                rw_socket->OnDisConnect(CEC_CLOSED);
-            }
+            rw_socket->SetShutdown();
+            rw_socket->OnDisConnect(CEC_CLOSED);
            
         } else {
             rw_socket->OnWrite(bytes);
@@ -476,17 +474,18 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
         context->_event_type = 0;
         event->RemoveType(ET_DISCONNECT);
         std::shared_ptr<WinRWSocket> rw_socket = std::dynamic_pointer_cast<WinRWSocket>(sock);
-        if (rw_socket->IsShutdown() && rw_socket->Decref() == 0) {
+        if (rw_socket) {
+            rw_socket->SetShutdown();
             rw_socket->OnDisConnect(CEC_CLOSED);
         }
-        rw_socket->OnDisConnect(CEC_CLOSED);
         break;
     }
     case INC_CONNECTION_BREAK: {
         context->_event_type = 0;
         event->RemoveType(ET_DISCONNECT);
         std::shared_ptr<WinRWSocket> rw_socket = std::dynamic_pointer_cast<WinRWSocket>(sock);
-        if (rw_socket->IsShutdown() && rw_socket->Decref() == 0) {
+        if (rw_socket) {
+            rw_socket->SetShutdown();
             rw_socket->OnDisConnect(CEC_CONNECT_BREAK);
         }
         break;

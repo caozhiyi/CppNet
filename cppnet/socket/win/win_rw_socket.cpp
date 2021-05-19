@@ -94,15 +94,22 @@ void WinRWSocket::Disconnect() {
 }
 
 void WinRWSocket::OnRead(uint32_t len) {
-    Decref();
     Recv(len);
+    Decref();
     // wait for read again
     Read();
 }
 
 void WinRWSocket::OnWrite(uint32_t len) {
-    Decref();
     Send(len);
+    Decref();
+}
+
+void WinRWSocket::OnDisConnect(uint16_t err) {
+    if (Decref() > 0) {
+        return;
+    }
+    RWSocket::OnDisConnect(err);
 }
 
 bool WinRWSocket::Recv(uint32_t len) {

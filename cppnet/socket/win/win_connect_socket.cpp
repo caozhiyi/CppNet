@@ -57,6 +57,9 @@ void WinConnectSocket::Accept(uint16_t index) {
 		LOG_ERROR("create socket failed. errno:%d, info:%s", sock_ret._errno, ErrnoInfo(sock_ret._errno));
 		return;
 	}
+    setsockopt(sock_ret._return_value, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT,
+        (char *)&_sock, sizeof(_sock));
+
     accept_event->SetClientSocket(sock_ret._return_value);
 	if (!accept_event->GetSocket()) {
 		accept_event->SetSocket(shared_from_this());
@@ -82,6 +85,10 @@ void WinConnectSocket::OnAccept(std::shared_ptr<AcceptEvent> event) {
 	// accept a socket and read msg
 	AcceptExSockAddrs(event->GetBuf(), __iocp_buff_size - ((sizeof(SOCKADDR_STORAGE) + 16) * 2),
 		sizeof(SOCKADDR_STORAGE) + 16, sizeof(SOCKADDR_STORAGE) + 16, (LPSOCKADDR*)&LocalAddr, &localLen, (LPSOCKADDR*)&client_addr, &remote_len);
+
+    // Does this call have any effect ?
+    setsockopt(event->GetClientSocket(), SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT,
+        (char *)&_sock, sizeof(_sock));
 
 	// create a new rw socket
 	std::shared_ptr<AlloterWrap> alloter = std::make_shared<AlloterWrap>(MakePoolAlloterPtr());
