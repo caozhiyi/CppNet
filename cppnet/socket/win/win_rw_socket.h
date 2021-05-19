@@ -6,6 +6,7 @@
 #ifndef CPPNET_SOCKET_WIN_READ_WRITE_SOCKET
 #define CPPNET_SOCKET_WIN_READ_WRITE_SOCKET
 
+#include <atomic>
 #include "../rw_socket.h"
 
 namespace cppnet {
@@ -26,9 +27,19 @@ public:
     virtual void OnRead(uint32_t len = 0);
     virtual void OnWrite(uint32_t len = 0);
 
+    void Incref() { _ref_count.fetch_add(1); }
+    int16_t Decref() { return _ref_count.fetch_sub(1) - 1; }
+
+    void SetShutdown() { _shutdown = true; }
+    bool IsShutdown() { return _shutdown; }
+
 private:
     bool Recv(uint32_t len);
     bool Send(uint32_t len = 0);
+
+private:
+    std::atomic_int16_t _ref_count;
+    std::atomic_bool _shutdown;
 };
 
 }

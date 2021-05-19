@@ -24,12 +24,16 @@ std::shared_ptr<RWSocket> MakeRWSocket(uint64_t sock, std::shared_ptr<AlloterWra
 }
 
 WinRWSocket::WinRWSocket(std::shared_ptr<AlloterWrap> alloter): 
-    RWSocket(alloter) {
+    RWSocket(alloter),
+    _ref_count(0),
+    _shutdown(false) {
 
 }
 
 WinRWSocket::WinRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter):
-    RWSocket(sock, alloter) {
+    RWSocket(sock, alloter),
+    _ref_count(0),
+    _shutdown(false) {
 
 }
 
@@ -43,7 +47,12 @@ void WinRWSocket::Read() {
         _event->SetSocket(shared_from_this());
     }
 
-    RWSocket::Read();
+    auto actions = GetEventActions();
+    if (actions) {
+        if (actions->AddRecvEvent(_event)) {
+            Incref();
+        }
+    }
 }
 
 bool WinRWSocket::Write(const char* src, uint32_t len) {
@@ -85,12 +94,14 @@ void WinRWSocket::Disconnect() {
 }
 
 void WinRWSocket::OnRead(uint32_t len) {
+    Decref();
     Recv(len);
     // wait for read again
     Read();
 }
 
 void WinRWSocket::OnWrite(uint32_t len) {
+    Decref();
     Send(len);
 }
 
@@ -120,7 +131,9 @@ bool WinRWSocket::Send(uint32_t len) {
     
     auto actions = GetEventActions();
     if (actions && _write_buffer->GetCanReadLength() > 0) {
-        actions->AddSendEvent(_event);
+        if (actions->AddSendEvent(_event)) {
+            Incref();
+        }
     }
 
     return true;
