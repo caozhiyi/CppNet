@@ -90,12 +90,24 @@ void WinRWSocket::Disconnect() {
         _event->SetSocket(shared_from_this());
     }
 
-    RWSocket::Disconnect();
+    if (!_event) {
+        _event = _alloter->PoolNewSharePtr<Event>();
+        _event->SetSocket(shared_from_this());
+    }
+
+    auto actions = GetEventActions();
+    if (actions) {
+        if (actions->AddDisconnection(_event)) {
+            Incref();
+        }
+    }
 }
 
 void WinRWSocket::OnRead(uint32_t len) {
     Recv(len);
-    Decref();
+    if (!Decref()) {
+        return;
+    }
     // wait for read again
     Read();
 }
@@ -106,10 +118,16 @@ void WinRWSocket::OnWrite(uint32_t len) {
 }
 
 void WinRWSocket::OnDisConnect(uint16_t err) {
-    if (Decref() > 0) {
-        return;
+    Decref(err);
+}
+
+bool WinRWSocket::Decref(uint16_t err) {
+    int16_t ref = _ref_count.fetch_sub(1);
+    if (ref == 1 && IsShutdown()) {
+        RWSocket::OnDisConnect(err);
+        return false;
     }
-    RWSocket::OnDisConnect(err);
+    return true;
 }
 
 bool WinRWSocket::Recv(uint32_t len) {

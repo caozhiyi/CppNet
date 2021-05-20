@@ -324,7 +324,6 @@ bool IOCPEventActions::AddDisconnection(std::shared_ptr<Event>& event) {
     }
 
     context->_event_type = ET_DISCONNECT;
-    rw_sock->Incref();
     int32_t ret = DisconnectionEx((SOCKET)sock->GetSocket(), &context->_overlapped, TF_REUSE_SOCKET, 0);
 
     if ((SOCKET_ERROR == ret) && (WSA_IO_PENDING != WSAGetLastError())) {
@@ -385,7 +384,7 @@ void IOCPEventActions::ProcessEvent(int32_t wait_ms) {
         ERROR_IO_PENDING == dw_err) {
 
     } else if (ERROR_SEM_TIMEOUT == dw_err || 
-               //WSAENOTCONN == dw_err || 
+               WSAENOTCONN == dw_err || 
                ERROR_OPERATION_ABORTED == dw_err) {
         context->_event_type = INC_CONNECTION_BREAK;
 

@@ -29,7 +29,7 @@ public:
     virtual void OnDisConnect(uint16_t err);
 
     void Incref() { _ref_count.fetch_add(1); }
-    int16_t Decref() { return _ref_count.fetch_sub(1) - 1; }
+    bool Decref(uint16_t err = CEC_CLOSED);
 
     void SetShutdown() { _shutdown = true; }
     bool IsShutdown() { return _shutdown; }

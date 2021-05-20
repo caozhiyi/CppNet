@@ -28,7 +28,7 @@ ConnectSocket::ConnectSocket() {
 
 ConnectSocket::~ConnectSocket() {
     if (_sock > 0) {
-        __all_socket_map.erase(_sock);
+        __all_socket_map.Erase(_sock);
         OsHandle::Close(_sock);
     }
 }
