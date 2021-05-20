@@ -144,7 +144,11 @@ void RWSocket::OnConnect(uint16_t err) {
 
 void RWSocket::OnDisConnect(uint16_t err) {
     auto sock = shared_from_this();
+#ifdef __win__
     __all_socket_map.Erase(_sock);
+#else
+    __all_socket_map.erase(_sock);
+#endif
     auto cppnet_base = _cppnet_base.lock();
     if (cppnet_base) {
         cppnet_base->OnDisConnect(sock, err);

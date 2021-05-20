@@ -72,6 +72,7 @@ bool IOCPEventActions::Dealloc() {
 
 bool IOCPEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
     if (event->GetType() & ET_WRITE || event->GetType() & ET_DISCONNECT) {
+        LOG_WARN_S << "repeat send event";
         return false;
     }
     
@@ -82,11 +83,13 @@ bool IOCPEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
     }
     auto rw_sock = std::dynamic_pointer_cast<WinRWSocket>(sock);
     if (rw_sock->IsShutdown()) {
+        LOG_WARN_S << "socket is shutdown when send";
         return false;
     }
 
     if (!(event->GetType() & ET_INACTIONS)) {
         if (!AddToIOCP(sock->GetSocket())) {
+            LOG_WARN_S << "add to iocp failed when send";
             return false;
         }
         event->AddType(ET_INACTIONS);
@@ -111,7 +114,6 @@ bool IOCPEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
 
     if ((SOCKET_ERROR == ret) && (WSA_IO_PENDING != WSAGetLastError())) {
         LOG_WARN("IOCP post send event failed! error code:%d, info:%s", WSAGetLastError(), ErrnoInfo(WSAGetLastError()));
-        LOG_ERROR_S << "is repeat write:" << (event->GetType() & ET_WRITE);
         //rw_sock->OnDisConnect(CEC_CLOSED);
         DelEvent(event);
         rw_sock->SetShutdown();
@@ -126,6 +128,7 @@ bool IOCPEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
 
 bool IOCPEventActions::AddRecvEvent(std::shared_ptr<Event>& event) {
     if (event->GetType() & ET_READ || event->GetType() & ET_DISCONNECT) {
+        LOG_WARN_S << "repeat recv event";
         return false;
     }
 
@@ -136,11 +139,13 @@ bool IOCPEventActions::AddRecvEvent(std::shared_ptr<Event>& event) {
     }
     auto rw_sock = std::dynamic_pointer_cast<WinRWSocket>(sock);
     if (rw_sock->IsShutdown()) {
+        LOG_WARN_S << "socket is shutdown when recv";
         return false;
     }
 
     if (!(event->GetType() & ET_INACTIONS)) {
         if (!AddToIOCP(sock->GetSocket())) {
+            LOG_WARN_S << "add to iocp failed when recv";
             return false;
         }
         event->AddType(ET_INACTIONS);
@@ -176,6 +181,7 @@ bool IOCPEventActions::AddRecvEvent(std::shared_ptr<Event>& event) {
 
 bool IOCPEventActions::AddAcceptEvent(std::shared_ptr<Event>& event) {
     if (event->GetType() & ET_ACCEPT) {
+        LOG_WARN_S << "repeat accept event";
         return false;
     }
 
@@ -188,6 +194,7 @@ bool IOCPEventActions::AddAcceptEvent(std::shared_ptr<Event>& event) {
     auto accept_sock = std::dynamic_pointer_cast<WinConnectSocket>(sock);
     if (!accept_sock->GetInActions()) {
         if (!AddToIOCP(sock->GetSocket())) {
+            LOG_WARN_S << "add to iocp failed when accept";
             return false;
         }
         accept_sock->SetInActions(true);
@@ -223,6 +230,7 @@ bool IOCPEventActions::AddAcceptEvent(std::shared_ptr<Event>& event) {
 
 bool IOCPEventActions::AddConnection(std::shared_ptr<Event>& event, Address& address) {
     if (event->GetType() & ET_CONNECT) {
+        LOG_WARN_S << "repeat connect event";
         return false;
     }
 
@@ -238,7 +246,6 @@ bool IOCPEventActions::AddConnection(std::shared_ptr<Event>& event, Address& add
         context->_event = (void*)&event;
         event->SetData(context);
     }
-
     
 	if (address.GetType() == AT_IPV4) {
 		SOCKADDR_IN local;
@@ -303,6 +310,7 @@ bool IOCPEventActions::AddConnection(std::shared_ptr<Event>& event, Address& add
 
 bool IOCPEventActions::AddDisconnection(std::shared_ptr<Event>& event) {
     if (event->GetType() & ET_DISCONNECT) {
+        LOG_WARN_S << "repeat disconnect event";
         return false;
     }
 
@@ -382,6 +390,7 @@ void IOCPEventActions::ProcessEvent(int32_t wait_ms) {
 
     if (NO_ERROR == dw_err ||
         ERROR_IO_PENDING == dw_err) {
+        // do nothing
 
     } else if (ERROR_SEM_TIMEOUT == dw_err || 
                WSAENOTCONN == dw_err || 
@@ -476,6 +485,9 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
         if (rw_socket) {
             rw_socket->SetShutdown();
             rw_socket->OnDisConnect(CEC_CLOSED);
+
+        } else {
+            LOG_WARN_S << "disconnect empty socket";
         }
         break;
     }
@@ -486,6 +498,8 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
         if (rw_socket) {
             rw_socket->SetShutdown();
             rw_socket->OnDisConnect(CEC_CONNECT_BREAK);
+        }  else {
+            LOG_WARN_S << "connect break empty socket";
         }
         break;
     }
