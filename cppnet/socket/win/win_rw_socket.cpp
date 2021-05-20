@@ -64,10 +64,12 @@ bool WinRWSocket::Write(const char* src, uint32_t len) {
     //can't send now
     if (_write_buffer->GetCanReadLength() > 0) {
         if (_write_buffer->GetCanReadLength() > __max_write_cache) {
+            LOG_ERROR_S << "can't send now";
             return false;
         }
         
         _write_buffer->Write(src, len);
+        LOG_ERROR_S << "can't send now";
         return false;
 
     } else {
@@ -108,8 +110,8 @@ void WinRWSocket::OnRead(uint32_t len) {
     if (!Decref()) {
         return;
     }
-    // wait for read again
-    Read();
+    //// wait for read again
+    //Read();
 }
 
 void WinRWSocket::OnWrite(uint32_t len) {
@@ -152,6 +154,8 @@ bool WinRWSocket::Send(uint32_t len) {
     if (len > 0) {
         _write_buffer->MoveReadPt(len);
         cppnet_base->OnWrite(shared_from_this(), len);
+        // do read again
+        Read();
     }
     
     auto actions = GetEventActions();

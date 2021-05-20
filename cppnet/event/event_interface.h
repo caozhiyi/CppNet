@@ -38,6 +38,7 @@ public:
     void RemoveType(EventType type) { _event_type &= ~type; }
     uint16_t GetType() { return _event_type; }
     void ClearType() { _event_type = 0; }
+    void ForceSetType(EventType type) { _event_type = type; }
 
     void SetSocket(std::shared_ptr<Socket> socket) { _socket = socket; }
     std::shared_ptr<Socket> GetSocket() { return _socket.lock(); }

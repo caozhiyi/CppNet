@@ -2,6 +2,7 @@
 // that can be found in the LICENSE file.
 
 // Author: caozhiyi (caozhiyi5@gmail.com)
+
 #include <WS2tcpip.h>
 #include "expend_func.h"
 #include "iocp_action.h"
@@ -71,7 +72,7 @@ bool IOCPEventActions::Dealloc() {
 }
 
 bool IOCPEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
-    if (event->GetType() & ET_WRITE || event->GetType() & ET_DISCONNECT) {
+    if (/*event->GetType() & ET_WRITE ||*/ event->GetType() & ET_DISCONNECT) {
         LOG_WARN_S << "repeat send event";
         return false;
     }
@@ -480,7 +481,7 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
     case INC_CONNECTION_CLOSE:
     case ET_DISCONNECT: {
         context->_event_type = 0;
-        event->RemoveType(ET_DISCONNECT);
+        event->ForceSetType(ET_DISCONNECT);
         std::shared_ptr<WinRWSocket> rw_socket = std::dynamic_pointer_cast<WinRWSocket>(sock);
         if (rw_socket) {
             rw_socket->SetShutdown();
@@ -493,7 +494,7 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
     }
     case INC_CONNECTION_BREAK: {
         context->_event_type = 0;
-        event->RemoveType(ET_DISCONNECT);
+        event->ForceSetType(ET_DISCONNECT);
         std::shared_ptr<WinRWSocket> rw_socket = std::dynamic_pointer_cast<WinRWSocket>(sock);
         if (rw_socket) {
             rw_socket->SetShutdown();
@@ -505,13 +506,26 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
     }
     case INC_CONNECTION_REFUSE: {
         context->_event_type = 0;
-        event->RemoveType(ET_CONNECT);
+        event->ForceSetType(ET_DISCONNECT);
         std::shared_ptr<RWSocket> rw_socket = std::dynamic_pointer_cast<RWSocket>(sock);
         rw_socket->OnConnect(CEC_CONNECT_REFUSE);
         break;
     }
     default:
-        LOG_ERROR("invalid event type. type:%d", context->_event_type);
+        //LOG_ERROR("invalid event type. type:%d", context->_event_type);
+        context->_event_type = 0;
+        event->RemoveType(ET_WRITE);
+        std::shared_ptr<WinRWSocket> rw_socket = std::dynamic_pointer_cast<WinRWSocket>(sock);
+        if (bytes == 0) {
+            rw_socket->SetShutdown();
+            rw_socket->OnDisConnect(CEC_CLOSED);
+
+        }
+        else {
+            rw_socket->OnWrite(bytes);
+        }
+
+        break;
         break;
     }
 }
