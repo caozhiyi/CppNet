@@ -32,7 +32,7 @@ public:
     // net io event
     virtual bool AddSendEvent(std::shared_ptr<Event>& event) = 0;
     virtual bool AddRecvEvent(std::shared_ptr<Event>& event) = 0;
-    virtual bool AddAcceptEvent(std::shared_ptr<Event>& event) = 0;
+    virtual bool AddWinAcceptEvent(std::shared_ptr<Event>& event) = 0;
 
     virtual bool AddConnection(std::shared_ptr<Event>& event, Address& addr) = 0;
     virtual bool AddDisconnection(std::shared_ptr<Event>& event) = 0;

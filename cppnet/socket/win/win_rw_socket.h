@@ -6,11 +6,14 @@
 #ifndef CPPNET_SOCKET_WIN_READ_WRITE_SOCKET
 #define CPPNET_SOCKET_WIN_READ_WRITE_SOCKET
 
+#include <mutex>
 #include <atomic>
+#include <unordered_set>
 #include "../rw_socket.h"
 
 namespace cppnet {
 
+class Event;
 class WinRWSocket:
     public RWSocket { 
 
@@ -25,14 +28,21 @@ public:
     virtual void Disconnect();
 
     virtual void OnRead(uint32_t len = 0);
+    virtual void OnRead(std::shared_ptr<Event>& event, uint32_t len = 0);
     virtual void OnWrite(uint32_t len = 0);
+    virtual void OnWrite(std::shared_ptr<Event>& event, uint32_t len = 0);
     virtual void OnDisConnect(uint16_t err);
+    virtual void OnDisConnect(std::shared_ptr<Event>& event, uint16_t err);
 
     void Incref() { _ref_count.fetch_add(1); }
     bool Decref(uint16_t err = CEC_CLOSED);
 
     void SetShutdown() { _shutdown = true; }
     bool IsShutdown() { return _shutdown; }
+
+    void AddEvent(std::shared_ptr<Event>& event);
+    void RemvoeEvent(std::shared_ptr<Event>& event);
+    bool EventEmpty();
 
 private:
     bool Recv(uint32_t len);
@@ -41,6 +51,11 @@ private:
 private:
     std::atomic_int16_t _ref_count;
     std::atomic_bool _shutdown;
+
+private:
+    std::atomic_bool _is_reading;
+    std::mutex _event_mutex;
+    std::unordered_set<std::shared_ptr<Event>> _event_set;
 };
 
 }

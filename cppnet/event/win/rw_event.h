@@ -6,23 +6,29 @@
 #ifndef CPPNET_EVENT_WIN_RW_EVENT
 #define CPPNET_EVENT_WIN_RW_EVENT
 
-#include "cppnet/cppnet_config.h"
 #include "cppnet/event/event_interface.h"
 
 namespace cppnet {
 
-class RWEvent:
+class BufferQueue;
+class WinRWEvent:
     public Event{
 public:
-    RWEvent(): 
+    WinRWEvent(): 
        _ex_data(nullptr) {}
-    virtual ~RWEvent() {}
+    virtual ~WinRWEvent() {}
 
     void SetExData(void* data) { _ex_data = data; }
     void* GetExData() { return _ex_data; }
 
+    void SetBuffer(std::shared_ptr<BufferQueue>& buffer) { _buffer = buffer; }
+    std::shared_ptr<BufferQueue> GetBuffer() { return _buffer; }
+
 private:
     void* _ex_data;
+
+private:
+    std::shared_ptr<BufferQueue> _buffer;
 };
 
 }

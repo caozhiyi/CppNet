@@ -85,7 +85,7 @@ void ConnectSocket::Accept() {
     __all_socket_map[_sock] = shared_from_this();
     auto actions = GetEventActions();
     if (actions) {
-        actions->AddAcceptEvent(_accept_event);
+        actions->AddWinAcceptEvent(_accept_event);
     }
 }
 

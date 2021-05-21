@@ -10,7 +10,7 @@
 
 namespace cppnet {
 
-class AcceptEvent;
+class WinAcceptEvent;
 class WinConnectSocket:
     public ConnectSocket { 
 public:
@@ -20,7 +20,7 @@ public:
     virtual void Accept();
     void Accept(uint16_t index);
 
-    void OnAccept(std::shared_ptr<AcceptEvent> event);
+    void OnAccept(std::shared_ptr<WinAcceptEvent> event);
 
     void SetInActions(bool in) { _in_actions = in; }
     bool GetInActions() { return _in_actions; }

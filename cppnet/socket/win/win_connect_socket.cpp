@@ -32,7 +32,7 @@ std::shared_ptr<ConnectSocket> MakeConnectSocket() {
 WinConnectSocket::WinConnectSocket():
 	_in_actions(false) {
 	for (uint16_t i = 0; i < __iocp_accept_event_num; i++) {
-		auto event = std::make_shared<AcceptEvent>(i);
+		auto event = std::make_shared<WinAcceptEvent>(i);
 		_accept_event_vec.emplace_back(event);
 	}
 }
@@ -50,7 +50,7 @@ void WinConnectSocket::Accept() {
 
 void WinConnectSocket::Accept(uint16_t index) {
     auto& event = _accept_event_vec[index];
-    auto accept_event = std::dynamic_pointer_cast<AcceptEvent>(event);
+    auto accept_event = std::dynamic_pointer_cast<WinAcceptEvent>(event);
 	// create a new socket
 	auto sock_ret = OsHandle::TcpSocket();
 	if (sock_ret._return_value < 0) {
@@ -67,11 +67,11 @@ void WinConnectSocket::Accept(uint16_t index) {
 
 	auto actions = GetEventActions();
 	if (actions) {
-		actions->AddAcceptEvent(event);
+		actions->AddWinAcceptEvent(event);
 	}
 }
 
-void WinConnectSocket::OnAccept(std::shared_ptr<AcceptEvent> event) {
+void WinConnectSocket::OnAccept(std::shared_ptr<WinAcceptEvent> event) {
 	auto cppnet_base = _cppnet_base.lock();
 	if (!cppnet_base) {
 		return;
