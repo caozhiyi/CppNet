@@ -12,7 +12,7 @@ namespace cppnet {
 
 struct EventOverlapped;
 
-// epoll event interface
+// iocp event interface
 class IOCPEventActions:
     public EventActions {
 public:
