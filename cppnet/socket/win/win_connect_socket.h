@@ -20,13 +20,13 @@ public:
     virtual void Accept();
     void Accept(uint16_t index);
 
-    void OnAccept(std::shared_ptr<WinAcceptEvent> event);
+    void OnAccept(WinAcceptEvent* event);
 
     void SetInActions(bool in) { _in_actions = in; }
     bool GetInActions() { return _in_actions; }
 
 private:
-    std::vector<std::shared_ptr<Event>>  _accept_event_vec;
+    std::vector<Event*>  _accept_event_vec;
     bool _in_actions;
 };
 

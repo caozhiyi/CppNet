@@ -9,6 +9,7 @@
 #include "cppnet/cppnet_config.h"
 #include "cppnet/event/win/rw_event.h"
 #include "cppnet/event/action_interface.h"
+#include "cppnet/event/win/iocp_action.h"
 
 #include "common/log/log.h"
 #include "common/buffer/buffer_queue.h"
@@ -47,16 +48,17 @@ void WinRWSocket::Read() {
         return;
     }
 
-    auto rw_event = _alloter->PoolNewSharePtr<WinRWEvent>();
+    auto rw_event = _alloter->PoolNew<WinRWEvent>();
     auto buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
     rw_event->SetBuffer(buffer);
 
-    auto event = std::dynamic_pointer_cast<Event>(rw_event);
+    auto event = dynamic_cast<Event*>(rw_event);
     event->SetSocket(shared_from_this());
 
     auto actions = GetEventActions();
     if (actions) {
-        if (actions->AddRecvEvent(event)) {
+        auto iocp = std::dynamic_pointer_cast<IOCPEventActions>(actions);
+        if (iocp->AddRecvEvent(event)) {
             _is_reading = true;
             AddEvent(event);
         }
@@ -64,19 +66,22 @@ void WinRWSocket::Read() {
 }
 
 bool WinRWSocket::Write(const char* src, uint32_t len) {
-    auto rw_event = _alloter->PoolNewSharePtr<WinRWEvent>();
+    auto rw_event = _alloter->PoolNew<WinRWEvent>();
     auto buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
     rw_event->SetBuffer(buffer);
 
     buffer->Write(src, len);
 
-    auto event = std::dynamic_pointer_cast<Event>(rw_event);
+    auto event = dynamic_cast<Event*>(rw_event);
     event->SetSocket(shared_from_this());
 
     auto actions = GetEventActions();
     if (actions) {
-        if (actions->AddSendEvent(event)) {
-            AddEvent(event);
+        auto iocp = std::dynamic_pointer_cast<IOCPEventActions>(actions);
+        if (iocp->AddSendEvent(event)) {
+            std::lock_guard<std::mutex> lock(_event_mutex);
+            _event_set.insert(event);
+  
             return true;
         }
     }
@@ -109,7 +114,7 @@ void WinRWSocket::OnRead(uint32_t len) {
     // do nothind
 }
 
-void WinRWSocket::OnRead(std::shared_ptr<Event>& event, uint32_t len) {
+void WinRWSocket::OnRead(Event* event, uint32_t len) {
     auto cppnet_base = _cppnet_base.lock();
     if (!cppnet_base) {
         return;
@@ -119,7 +124,7 @@ void WinRWSocket::OnRead(std::shared_ptr<Event>& event, uint32_t len) {
         return;
     }
 
-    auto rw_event = std::dynamic_pointer_cast<WinRWEvent>(event);
+    auto rw_event = dynamic_cast<WinRWEvent*>(event);
 
     auto buffer = rw_event->GetBuffer();
     buffer->MoveWritePt(len);
@@ -148,7 +153,7 @@ void WinRWSocket::OnWrite(uint32_t len) {
     // do nothing
 }
 
-void WinRWSocket::OnWrite(std::shared_ptr<Event>& event, uint32_t len) {
+void WinRWSocket::OnWrite(Event* event, uint32_t len) {
     auto cppnet_base = _cppnet_base.lock();
     if (!cppnet_base) {
         return;
@@ -158,7 +163,7 @@ void WinRWSocket::OnWrite(std::shared_ptr<Event>& event, uint32_t len) {
         return;
     }
 
-    auto rw_event = std::dynamic_pointer_cast<WinRWEvent>(event);
+    auto rw_event = dynamic_cast<WinRWEvent*>(event);
     auto buffer = rw_event->GetBuffer();
     buffer->MoveReadPt(len);
 
@@ -168,7 +173,8 @@ void WinRWSocket::OnWrite(std::shared_ptr<Event>& event, uint32_t len) {
     if (buffer->GetCanReadLength() > 0) {
         auto actions = GetEventActions();
         if (actions) {
-            if (actions->AddSendEvent(event)) {
+            auto iocp = std::dynamic_pointer_cast<IOCPEventActions>(actions);
+            if (iocp->AddSendEvent(event)) {
                 LOG_ERROR("post send event. sock:%d", _sock);
             }
         }
@@ -182,7 +188,7 @@ void WinRWSocket::OnDisConnect(uint16_t err) {
     // do nothing
 }
 
-void WinRWSocket::OnDisConnect(std::shared_ptr<Event>& event, uint16_t err) {
+void WinRWSocket::OnDisConnect(Event* event, uint16_t err) {
     RemvoeEvent(event);
 
     if (EventEmpty() && IsShutdown()) {
@@ -198,12 +204,12 @@ void WinRWSocket::OnDisConnect(std::shared_ptr<Event>& event, uint16_t err) {
     }
 }
 
-void WinRWSocket::AddEvent(std::shared_ptr<Event>& event) {
+void WinRWSocket::AddEvent(Event* event) {
     std::lock_guard<std::mutex> lock(_event_mutex);
-    _event_set.insert(event);
+    _event_set.insert(std::move(event));
 }
 
-void WinRWSocket::RemvoeEvent(std::shared_ptr<Event>& event) {
+void WinRWSocket::RemvoeEvent(Event* event) {
     std::lock_guard<std::mutex> lock(_event_mutex);
     _event_set.erase(event);
 }

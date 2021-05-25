@@ -50,7 +50,7 @@ void WinConnectSocket::Accept() {
 
 void WinConnectSocket::Accept(uint16_t index) {
     auto& event = _accept_event_vec[index];
-    auto accept_event = std::dynamic_pointer_cast<WinAcceptEvent>(event);
+    auto accept_event = dynamic_cast<WinAcceptEvent*>(event);
 	// create a new socket
 	auto sock_ret = OsHandle::TcpSocket();
 	if (sock_ret._return_value < 0) {
@@ -71,7 +71,7 @@ void WinConnectSocket::Accept(uint16_t index) {
 	}
 }
 
-void WinConnectSocket::OnAccept(std::shared_ptr<WinAcceptEvent> event) {
+void WinConnectSocket::OnAccept(WinAcceptEvent* event) {
 	auto cppnet_base = _cppnet_base.lock();
 	if (!cppnet_base) {
 		return;
