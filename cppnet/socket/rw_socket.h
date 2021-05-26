@@ -46,15 +46,19 @@ public:
     virtual void OnDisConnect(uint16_t err);
 
     std::shared_ptr<BufferQueue> GetReadBuffer() { return _read_buffer; }
+#ifndef __win__
     std::shared_ptr<BufferQueue> GetWriteBuffer() { return _write_buffer; }
-    
+#endif
+
 protected:
     std::shared_ptr<BlockMemoryPool> _block_pool;
-
-    std::shared_ptr<Event>  _event;
-
-    std::shared_ptr<BufferQueue> _write_buffer;
     std::shared_ptr<BufferQueue> _read_buffer;
+
+#ifndef __win__
+    std::shared_ptr<Event>  _event;
+    std::shared_ptr<BufferQueue> _write_buffer;
+#endif
+    
 };
 
 std::shared_ptr<RWSocket> MakeRWSocket(std::shared_ptr<AlloterWrap> alloter);

@@ -26,6 +26,7 @@ enum EventType {
 const char* TypeString(EventType type);
 
 class Socket;
+class BufferQueue;
 class Event {
 public:
     Event(): _data(nullptr), _event_type(0) {}
@@ -43,10 +44,19 @@ public:
     void SetSocket(std::shared_ptr<Socket> socket) { _socket = socket; }
     std::shared_ptr<Socket> GetSocket() { return _socket.lock(); }
 
+#ifdef __win__
+    void SetBuffer(std::shared_ptr<BufferQueue>& buffer) { _buffer = buffer; }
+    std::shared_ptr<BufferQueue> GetBuffer() { return _buffer; }
+private:
+    std::shared_ptr<BufferQueue> _buffer;
+#endif
+
 protected:
     void*    _data;
     uint16_t _event_type;
     std::weak_ptr<Socket> _socket;
+
+
 };
 
 }

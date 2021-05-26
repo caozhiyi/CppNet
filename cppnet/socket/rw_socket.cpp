@@ -23,7 +23,7 @@ RWSocket::RWSocket(std::shared_ptr<AlloterWrap> alloter):
     Socket(alloter) {
 
     _block_pool = _alloter->PoolNewSharePtr<BlockMemoryPool>(__mem_block_size, __mem_block_add_step);
-    _write_buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
+    //_write_buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
     _read_buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
 }
 
@@ -31,15 +31,15 @@ RWSocket::RWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter):
     Socket(sock, alloter) {
 
     _block_pool = _alloter->PoolNewSharePtr<BlockMemoryPool>(__mem_block_size, __mem_block_add_step);
-    _write_buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
+    //_write_buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
     _read_buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
 }
 
 RWSocket::~RWSocket() {
     // free buffer early than pool
-    _write_buffer.reset();
-    _read_buffer.reset();
-    _block_pool.reset();
+    //_write_buffer.reset();
+    //_read_buffer.reset();
+    //_block_pool.reset();
 }
 
 bool RWSocket::GetAddress(std::string& ip, uint16_t& port) {
@@ -55,7 +55,7 @@ bool RWSocket::Close() {
 }
 
 void RWSocket::Read() {
-    if (!_event) {
+    /*if (!_event) {
         _event = _alloter->PoolNewSharePtr<Event>();
         _event->SetSocket(shared_from_this());
     }
@@ -63,11 +63,11 @@ void RWSocket::Read() {
     auto actions = GetEventActions();
     if (actions) {
         actions->AddRecvEvent(_event);
-    }
+    }*/
 }
 
 void RWSocket::Connect(const std::string& ip, uint16_t port) {
-    if (!_event) {
+    /*if (!_event) {
         _event = _alloter->PoolNewSharePtr<Event>();
         _event->SetSocket(shared_from_this());
     }
@@ -88,11 +88,11 @@ void RWSocket::Connect(const std::string& ip, uint16_t port) {
     auto actions = GetEventActions();
     if (actions) {
         actions->AddConnection(_event, _addr);
-    }
+    }*/
 }
 
 void RWSocket::Disconnect() {
-    if (!_event) {
+    /*if (!_event) {
         _event = _alloter->PoolNewSharePtr<Event>();
         _event->SetSocket(shared_from_this());
     }
@@ -100,7 +100,7 @@ void RWSocket::Disconnect() {
     auto actions = GetEventActions();
     if (actions) {
         actions->AddDisconnection(_event);
-    }
+    }*/
 }
 
 void RWSocket::OnTimer() {
@@ -155,9 +155,9 @@ void RWSocket::OnDisConnect(uint16_t err) {
     }
 
     // not active disconnection
-    if (_event && !(_event->GetType() & ET_DISCONNECT)) {
+    /*if (_event && !(_event->GetType() & ET_DISCONNECT)) {
         OsHandle::Close(_sock);
-    }
+    }*/
 }
 
 }

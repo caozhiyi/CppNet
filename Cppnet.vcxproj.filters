@@ -213,9 +213,6 @@
     <ClInclude Include="cppnet\event\win\accept_event.h">
       <Filter>cppnet\event\win</Filter>
     </ClInclude>
-    <ClInclude Include="cppnet\event\win\rw_event.h">
-      <Filter>cppnet\event\win</Filter>
-    </ClInclude>
     <ClInclude Include="common\log\log_stream.h">
       <Filter>common\log</Filter>
     </ClInclude>

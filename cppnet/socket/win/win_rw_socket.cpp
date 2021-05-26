@@ -7,9 +7,8 @@
 
 #include "cppnet/cppnet_base.h"
 #include "cppnet/cppnet_config.h"
-#include "cppnet/event/win/rw_event.h"
+#include "cppnet/event/event_interface.h"
 #include "cppnet/event/action_interface.h"
-#include "cppnet/event/win/iocp_action.h"
 
 #include "common/log/log.h"
 #include "common/buffer/buffer_queue.h"
@@ -26,7 +25,6 @@ std::shared_ptr<RWSocket> MakeRWSocket(uint64_t sock, std::shared_ptr<AlloterWra
 
 WinRWSocket::WinRWSocket(std::shared_ptr<AlloterWrap> alloter): 
     RWSocket(alloter),
-    _ref_count(0),
     _shutdown(false),
     _is_reading(false) {
 
@@ -34,7 +32,6 @@ WinRWSocket::WinRWSocket(std::shared_ptr<AlloterWrap> alloter):
 
 WinRWSocket::WinRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter):
     RWSocket(sock, alloter),
-    _ref_count(0),
     _shutdown(false),
     _is_reading(false) {
 
@@ -50,7 +47,7 @@ void WinRWSocket::Read() {
         return;
     }
 
-    auto rw_event = _alloter->PoolNew<WinRWEvent>();
+    auto rw_event = _alloter->PoolNew<Event>();
     auto buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
     rw_event->SetBuffer(buffer);
 
@@ -59,8 +56,7 @@ void WinRWSocket::Read() {
 
     auto actions = GetEventActions();
     if (actions) {
-        auto iocp = std::dynamic_pointer_cast<IOCPEventActions>(actions);
-        if (iocp->AddRecvEvent(event)) {
+        if (actions->AddRecvEvent(event)) {
             _is_reading = true;
             AddEvent(event);
         }
@@ -68,22 +64,20 @@ void WinRWSocket::Read() {
 }
 
 bool WinRWSocket::Write(const char* src, uint32_t len) {
-    auto rw_event = _alloter->PoolNew<WinRWEvent>();
+    // create new write buffer
     auto buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
-    rw_event->SetBuffer(buffer);
-
     buffer->Write(src, len);
 
-    auto event = dynamic_cast<Event*>(rw_event);
-    event->SetSocket(shared_from_this());
+    // create new write event
+    auto rw_event = _alloter->PoolNew<Event>();
+    rw_event->SetBuffer(buffer);
+
+    rw_event->SetSocket(shared_from_this());
 
     auto actions = GetEventActions();
     if (actions) {
-        auto iocp = std::dynamic_pointer_cast<IOCPEventActions>(actions);
-        if (iocp->AddSendEvent(event)) {
-            std::lock_guard<std::mutex> lock(_event_mutex);
-            _event_set.insert(event);
-  
+        if (actions->AddSendEvent(rw_event)) {
+            AddEvent(rw_event);
             return true;
         }
     }
@@ -91,29 +85,39 @@ bool WinRWSocket::Write(const char* src, uint32_t len) {
 }
 
 void WinRWSocket::Connect(const std::string& ip, uint16_t port) {
-    if (!_event) {
-        _event = _alloter->PoolNewSharePtr<WinRWEvent>();
-        _event->SetSocket(shared_from_this());
+    if (_sock == 0) {
+        auto ret = OsHandle::TcpSocket();
+        if (ret._return_value < 0) {
+            LOG_ERROR("create socket failed. error:%d", ret._errno);
+            return;
+        }
+        _sock = ret._return_value;
     }
-    RWSocket::Connect(ip, port);
-}
 
-void WinRWSocket::Disconnect() {
-    if (!_event) {
-        _event = _alloter->PoolNewSharePtr<Event>();
-        _event->SetSocket(shared_from_this());
-    }
+    _addr.SetIp(ip);
+    _addr.SetAddrPort(port);
+
+    auto rw_event = _alloter->PoolNew<Event>();
+    rw_event->SetSocket(shared_from_this());
 
     auto actions = GetEventActions();
     if (actions) {
-        if (actions->AddDisconnection(_event)) {
-            Incref();
+        if (actions->AddConnection(rw_event, _addr)) {
+            AddEvent(rw_event);
         }
     }
 }
 
-void WinRWSocket::OnRead(uint32_t len) {
-    // do nothind
+void WinRWSocket::Disconnect() {
+    auto rw_event = _alloter->PoolNew<Event>();
+    rw_event->SetSocket(shared_from_this());
+
+    auto actions = GetEventActions();
+    if (actions) {
+        if (actions->AddDisconnection(rw_event)) {
+            AddEvent(rw_event);
+        }
+    }
 }
 
 void WinRWSocket::OnRead(Event* event, uint32_t len) {
@@ -126,8 +130,7 @@ void WinRWSocket::OnRead(Event* event, uint32_t len) {
         return;
     }
 
-    auto rw_event = dynamic_cast<WinRWEvent*>(event);
-
+    auto rw_event = dynamic_cast<Event*>(event);
     auto buffer = rw_event->GetBuffer();
     buffer->MoveWritePt(len);
 
@@ -151,10 +154,6 @@ void WinRWSocket::OnRead(Event* event, uint32_t len) {
     Read();
 }
 
-void WinRWSocket::OnWrite(uint32_t len) {
-    // do nothing
-}
-
 void WinRWSocket::OnWrite(Event* event, uint32_t len) {
     auto cppnet_base = _cppnet_base.lock();
     if (!cppnet_base) {
@@ -165,7 +164,7 @@ void WinRWSocket::OnWrite(Event* event, uint32_t len) {
         return;
     }
 
-    auto rw_event = dynamic_cast<WinRWEvent*>(event);
+    auto rw_event = dynamic_cast<Event*>(event);
     auto buffer = rw_event->GetBuffer();
     buffer->MoveReadPt(len);
 
@@ -175,8 +174,7 @@ void WinRWSocket::OnWrite(Event* event, uint32_t len) {
     if (buffer->GetCanReadLength() > 0) {
         auto actions = GetEventActions();
         if (actions) {
-            auto iocp = std::dynamic_pointer_cast<IOCPEventActions>(actions);
-            if (iocp->AddSendEvent(event)) {
+            if (actions->AddSendEvent(event)) {
                 LOG_ERROR("post send event. sock:%d", _sock);
             }
         }
@@ -186,22 +184,17 @@ void WinRWSocket::OnWrite(Event* event, uint32_t len) {
     }
 }
 
-void WinRWSocket::OnDisConnect(uint16_t err) {
-    // do nothing
-}
-
 void WinRWSocket::OnDisConnect(Event* event, uint16_t err) {
     RemvoeEvent(event);
 
     if (EventEmpty() && IsShutdown()) {
         auto sock = shared_from_this();
-        __all_socket_map.Erase(_sock);
         auto cppnet_base = _cppnet_base.lock();
-
         if (cppnet_base) {
             cppnet_base->OnDisConnect(sock, err);
         }
 
+        __all_socket_map.Erase(_sock);
         OsHandle::Close(_sock);
     }
 }
@@ -220,44 +213,6 @@ void WinRWSocket::RemvoeEvent(Event* event) {
 bool WinRWSocket::EventEmpty() {
     std::lock_guard<std::mutex> lock(_event_mutex);
     return _event_set.empty();
-}
-
-bool WinRWSocket::Decref(uint16_t err) {
-    int16_t ref = _ref_count.fetch_sub(1);
-    if (ref == 1 && IsShutdown()) {
-        RWSocket::OnDisConnect(err);
-        return false;
-    }
-    return true;
-}
-
-bool WinRWSocket::Recv(uint32_t len) {
-    auto cppnet_base = _cppnet_base.lock();
-    if (!cppnet_base) {
-        return false;
-    }
-    if (len == 0) {
-        LOG_ERROR("read invalid length. sock:%d", _sock);
-    }
-
-    _read_buffer->MoveWritePt(len);
-    cppnet_base->OnRead(shared_from_this(), len);
-    return true;
-}
-
-bool WinRWSocket::Send(uint32_t len) {
-    auto cppnet_base = _cppnet_base.lock();
-    if (!cppnet_base) {
-        return false;
-    }
-    if (len > 0) {
-        _write_buffer->MoveReadPt(len);
-        cppnet_base->OnWrite(shared_from_this(), len);
-        // do read again
-        Read();
-    }
-    
-    return true;
 }
 
 }

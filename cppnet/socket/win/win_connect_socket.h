@@ -18,17 +18,15 @@ public:
     WinConnectSocket();
     ~WinConnectSocket();
 
+    virtual bool Bind(const std::string& ip, uint16_t port);
     virtual void Accept();
-    void Accept(uint16_t index);
+    virtual void Accept(uint16_t index);
+    virtual void Close();
 
-    void OnAccept(WinAcceptEvent* event);
-
-    void SetInActions(bool in) { _in_actions = in; }
-    bool GetInActions() { return _in_actions; }
+    virtual void OnAccept(Event* event);
 
 private:
     std::vector<Event*>  _accept_event_vec;
-    bool _in_actions;
 };
 
 }

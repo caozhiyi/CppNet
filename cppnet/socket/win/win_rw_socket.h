@@ -27,34 +27,25 @@ public:
     virtual void Connect(const std::string& ip, uint16_t port);
     virtual void Disconnect();
 
-    virtual void OnRead(uint32_t len = 0);
     virtual void OnRead(Event* event, uint32_t len = 0);
-    virtual void OnWrite(uint32_t len = 0);
     virtual void OnWrite(Event* event, uint32_t len = 0);
-    virtual void OnDisConnect(uint16_t err);
+    virtual void OnConnect(Event* event, uint16_t err);
     virtual void OnDisConnect(Event* event, uint16_t err);
-
-    void Incref() { _ref_count.fetch_add(1); }
-    bool Decref(uint16_t err = CEC_CLOSED);
 
     void SetShutdown() { _shutdown = true; }
     bool IsShutdown() { return _shutdown; }
 
+private:
     void AddEvent(Event* event);
     void RemvoeEvent(Event* event);
     bool EventEmpty();
 
 private:
-    bool Recv(uint32_t len);
-    bool Send(uint32_t len = 0);
-
-private:
-    std::atomic_int16_t _ref_count;
     std::atomic_bool _shutdown;
-
-private:
     std::atomic_bool _is_reading;
+
     std::mutex _event_mutex;
+    // all event
     std::unordered_set<Event*> _event_set;
 };
 

@@ -27,14 +27,7 @@ ConnectSocket::ConnectSocket() {
 }
 
 ConnectSocket::~ConnectSocket() {
-    if (_sock > 0) {
-#ifdef __win__
-        __all_socket_map.Erase(_sock);
-#else
-        __all_socket_map.erase(_sock);
-#endif
-        OsHandle::Close(_sock);
-    }
+
 }
 
 bool ConnectSocket::Bind(const std::string& ip, uint16_t port) {
@@ -77,6 +70,7 @@ bool ConnectSocket::Listen() {
     return true;
 }
 
+/*
 void ConnectSocket::Accept() {
     if (!_accept_event) {
         _accept_event = std::make_shared<Event>();
@@ -88,5 +82,6 @@ void ConnectSocket::Accept() {
         actions->AddWinAcceptEvent(_accept_event);
     }
 }
+*/
 
 }

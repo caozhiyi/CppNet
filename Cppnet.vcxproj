@@ -187,7 +187,6 @@
     <ClInclude Include="cppnet\event\win\accept_event.h" />
     <ClInclude Include="cppnet\event\win\expend_func.h" />
     <ClInclude Include="cppnet\event\win\iocp_action.h" />
-    <ClInclude Include="cppnet\event\win\rw_event.h" />
     <ClInclude Include="cppnet\socket\connect_socket.h" />
     <ClInclude Include="cppnet\socket\rw_socket.h" />
     <ClInclude Include="cppnet\socket\socket_interface.h" />
