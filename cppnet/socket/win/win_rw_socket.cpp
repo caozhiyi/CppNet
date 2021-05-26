@@ -27,14 +27,16 @@ std::shared_ptr<RWSocket> MakeRWSocket(uint64_t sock, std::shared_ptr<AlloterWra
 WinRWSocket::WinRWSocket(std::shared_ptr<AlloterWrap> alloter): 
     RWSocket(alloter),
     _ref_count(0),
-    _shutdown(false) {
+    _shutdown(false),
+    _is_reading(false) {
 
 }
 
 WinRWSocket::WinRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter):
     RWSocket(sock, alloter),
     _ref_count(0),
-    _shutdown(false) {
+    _shutdown(false),
+    _is_reading(false) {
 
 }
 
@@ -212,6 +214,7 @@ void WinRWSocket::AddEvent(Event* event) {
 void WinRWSocket::RemvoeEvent(Event* event) {
     std::lock_guard<std::mutex> lock(_event_mutex);
     _event_set.erase(event);
+    _alloter->PoolDelete(event);
 }
 
 bool WinRWSocket::EventEmpty() {

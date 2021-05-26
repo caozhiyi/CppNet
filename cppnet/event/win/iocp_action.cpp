@@ -88,13 +88,13 @@ bool IOCPEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
         return false;
     }
 
-    if (!(event->GetType() & ET_INACTIONS)) {
+    /*if (!(event->GetType() & ET_INACTIONS)) {
         if (!AddToIOCP(sock->GetSocket())) {
             LOG_WARN_S << "add to iocp failed when send";
             return false;
         }
         event->AddType(ET_INACTIONS);
-    }
+    }*/
     auto rw_event = std::dynamic_pointer_cast<WinRWEvent>(event);
     EventOverlapped* context = (EventOverlapped*)rw_event->GetData();
     
@@ -144,13 +144,13 @@ bool IOCPEventActions::AddRecvEvent(std::shared_ptr<Event>& event) {
         return false;
     }
 
-    if (!(event->GetType() & ET_INACTIONS)) {
+    /*if (!(event->GetType() & ET_INACTIONS)) {
         if (!AddToIOCP(sock->GetSocket())) {
             LOG_WARN_S << "add to iocp failed when recv";
             return false;
         }
         event->AddType(ET_INACTIONS);
-    }
+    }*/
 
     EventOverlapped* context = (EventOverlapped*)event->GetData();
    
@@ -197,19 +197,19 @@ bool IOCPEventActions::AddSendEvent(Event* event) {
         return false;
     }
 
-    if (!(event->GetType() & ET_INACTIONS)) {
+    /*if (!(event->GetType() & ET_INACTIONS)) {
         if (!AddToIOCP(sock->GetSocket())) {
             LOG_WARN_S << "add to iocp failed when send";
             return false;
         }
         event->AddType(ET_INACTIONS);
-    }
+    }*/
     auto rw_event = dynamic_cast<WinRWEvent*>(event);
     EventOverlapped* context = (EventOverlapped*)rw_event->GetData();
 
     if (!context) {
         context = rw_sock->GetAlloter()->PoolNew<EventOverlapped>();
-        context->_event = (void*)&event;
+        context->_event = (void*)event;
         rw_event->SetData(context);
     }
 
@@ -253,13 +253,13 @@ bool IOCPEventActions::AddRecvEvent(Event* event) {
         return false;
     }
 
-    if (!(event->GetType() & ET_INACTIONS)) {
+    /*if (!(event->GetType() & ET_INACTIONS)) {
         if (!AddToIOCP(sock->GetSocket())) {
             LOG_WARN_S << "add to iocp failed when recv";
             return false;
         }
         event->AddType(ET_INACTIONS);
-    }
+    }*/
 
     EventOverlapped* context = (EventOverlapped*)event->GetData();
 
@@ -270,7 +270,8 @@ bool IOCPEventActions::AddRecvEvent(Event* event) {
     }
     context->_event_type = ET_READ;
 
-    auto buffer = rw_sock->GetReadBuffer();
+    auto win_rw = dynamic_cast<WinRWEvent*>(event);
+    auto buffer = win_rw->GetBuffer();
     std::vector<Iovec> bufs;
     buffer->GetFreeMemoryBlock(bufs, __iocp_buff_size);
 
@@ -364,7 +365,7 @@ bool IOCPEventActions::AddWinAcceptEvent(Event* event) {
     EventOverlapped* context = (EventOverlapped*)event->GetData();
     if (!context) {
         context = new EventOverlapped();
-        context->_event = (void*)&event;
+        context->_event = (void*)event;
         event->SetData(context);
     }
     context->_event_type = ET_ACCEPT;
@@ -487,6 +488,126 @@ bool IOCPEventActions::AddDisconnection(std::shared_ptr<Event>& event) {
     if (!context) {
         context = sock->GetAlloter()->PoolNew<EventOverlapped>();
         context->_event = (void*)&event;
+        event->SetData(context);
+    }
+
+    context->_event_type = ET_DISCONNECT;
+    int32_t ret = DisconnectionEx((SOCKET)sock->GetSocket(), &context->_overlapped, TF_REUSE_SOCKET, 0);
+
+    if ((SOCKET_ERROR == ret) && (WSA_IO_PENDING != WSAGetLastError())) {
+        LOG_FATAL("IOCP post disconnect event failed! error code: %d", WSAGetLastError());
+        return false;
+    }
+    LOG_DEBUG("post a new disconnect event");
+
+    event->AddType(ET_DISCONNECT);
+    //DelEvent(event);
+    //auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
+    //rw_sock->OnDisConnect(CEC_CLOSED);
+    return true;
+}
+
+bool IOCPEventActions::AddConnection(Event* event, Address& address) {
+    if (event->GetType() & ET_CONNECT) {
+        LOG_WARN_S << "repeat connect event";
+        return false;
+    }
+
+    auto sock = event->GetSocket();
+    if (!sock) {
+        LOG_WARN("socket is already distroyed! event %s", "AddSendEvent");
+        return false;
+    }
+
+    EventOverlapped* context = (EventOverlapped*)event->GetData();
+    if (!context) {
+        context = sock->GetAlloter()->PoolNew<EventOverlapped>();
+        context->_event = (void*)event;
+        event->SetData(context);
+    }
+
+    if (address.GetType() == AT_IPV4) {
+        SOCKADDR_IN local;
+        local.sin_family = AF_INET;
+        local.sin_port = htons(0);
+        local.sin_addr.S_un.S_addr = INADDR_ANY;
+        if (bind(sock->GetSocket(), (sockaddr*)&local, sizeof(local)) != 0) {
+            LOG_FATAL("bind local host failed! error code:%d, info:%s", WSAGetLastError(), ErrnoInfo(WSAGetLastError()));
+        }
+
+    } else {
+        SOCKADDR_IN6 local;
+        local.sin6_flowinfo = 0;
+        local.sin6_scope_id = 0;
+        local.sin6_family = AF_INET6;
+        local.sin6_port = 0;
+        local.sin6_addr = in6addr_any;
+        if (bind(sock->GetSocket(), (sockaddr*)&local, sizeof(local)) != 0) {
+            LOG_FATAL("bind local host failed! error code:%d, info:%s", WSAGetLastError(), ErrnoInfo(WSAGetLastError()));
+        }
+    }
+
+    DWORD dwBytes = 0;
+    int32_t ret = -1;
+    if (address.GetType() == AT_IPV4) {
+        SOCKADDR_IN addr;
+        addr.sin_family = AF_INET6;
+        addr.sin_port = htons(address.GetAddrPort());
+        addr.sin_addr.S_un.S_addr = inet_addr(address.GetIp().c_str());
+        ConnectEx((SOCKET)sock->GetSocket(), (sockaddr*)&addr, sizeof(addr), nullptr, 0, &dwBytes, &context->_overlapped);
+
+    }
+    else {
+        SOCKADDR_IN6 addr;
+        addr.sin6_flowinfo = 0;
+        addr.sin6_scope_id = 0;
+        addr.sin6_family = AF_INET6;
+        addr.sin6_port = htons(address.GetAddrPort());
+        inet_pton(AF_INET6, address.GetIp().c_str(), &addr.sin6_addr);
+        ConnectEx((SOCKET)sock->GetSocket(), (sockaddr*)&addr, sizeof(addr), nullptr, 0, &dwBytes, &context->_overlapped);
+    }
+
+    setsockopt((SOCKET)sock->GetSocket(), SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, NULL, 0);
+
+    auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
+    if (ret) {
+        rw_sock->OnConnect(CEC_SUCCESS);
+        return true;
+    }
+
+    int32_t err = WSAGetLastError();
+    if (WSA_IO_PENDING == err || ERROR_SUCCESS == err) {
+        if (CheckConnect(rw_sock->GetSocket())) {
+            rw_sock->OnConnect(CEC_SUCCESS);
+            return true;
+        }
+    }
+    context->_event_type = ET_CONNECT;
+    DoEvent(context, 0);
+
+    return false;
+}
+
+bool IOCPEventActions::AddDisconnection(Event* event) {
+    if (event->GetType() & ET_DISCONNECT) {
+        LOG_WARN_S << "repeat disconnect event";
+        return false;
+    }
+
+    auto sock = event->GetSocket();
+    if (!sock) {
+        LOG_WARN("socket is already distroyed! event %s", "AddSendEvent");
+        return false;
+    }
+    auto rw_sock = std::dynamic_pointer_cast<WinRWSocket>(sock);
+    if (rw_sock->IsShutdown()) {
+        return false;
+    }
+
+    EventOverlapped* context = (EventOverlapped*)event->GetData();
+    if (!context) {
+        context = sock->GetAlloter()->PoolNew<EventOverlapped>();
+        context->_event = (void*)event;
         event->SetData(context);
     }
 

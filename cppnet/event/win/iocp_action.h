@@ -32,12 +32,15 @@ public:
     virtual bool AddConnection(std::shared_ptr<Event>& event, Address& address);
     virtual bool AddDisconnection(std::shared_ptr<Event>& event);
 
+    virtual bool AddConnection(Event* event, Address& address);
+    virtual bool AddDisconnection(Event* event);
+
     virtual bool DelEvent(std::shared_ptr<Event>& event);
     // io thread process
     virtual void ProcessEvent(int32_t wait_ms);
     // weak up net io thread
     virtual void Wakeup();
-private:
+public:
     bool AddToIOCP(uint64_t sock);
     void DoEvent(EventOverlapped *socket_context, uint32_t bytes);
 

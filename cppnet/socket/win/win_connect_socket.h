@@ -10,6 +10,7 @@
 
 namespace cppnet {
 
+class Event;
 class WinAcceptEvent;
 class WinConnectSocket:
     public ConnectSocket { 

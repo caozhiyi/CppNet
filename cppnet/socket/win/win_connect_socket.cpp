@@ -11,6 +11,7 @@
 #include "cppnet/event/win/expend_func.h"
 #include "cppnet/event/win/accept_event.h"
 #include "cppnet/event/action_interface.h"
+#include "cppnet/event/win/iocp_action.h"
 
 #include "common/log/log.h"
 #include "common/os/convert.h"
@@ -32,7 +33,7 @@ std::shared_ptr<ConnectSocket> MakeConnectSocket() {
 WinConnectSocket::WinConnectSocket():
 	_in_actions(false) {
 	for (uint16_t i = 0; i < __iocp_accept_event_num; i++) {
-		auto event = std::make_shared<WinAcceptEvent>(i);
+		auto event = new WinAcceptEvent(i);
 		_accept_event_vec.emplace_back(event);
 	}
 }
@@ -49,26 +50,27 @@ void WinConnectSocket::Accept() {
 }
 
 void WinConnectSocket::Accept(uint16_t index) {
-    auto& event = _accept_event_vec[index];
+    auto event = _accept_event_vec[index];
     auto accept_event = dynamic_cast<WinAcceptEvent*>(event);
-	// create a new socket
-	auto sock_ret = OsHandle::TcpSocket();
-	if (sock_ret._return_value < 0) {
-		LOG_ERROR("create socket failed. errno:%d, info:%s", sock_ret._errno, ErrnoInfo(sock_ret._errno));
-		return;
-	}
+    // create a new socket
+    auto sock_ret = OsHandle::TcpSocket();
+    if (sock_ret._return_value < 0) {
+        LOG_ERROR("create socket failed. errno:%d, info:%s", sock_ret._errno, ErrnoInfo(sock_ret._errno));
+        return;
+    }
     setsockopt(sock_ret._return_value, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT,
         (char *)&_sock, sizeof(_sock));
 
     accept_event->SetClientSocket(sock_ret._return_value);
-	if (!accept_event->GetSocket()) {
-		accept_event->SetSocket(shared_from_this());
-	}
+    if (!accept_event->GetSocket()) {
+        accept_event->SetSocket(shared_from_this());
+    }
 
-	auto actions = GetEventActions();
-	if (actions) {
-		actions->AddWinAcceptEvent(event);
-	}
+    auto actions = GetEventActions();
+    if (actions) {
+        auto iocp = std::dynamic_pointer_cast<IOCPEventActions>(actions);
+        iocp->AddWinAcceptEvent(event);
+    }
 }
 
 void WinConnectSocket::OnAccept(WinAcceptEvent* event) {
@@ -121,6 +123,10 @@ void WinConnectSocket::OnAccept(WinAcceptEvent* event) {
 	sock->SetEventActions(_event_actions);
 	sock->SetAddress(std::move(address));
 	sock->SetDispatcher(GetDispatcher());
+
+    auto action = GetEventActions();
+    auto iocp = std::dynamic_pointer_cast<IOCPEventActions>(action);
+    iocp->AddToIOCP(event->GetClientSocket());
 
 	__all_socket_map[event->GetClientSocket()] = sock;
 
