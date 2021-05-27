@@ -6,11 +6,31 @@
 #ifndef CPPNET_EVENT_WIN_IOCP_ACTION
 #define CPPNET_EVENT_WIN_IOCP_ACTION
 
+#include <WS2tcpip.h>
 #include "../action_interface.h"
 
 namespace cppnet {
 
-struct EventOverlapped;
+enum IOCP_NOTIFY_CODE {
+    INC_WEAK_UP           = 0xAAAAFFFF,
+    INC_CONNECTION_BREAK  = 0x100,
+    INC_CONNECTION_REFUSE = 0x200,
+    INC_CONNECTION_CLOSE  = 0x400,
+};
+
+struct EventOverlapped {
+    OVERLAPPED    _overlapped;
+    uint32_t      _event_type;
+    void*         _event;
+
+    EventOverlapped(): 
+        _event_type(0),
+        _event(nullptr){
+        memset(&_overlapped, 0, sizeof(_overlapped));
+    }
+
+    ~EventOverlapped() {}
+};
 
 // epoll event interface
 class IOCPEventActions:

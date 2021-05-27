@@ -3,7 +3,6 @@
 
 // Author: caozhiyi (caozhiyi5@gmail.com)
 
-#include <WS2tcpip.h>
 #include "expend_func.h"
 #include "iocp_action.h"
 
@@ -22,27 +21,6 @@ namespace cppnet {
 std::shared_ptr<EventActions> MakeEventActions() {
     return std::make_shared<IOCPEventActions>();
 }
-
-enum IOCP_NOTIFY_CODE {
-    INC_WEAK_UP           = 0xAAAAFFFF,
-    INC_CONNECTION_BREAK  = 0x100,
-    INC_CONNECTION_REFUSE = 0x200,
-    INC_CONNECTION_CLOSE  = 0x400,
-};
-
-struct EventOverlapped {
-    OVERLAPPED    _overlapped;
-    uint32_t      _event_type;
-    void*         _event;
-
-    EventOverlapped(): 
-        _event_type(0),
-        _event(nullptr){
-        memset(&_overlapped, 0, sizeof(_overlapped));
-    }
-
-    ~EventOverlapped() {}
-};
 
 IOCPEventActions::IOCPEventActions():
     _iocp_handler(nullptr) {
@@ -83,6 +61,7 @@ bool IOCPEventActions::AddSendEvent(Event* event) {
     auto rw_sock = std::dynamic_pointer_cast<WinRWSocket>(sock);
     if (rw_sock->IsShutdown()) {
         LOG_WARN_S << "socket is shutdown when send";
+        rw_sock->OnDisConnect(event, CEC_CONNECT_BREAK);
         return false;
     }
 
@@ -105,6 +84,7 @@ bool IOCPEventActions::AddSendEvent(Event* event) {
     if ((SOCKET_ERROR == ret) && (WSA_IO_PENDING != WSAGetLastError())) {
         LOG_WARN("IOCP post send event failed! error code:%d, info:%s", WSAGetLastError(), ErrnoInfo(WSAGetLastError()));
         rw_sock->SetShutdown();
+        rw_sock->OnDisConnect(event, CEC_CONNECT_BREAK);
         return false;
     }
 
@@ -128,6 +108,7 @@ bool IOCPEventActions::AddRecvEvent(Event* event) {
     auto rw_sock = std::dynamic_pointer_cast<WinRWSocket>(sock);
     if (rw_sock->IsShutdown()) {
         LOG_WARN_S << "socket is shutdown when recv";
+        rw_sock->OnDisConnect(event, CEC_CONNECT_BREAK);
         return false;
     }
 
@@ -150,6 +131,7 @@ bool IOCPEventActions::AddRecvEvent(Event* event) {
     if ((SOCKET_ERROR == ret) && (WSA_IO_PENDING != WSAGetLastError())) {
         LOG_WARN("IOCP post recv event failed! error code: %d, info:%s", WSAGetLastError(), ErrnoInfo(WSAGetLastError()));
         rw_sock->SetShutdown();
+        rw_sock->OnDisConnect(event, CEC_CONNECT_BREAK);
         return false;
     }
     event->AddType(ET_READ);
@@ -360,7 +342,9 @@ void IOCPEventActions::ProcessEvent(int32_t wait_ms) {
         // do nothing
 
     } else if (ERROR_SEM_TIMEOUT == dw_err || 
-               WSAENOTCONN == dw_err || 
+               WSAENOTCONN == dw_err       || 
+               WSAECONNABORTED == dw_err   ||
+               WSAENOTSOCK == dw_err       || 
                ERROR_OPERATION_ABORTED == dw_err) {
         context->_event_type = INC_CONNECTION_BREAK;
 

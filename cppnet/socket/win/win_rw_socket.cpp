@@ -8,7 +8,7 @@
 #include "cppnet/cppnet_base.h"
 #include "cppnet/cppnet_config.h"
 #include "cppnet/event/event_interface.h"
-#include "cppnet/event/action_interface.h"
+#include "cppnet/event/win/iocp_action.h"
 
 #include "common/log/log.h"
 #include "common/buffer/buffer_queue.h"
@@ -205,7 +205,11 @@ void WinRWSocket::AddEvent(Event* event) {
 void WinRWSocket::RemvoeEvent(Event* event) {
     std::lock_guard<std::mutex> lock(_event_mutex);
     _event_set.erase(event);
-    _alloter->PoolDelete(event);
+    EventOverlapped* data = (EventOverlapped*)event->GetData();
+    if (data) {
+        _alloter->PoolDelete<EventOverlapped>(data);
+    }
+    _alloter->PoolDelete<Event>(event);
 }
 
 bool WinRWSocket::EventEmpty() {
