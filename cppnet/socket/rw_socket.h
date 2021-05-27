@@ -39,10 +39,10 @@ public:
     virtual void StopTimer(uint64_t timer_id);
 
     virtual void OnTimer();
-    virtual void OnRead(uint32_t len = 0) {}
-    virtual void OnWrite(uint32_t len = 0) {}
-    virtual void OnConnect(uint16_t err);
-    virtual void OnDisConnect(uint16_t err);
+    virtual void OnRead(Event* event, uint32_t len = 0) {}
+    virtual void OnWrite(Event* event, uint32_t len = 0) {}
+    virtual void OnConnect(Event* event, uint16_t err);
+    virtual void OnDisConnect(Event* event, uint16_t err) {}
 
     virtual void SetShutdown() { }
     virtual bool IsShutdown() { return false; }
@@ -50,7 +50,6 @@ public:
     virtual std::shared_ptr<BufferQueue> GetReadBuffer() { return nullptr; }
 
     std::shared_ptr<AlloterWrap> GetAlloter() { return _alloter; }
-    std::shared_ptr<BlockMemoryPool> GetBlockMemoryPool() { return _block_pool; }
 
 protected:
     std::shared_ptr<AlloterWrap>     _alloter;

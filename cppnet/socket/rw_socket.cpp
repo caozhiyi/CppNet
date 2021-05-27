@@ -125,7 +125,7 @@ void RWSocket::StopTimer(uint64_t timer_id) {
     }
 }
 
-void RWSocket::OnConnect(uint16_t err) {
+void RWSocket::OnConnect(Event* event, uint16_t err) {
     auto sock = shared_from_this();
     if (err == CEC_SUCCESS) {
         __all_socket_map[_sock] = sock;
@@ -141,8 +141,9 @@ void RWSocket::OnConnect(uint16_t err) {
     }
 }
 
-void RWSocket::OnDisConnect(uint16_t err) {
-    /*auto sock = shared_from_this();
+/*
+void RWSocket::OnDisConnect(Event* event, uint16_t err) {
+    auto sock = shared_from_this();
 #ifdef __win__
     __all_socket_map.Erase(_sock);
 #else
@@ -156,7 +157,8 @@ void RWSocket::OnDisConnect(uint16_t err) {
     // not active disconnection
     if (_event && !(_event->GetType() & ET_DISCONNECT)) {
         OsHandle::Close(_sock);
-    }*/
+    }
 }
+*/
 
 }
