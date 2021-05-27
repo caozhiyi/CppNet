@@ -14,10 +14,12 @@
 namespace cppnet {
 
 class Event;
+class AlloterWrap;
 class WinRWSocket:
     public RWSocket { 
 
 public:
+    WinRWSocket();
     WinRWSocket(std::shared_ptr<AlloterWrap> alloter);
     WinRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter);
     virtual ~WinRWSocket();
@@ -29,11 +31,12 @@ public:
 
     virtual void OnRead(Event* event, uint32_t len = 0);
     virtual void OnWrite(Event* event, uint32_t len = 0);
-    virtual void OnConnect(Event* event, uint16_t err);
     virtual void OnDisConnect(Event* event, uint16_t err);
 
-    void SetShutdown() { _shutdown = true; }
-    bool IsShutdown() { return _shutdown; }
+    virtual void SetShutdown() { _shutdown = true; }
+    virtual bool IsShutdown() { return _shutdown; }
+
+    virtual std::shared_ptr<BufferQueue> GetReadBuffer();
 
 private:
     void AddEvent(Event* event);
@@ -44,10 +47,17 @@ private:
     std::atomic_bool _shutdown;
     std::atomic_bool _is_reading;
 
-    std::mutex _event_mutex;
+    // only need read cache. data to send is saved to event buffer.
+    std::shared_ptr<BufferQueue> _read_buffer;
+
     // all event
+    std::mutex _event_mutex;
     std::unordered_set<Event*> _event_set;
 };
+
+std::shared_ptr<RWSocket> MakeRWSocket();
+std::shared_ptr<RWSocket> MakeRWSocket(std::shared_ptr<AlloterWrap> alloter);
+std::shared_ptr<RWSocket> MakeRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter);
 
 }
 

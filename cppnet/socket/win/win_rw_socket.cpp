@@ -12,22 +12,16 @@
 
 #include "common/log/log.h"
 #include "common/buffer/buffer_queue.h"
+#include "common/alloter/pool_alloter.h"
 
 namespace cppnet {
 
-std::shared_ptr<RWSocket> MakeRWSocket(std::shared_ptr<AlloterWrap> alloter) {
-    return std::make_shared<WinRWSocket>(alloter);
+WinRWSocket::WinRWSocket():
+    RWSocket() {
 }
 
-std::shared_ptr<RWSocket> MakeRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter) {
-    return std::make_shared<WinRWSocket>(sock, alloter);
-}
-
-WinRWSocket::WinRWSocket(std::shared_ptr<AlloterWrap> alloter): 
-    RWSocket(alloter),
-    _shutdown(false),
-    _is_reading(false) {
-
+WinRWSocket::WinRWSocket(std::shared_ptr<AlloterWrap> alloter):
+    RWSocket(alloter) {
 }
 
 WinRWSocket::WinRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter):
@@ -50,15 +44,13 @@ void WinRWSocket::Read() {
     auto rw_event = _alloter->PoolNew<Event>();
     auto buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
     rw_event->SetBuffer(buffer);
-
-    auto event = dynamic_cast<Event*>(rw_event);
-    event->SetSocket(shared_from_this());
+    rw_event->SetSocket(shared_from_this());
 
     auto actions = GetEventActions();
     if (actions) {
-        if (actions->AddRecvEvent(event)) {
+        if (actions->AddRecvEvent(rw_event)) {
             _is_reading = true;
-            AddEvent(event);
+            AddEvent(rw_event);
         }
     }
 }
@@ -71,7 +63,6 @@ bool WinRWSocket::Write(const char* src, uint32_t len) {
     // create new write event
     auto rw_event = _alloter->PoolNew<Event>();
     rw_event->SetBuffer(buffer);
-
     rw_event->SetSocket(shared_from_this());
 
     auto actions = GetEventActions();
@@ -199,6 +190,13 @@ void WinRWSocket::OnDisConnect(Event* event, uint16_t err) {
     }
 }
 
+std::shared_ptr<BufferQueue> WinRWSocket::GetReadBuffer() {
+    if (!_read_buffer) {
+        _read_buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
+    }
+    return _read_buffer;
+}
+
 void WinRWSocket::AddEvent(Event* event) {
     std::lock_guard<std::mutex> lock(_event_mutex);
     _event_set.insert(std::move(event));
@@ -214,5 +212,18 @@ bool WinRWSocket::EventEmpty() {
     std::lock_guard<std::mutex> lock(_event_mutex);
     return _event_set.empty();
 }
+
+std::shared_ptr<RWSocket> MakeRWSocket() {
+    return std::make_shared<WinRWSocket>();
+}
+
+std::shared_ptr<RWSocket> MakeRWSocket(std::shared_ptr<AlloterWrap> alloter) {
+    return std::make_shared<WinRWSocket>(alloter);
+}
+
+std::shared_ptr<RWSocket> MakeRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter) {
+    return std::make_shared<WinRWSocket>(sock, alloter);
+}
+
 
 }

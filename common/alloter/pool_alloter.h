@@ -6,6 +6,9 @@
 #ifndef COMMON_ALLOTER_POOL_ALLOTER
 #define COMMON_ALLOTER_POOL_ALLOTER
 
+#ifdef __use_iocp__
+#include <mutex>
+#endif
 #include <vector>
 #include <cstdint>
 #include "alloter_interface.h"
@@ -40,6 +43,9 @@ private:
         char        _data[1];
     };
     
+#ifdef __use_iocp__
+    std::mutex _mutex;
+#endif
     char*  _pool_start;         
     char*  _pool_end;
     std::vector<MemNode*> _free_list;  

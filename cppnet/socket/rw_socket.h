@@ -11,8 +11,6 @@
 
 namespace cppnet {
 
-class Event;
-class Dispatcher;
 class BufferQueue;
 class AlloterWrap;
 class BlockMemoryPool;
@@ -23,6 +21,7 @@ class RWSocket:
     public std::enable_shared_from_this<RWSocket> { 
 
 public:
+    RWSocket();
     RWSocket(std::shared_ptr<AlloterWrap> alloter);
     RWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter);
     virtual ~RWSocket();
@@ -45,24 +44,18 @@ public:
     virtual void OnConnect(uint16_t err);
     virtual void OnDisConnect(uint16_t err);
 
-    std::shared_ptr<BufferQueue> GetReadBuffer() { return _read_buffer; }
-#ifndef __win__
-    std::shared_ptr<BufferQueue> GetWriteBuffer() { return _write_buffer; }
-#endif
+    virtual void SetShutdown() { }
+    virtual bool IsShutdown() { return false; }
+
+    virtual std::shared_ptr<BufferQueue> GetReadBuffer() { return nullptr; }
+
+    std::shared_ptr<AlloterWrap> GetAlloter() { return _alloter; }
+    std::shared_ptr<BlockMemoryPool> GetBlockMemoryPool() { return _block_pool; }
 
 protected:
+    std::shared_ptr<AlloterWrap>     _alloter;
     std::shared_ptr<BlockMemoryPool> _block_pool;
-    std::shared_ptr<BufferQueue> _read_buffer;
-
-#ifndef __win__
-    std::shared_ptr<Event>  _event;
-    std::shared_ptr<BufferQueue> _write_buffer;
-#endif
-    
 };
-
-std::shared_ptr<RWSocket> MakeRWSocket(std::shared_ptr<AlloterWrap> alloter);
-std::shared_ptr<RWSocket> MakeRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter);
 
 }
 

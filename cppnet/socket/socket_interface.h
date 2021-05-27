@@ -8,28 +8,25 @@
 
 #include <memory>
 #include <cstdint>
-#include <unordered_map>
 
 #include "common/network/address.h"
 #ifdef __win__
 #include "common/structure/thread_safe_unordered_map.h"
+#else
+#include <unordered_map>
 #endif
+
 
 namespace cppnet {
 
-class Buffer;
 class Address;
 class CppNetBase;
 class Dispatcher;
-class AlloterWrap;
 class EventActions;
 class Socket { 
 public:
-    Socket(): _sock(0), _addr() {}
-    Socket(std::shared_ptr<AlloterWrap> alloter):
-        _sock(0), _alloter(alloter) {}
-    Socket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter): 
-        _sock(sock), _alloter(alloter) {}
+    Socket(): _sock(0) {}
+    Socket(uint64_t sock): _sock(sock) {}
     virtual ~Socket() {}
 
     void SetSocket(const uint64_t& sock) { _sock = sock; }
@@ -47,15 +44,10 @@ public:
     void SetDispatcher(std::shared_ptr<Dispatcher> dis) { _dispatcher = dis; }
     std::shared_ptr<Dispatcher> GetDispatcher() { return _dispatcher.lock(); }
 
-    void SetAlloter(std::shared_ptr<AlloterWrap> alloter) { _alloter = alloter; }
-    std::shared_ptr<AlloterWrap> GetAlloter() { return _alloter; }
-
 protected:
     uint64_t _sock;
-    Address _addr;
+    Address  _addr;
 
-    std::shared_ptr<AlloterWrap> _alloter;
-    
     std::weak_ptr<CppNetBase>   _cppnet_base;
     std::weak_ptr<EventActions> _event_actions;
     std::weak_ptr<Dispatcher>   _dispatcher;

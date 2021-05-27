@@ -58,7 +58,7 @@ bool IOCPEventActions::Init(uint32_t thread_num) {
     //tell IOCP thread num
     _iocp_handler = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, thread_num);
     if (_iocp_handler == INVALID_HANDLE_VALUE) {
-        LOG_ERROR("IOCP create io completion port failed!");
+        LOG_ERROR("IOCP create IO completion port failed!");
         return false;
     }
     return true;
@@ -77,7 +77,7 @@ bool IOCPEventActions::AddSendEvent(Event* event) {
 
     auto sock = event->GetSocket();
     if (!sock) {
-        LOG_WARN("socket is already distroyed! event %s", "AddSendEvent");
+        LOG_WARN("socket is already destroyed! event %s", "AddSendEvent");
         return false;
     }
     auto rw_sock = std::dynamic_pointer_cast<WinRWSocket>(sock);
@@ -87,7 +87,6 @@ bool IOCPEventActions::AddSendEvent(Event* event) {
     }
 
     EventOverlapped* context = (EventOverlapped*)event->GetData();
-
     if (!context) {
         context = rw_sock->GetAlloter()->PoolNew<EventOverlapped>();
         context->_event = (void*)event;
@@ -123,7 +122,7 @@ bool IOCPEventActions::AddRecvEvent(Event* event) {
 
     auto sock = event->GetSocket();
     if (!sock) {
-        LOG_WARN("socket is already distroyed! event %s", "AddSendEvent");
+        LOG_WARN("socket is already destroyed! event %s", "AddSendEvent");
         return false;
     }
     auto rw_sock = std::dynamic_pointer_cast<WinRWSocket>(sock);
@@ -166,7 +165,7 @@ bool IOCPEventActions::AddAcceptEvent(Event* event) {
 
     auto sock = event->GetSocket();
     if (!sock) {
-        LOG_WARN("socket is already distroyed! event %s", "AddWinAcceptEvent");
+        LOG_WARN("socket is already destroyed! event %s", "AddWinAcceptEvent");
         return false;
     }
 
@@ -206,13 +205,14 @@ bool IOCPEventActions::AddConnection(Event* event, Address& address) {
 
     auto sock = event->GetSocket();
     if (!sock) {
-        LOG_WARN("socket is already distroyed! event %s", "AddSendEvent");
+        LOG_WARN("socket is already destroyed! event %s", "AddSendEvent");
         return false;
     }
 
     EventOverlapped* context = (EventOverlapped*)event->GetData();
     if (!context) {
-        context = sock->GetAlloter()->PoolNew<EventOverlapped>();
+        auto rw_sock = std::dynamic_pointer_cast<WinRWSocket>(sock);
+        context = rw_sock->GetAlloter()->PoolNew<EventOverlapped>();
         context->_event = (void*)event;
         event->SetData(context);
     }
@@ -285,7 +285,7 @@ bool IOCPEventActions::AddDisconnection(Event* event) {
 
     auto sock = event->GetSocket();
     if (!sock) {
-        LOG_WARN("socket is already distroyed! event %s", "AddSendEvent");
+        LOG_WARN("socket is already destroyed! event %s", "AddSendEvent");
         return false;
     }
     auto rw_sock = std::dynamic_pointer_cast<WinRWSocket>(sock);
@@ -295,7 +295,8 @@ bool IOCPEventActions::AddDisconnection(Event* event) {
 
     EventOverlapped* context = (EventOverlapped*)event->GetData();
     if (!context) {
-        context = sock->GetAlloter()->PoolNew<EventOverlapped>();
+        auto rw_sock = std::dynamic_pointer_cast<WinRWSocket>(sock);
+        context = rw_sock->GetAlloter()->PoolNew<EventOverlapped>();
         context->_event = (void*)event;
         event->SetData(context);
     }
@@ -316,7 +317,7 @@ bool IOCPEventActions::AddDisconnection(Event* event) {
 bool IOCPEventActions::DelEvent(Event* event) {
     auto sock = event->GetSocket();
     if (!sock) {
-        LOG_WARN("socket is already distroyed! event %s", "AddSendEvent");
+        LOG_WARN("socket is already destroyed! event %s", "AddSendEvent");
         return false;
     }
 
@@ -381,7 +382,7 @@ void IOCPEventActions::Wakeup() {
 
 bool IOCPEventActions::AddToIOCP(uint64_t sock) {
     if (CreateIoCompletionPort((HANDLE)sock, _iocp_handler, 0, 0) == NULL) {
-        LOG_ERROR("IOCP bind socket to io completion port failed!");
+        LOG_ERROR("IOCP bind socket to IO completion port failed!");
         return false;
     }
     return true;

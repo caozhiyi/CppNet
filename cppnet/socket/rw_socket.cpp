@@ -6,7 +6,6 @@
 #include <errno.h>
 
 #include "rw_socket.h"
-
 #include "cppnet/dispatcher.h"
 #include "cppnet/cppnet_base.h"
 #include "cppnet/cppnet_config.h"
@@ -16,23 +15,24 @@
 #include "common/log/log.h"
 #include "common/alloter/pool_block.h"
 #include "common/buffer/buffer_queue.h"
+#include "common/alloter/pool_alloter.h"
 #include "common/alloter/alloter_interface.h"
 
 namespace cppnet {
-RWSocket::RWSocket(std::shared_ptr<AlloterWrap> alloter): 
-    Socket(alloter) {
 
-    _block_pool = _alloter->PoolNewSharePtr<BlockMemoryPool>(__mem_block_size, __mem_block_add_step);
-    //_write_buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
-    _read_buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
+RWSocket::RWSocket():
+    RWSocket(0, std::make_shared<AlloterWrap>(MakePoolAlloterPtr())) {
+}
+
+RWSocket::RWSocket(std::shared_ptr<AlloterWrap> alloter):
+    RWSocket(0, alloter) {
+
 }
 
 RWSocket::RWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter):
-    Socket(sock, alloter) {
-
+    Socket(sock),
+    _alloter(alloter) {
     _block_pool = _alloter->PoolNewSharePtr<BlockMemoryPool>(__mem_block_size, __mem_block_add_step);
-    //_write_buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
-    _read_buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
 }
 
 RWSocket::~RWSocket() {
@@ -45,7 +45,6 @@ RWSocket::~RWSocket() {
 bool RWSocket::GetAddress(std::string& ip, uint16_t& port) {
     ip = _addr.GetIp();
     port = _addr.GetAddrPort();
-
     return true;
 }
 
@@ -143,7 +142,7 @@ void RWSocket::OnConnect(uint16_t err) {
 }
 
 void RWSocket::OnDisConnect(uint16_t err) {
-    auto sock = shared_from_this();
+    /*auto sock = shared_from_this();
 #ifdef __win__
     __all_socket_map.Erase(_sock);
 #else
@@ -155,7 +154,7 @@ void RWSocket::OnDisConnect(uint16_t err) {
     }
 
     // not active disconnection
-    /*if (_event && !(_event->GetType() & ET_DISCONNECT)) {
+    if (_event && !(_event->GetType() & ET_DISCONNECT)) {
         OsHandle::Close(_sock);
     }*/
 }

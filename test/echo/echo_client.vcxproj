@@ -25,7 +25,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{25B16872-AB29-4667-B345-04979B149DD7}</ProjectGuid>
     <RootNamespace>EchoClient</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

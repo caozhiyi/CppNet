@@ -11,6 +11,7 @@
 #include "cppnet/event/win/expend_func.h"
 #include "cppnet/event/win/iocp_action.h"
 #include "cppnet/event/win/accept_event.h"
+#include "cppnet/socket/win/win_rw_socket.h"
 
 #include "common/log/log.h"
 #include "common/os/convert.h"
@@ -52,14 +53,15 @@ bool WinConnectSocket::Bind(const std::string& ip, uint16_t port) {
             return false;
         }
         _sock = ret._return_value;
+    }
 
-        auto action = GetEventActions();
-        auto iocp = std::dynamic_pointer_cast<IOCPEventActions>(action);
-        if (!iocp->AddToIOCP(_sock)) {
-            LOG_FATAL("add accept socket to iocp failed!");
-            OsHandle::Close(_sock);
-            return false;
-        }
+    // add to iocp.
+    auto action = GetEventActions();
+    auto iocp = std::dynamic_pointer_cast<IOCPEventActions>(action);
+    if (!iocp->AddToIOCP(_sock)) {
+        LOG_FATAL("add accept socket to iocp failed!");
+        OsHandle::Close(_sock);
+        return false;
     }
 
     _addr.SetIp(ip);
@@ -163,6 +165,7 @@ void WinConnectSocket::OnAccept(Event* event) {
 	sock->SetEventActions(_event_actions);
 	sock->SetAddress(std::move(address));
 	sock->SetDispatcher(GetDispatcher());
+
     auto buffer = sock->GetReadBuffer();
     buffer->Write(accept_event->GetBuf(), accept_event->GetBufOffset());
 
