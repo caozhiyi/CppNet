@@ -55,10 +55,6 @@ private:
     std::unordered_set<Event*> _event_set;
 };
 
-std::shared_ptr<RWSocket> MakeRWSocket();
-std::shared_ptr<RWSocket> MakeRWSocket(std::shared_ptr<AlloterWrap> alloter);
-std::shared_ptr<RWSocket> MakeRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter);
-
 }
 
 #endif

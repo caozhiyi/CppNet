@@ -74,7 +74,7 @@ bool EpollEventActions::Dealloc() {
     return true;
 }
 
-bool EpollEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
+bool EpollEventActions::AddSendEvent(Event* event) {
     if (event->GetType() & ET_WRITE) {
         return false;
     }
@@ -89,7 +89,7 @@ bool EpollEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
             memset(ep_event, 0, sizeof(epoll_event));
             event->SetData(ep_event);
         }
-        ep_event->data.ptr = (void*)&event;
+        ep_event->data.ptr = (void*)event;
         if (AddEvent(ep_event, EPOLLOUT, sock->GetSocket(), event->GetType() & ET_INACTIONS)) {
             event->AddType(ET_INACTIONS);
             return true;
@@ -99,7 +99,7 @@ bool EpollEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
     return false;
 }
 
-bool EpollEventActions::AddRecvEvent(std::shared_ptr<Event>& event) {
+bool EpollEventActions::AddRecvEvent(Event* event) {
     if (event->GetType() & ET_READ) {
         return false;
     }
@@ -114,7 +114,7 @@ bool EpollEventActions::AddRecvEvent(std::shared_ptr<Event>& event) {
             memset(ep_event, 0, sizeof(epoll_event));
             event->SetData(ep_event);
         }
-        ep_event->data.ptr = (void*)&event;
+        ep_event->data.ptr = (void*)event;
         if (AddEvent(ep_event, EPOLLIN, sock->GetSocket(), event->GetType() & ET_INACTIONS)) {
             event->AddType(ET_INACTIONS);
             return true;
@@ -124,7 +124,7 @@ bool EpollEventActions::AddRecvEvent(std::shared_ptr<Event>& event) {
     return false;
 }
 
-bool EpollEventActions::AddAcceptEvent(std::shared_ptr<Event>& event) {
+bool EpollEventActions::AddAcceptEvent(Event* event) {
     if (event->GetType() & ET_ACCEPT) {
         return false;
     }
@@ -139,7 +139,7 @@ bool EpollEventActions::AddAcceptEvent(std::shared_ptr<Event>& event) {
             memset(ep_event, 0, sizeof(epoll_event));
             event->SetData(ep_event);
         }
-        ep_event->data.ptr = (void*)&event;
+        ep_event->data.ptr = (void*)event;
         if (AddEvent(ep_event, EPOLLIN, sock->GetSocket(), event->GetType() & ET_INACTIONS)) {
             event->AddType(ET_INACTIONS);
             return true;
@@ -149,7 +149,7 @@ bool EpollEventActions::AddAcceptEvent(std::shared_ptr<Event>& event) {
     return false;
 }
 
-bool EpollEventActions::AddConnection(std::shared_ptr<Event>& event, Address& addr) {
+bool EpollEventActions::AddConnection(Event* event, Address& addr) {
     if (event->GetType() & ET_CONNECT) {
         return false;
     }
@@ -169,16 +169,16 @@ bool EpollEventActions::AddConnection(std::shared_ptr<Event>& event, Address& ad
 
         auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
         if (ret._return_value == 0) {
-            rw_sock->OnConnect(CEC_SUCCESS);
+            rw_sock->OnConnect(event, CEC_SUCCESS);
             return true;
 
         } else if (ret._errno == EINPROGRESS) {
             if (CheckConnect(rw_sock->GetSocket())) {
-                rw_sock->OnConnect(CEC_SUCCESS);
+                rw_sock->OnConnect(event, CEC_SUCCESS);
                 return true;
             }
         }
-        rw_sock->OnConnect(CEC_CONNECT_REFUSE);
+        rw_sock->OnConnect(event, CEC_CONNECT_REFUSE);
         LOG_WARN("connect event failed! %d", ret._errno);
         return false;
     }
@@ -186,7 +186,7 @@ bool EpollEventActions::AddConnection(std::shared_ptr<Event>& event, Address& ad
     return false;
 }
 
-bool EpollEventActions::AddDisconnection(std::shared_ptr<Event>& event) {
+bool EpollEventActions::AddDisconnection(Event* event) {
     if (event->GetType() & ET_DISCONNECT) {
         return false;
     }
@@ -202,11 +202,11 @@ bool EpollEventActions::AddDisconnection(std::shared_ptr<Event>& event) {
         return false;
     }
     OsHandle::Close(socket->GetSocket());
-    socket->OnDisConnect(CEC_SUCCESS);
+    socket->OnDisConnect(event, CEC_SUCCESS);
     return true;
 }
 
-bool EpollEventActions::DelEvent(std::shared_ptr<Event>& event) {
+bool EpollEventActions::DelEvent(Event* event) {
     auto sock = event->GetSocket();
     if (!sock) {
         return false;
@@ -244,7 +244,7 @@ void EpollEventActions::Wakeup() {
 
 void EpollEventActions::OnEvent(std::vector<epoll_event>& event_vec, int16_t num) {
     std::shared_ptr<Socket> sock;
-    std::shared_ptr<Event> event;
+    Event* event = nullptr;
 
     for (int i = 0; i < num; i++) {
         if ((uint32_t)event_vec[i].data.fd == _pipe[0]) {
@@ -254,7 +254,7 @@ void EpollEventActions::OnEvent(std::vector<epoll_event>& event_vec, int16_t num
             continue;
         }
 
-        event = *(std::shared_ptr<Event>*)event_vec[i].data.ptr;
+        event = (Event*)event_vec[i].data.ptr;
         sock = event->GetSocket();
         if (!sock) {
             LOG_WARN("epoll weak up but socket already destroy, index : %d", i);
@@ -264,20 +264,20 @@ void EpollEventActions::OnEvent(std::vector<epoll_event>& event_vec, int16_t num
         // accept event
         if (event->GetType() & ET_ACCEPT) {
             std::shared_ptr<ConnectSocket> connect_sock = std::dynamic_pointer_cast<ConnectSocket>(sock);
-            connect_sock->OnAccept();
+            connect_sock->OnAccept(event);
 
         } else {
             std::shared_ptr<RWSocket> rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
             if (event_vec[i].events & EPOLLIN) {
                 // close
                 if (event_vec[i].events & EPOLLRDHUP) {
-                    rw_sock->OnDisConnect(CEC_CLOSED);
+                    rw_sock->OnDisConnect(event, CEC_CLOSED);
                 }
-                rw_sock->OnRead();
+                rw_sock->OnRead(event);
             }
 
             if (event_vec[i].events & EPOLLOUT) {
-                rw_sock->OnWrite();
+                rw_sock->OnWrite(event);
             }
         }
     }

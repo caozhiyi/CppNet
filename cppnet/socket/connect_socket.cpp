@@ -46,7 +46,7 @@ bool ConnectSocket::Bind(const std::string& ip, uint16_t port) {
     auto ret = OsHandle::Bind(_sock, _addr);
 
     if (ret._return_value < 0) {
-        LOG_FATAL("linux bind socket filed! error:%d, info:%s", ret._errno, ErrnoInfo(ret._errno));
+        LOG_FATAL("bind socket filed! error:%d, info:%s", ret._errno, ErrnoInfo(ret._errno));
         OsHandle::Close(_sock);
         return false;
     }
@@ -57,7 +57,7 @@ bool ConnectSocket::Bind(const std::string& ip, uint16_t port) {
 bool ConnectSocket::Listen() {
     auto ret = OsHandle::Listen(_sock);
     if (ret._return_value < 0) {
-        LOG_FATAL("linux listen socket filed! error:%d, info:%s", ret._errno, ErrnoInfo(ret._errno));
+        LOG_FATAL("listen socket filed! error:%d, info:%s", ret._errno, ErrnoInfo(ret._errno));
         OsHandle::Close(_sock);
         return false;
     }

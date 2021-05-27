@@ -11,6 +11,7 @@
 
 namespace cppnet {
 
+class Event;
 class BufferQueue;
 class AlloterWrap;
 class BlockMemoryPool;
@@ -30,10 +31,10 @@ public:
 
     virtual bool Close();
 
-    virtual void Read();
+    virtual void Read() {}
     virtual bool Write(const char* src, uint32_t len) { return false; }
-    virtual void Connect(const std::string& ip, uint16_t port);
-    virtual void Disconnect();
+    virtual void Connect(const std::string& ip, uint16_t port) {}
+    virtual void Disconnect() {}
 
     virtual uint64_t AddTimer(uint32_t interval, bool always = false);
     virtual void StopTimer(uint64_t timer_id);
@@ -55,6 +56,10 @@ protected:
     std::shared_ptr<AlloterWrap>     _alloter;
     std::shared_ptr<BlockMemoryPool> _block_pool;
 };
+
+std::shared_ptr<RWSocket> MakeRWSocket();
+std::shared_ptr<RWSocket> MakeRWSocket(std::shared_ptr<AlloterWrap> alloter);
+std::shared_ptr<RWSocket> MakeRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter);
 
 }
 

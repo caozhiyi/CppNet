@@ -11,9 +11,14 @@
 #include "cppnet/event/event_interface.h"
 #include "cppnet/event/action_interface.h"
 
+#include "common/log/log.h"
 #include "common/buffer/buffer_queue.h"
 
 namespace cppnet {
+
+std::shared_ptr<RWSocket> MakeRWSocket() {
+    return std::make_shared<PosixRWSocket>();
+}
 
 std::shared_ptr<RWSocket> MakeRWSocket(std::shared_ptr<AlloterWrap> alloter) {
     return std::make_shared<PosixRWSocket>(alloter);
@@ -23,23 +28,45 @@ std::shared_ptr<RWSocket> MakeRWSocket(uint64_t sock, std::shared_ptr<AlloterWra
     return std::make_shared<PosixRWSocket>(sock, alloter);
 }
 
+PosixRWSocket::PosixRWSocket():
+    RWSocket(),
+    _event(nullptr) {
+
+}
+
 PosixRWSocket::PosixRWSocket(std::shared_ptr<AlloterWrap> alloter): 
-    RWSocket(alloter) {
+    RWSocket(alloter),
+    _event(nullptr) {
 
 }
 
 PosixRWSocket::PosixRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter):
-    RWSocket(sock, alloter) {
+    RWSocket(sock, alloter),
+    _event(nullptr) {
 
 }
 
 PosixRWSocket::~PosixRWSocket() {
+    if (_event) {
+        _alloter->PoolDelete<Event>(_event);
+    }
+}
 
+void PosixRWSocket::Read() {
+    if (_event) {
+        _event = _alloter->PoolNew<Event>();
+        _event->SetSocket(shared_from_this());
+    }
+
+    auto actions = GetEventActions();
+    if (actions) {
+        actions->AddRecvEvent(_event);
+    }
 }
 
 bool PosixRWSocket::Write(const char* src, uint32_t len) {
     if (!_event) {
-        _event = _alloter->PoolNewSharePtr<Event>();
+        _event = _alloter->PoolNew<Event>();
         _event->SetSocket(shared_from_this());
     }
 
@@ -62,12 +89,64 @@ bool PosixRWSocket::Write(const char* src, uint32_t len) {
     }
 }
 
-void PosixRWSocket::OnRead(uint32_t len) {
+void PosixRWSocket::Connect(const std::string& ip, uint16_t port) {
+    if (!_event) {
+        _event = _alloter->PoolNew<Event>();
+        _event->SetSocket(shared_from_this());
+    }
+
+    if (_sock == 0) {
+        auto ret = OsHandle::TcpSocket();
+        if (ret._return_value < 0) {
+            LOG_ERROR("create socket failed. error:%d", ret._errno);
+            return;
+        }
+        _sock = ret._return_value;
+    }
+
+
+    _addr.SetIp(ip);
+    _addr.SetAddrPort(port);
+
+    auto actions = GetEventActions();
+    if (actions) {
+        actions->AddConnection(_event, _addr);
+    }
+}
+
+void PosixRWSocket::Disconnect() {
+    if (!_event) {
+        _event = _alloter->PoolNew<Event>();
+        _event->SetSocket(shared_from_this());
+    }
+
+    auto actions = GetEventActions();
+    if (actions) {
+        actions->AddDisconnection(_event);
+    }
+}
+
+void PosixRWSocket::OnRead(Event*, uint32_t len) {
     Recv(len);
 }
 
-void PosixRWSocket::OnWrite(uint32_t len) {
+void PosixRWSocket::OnWrite(Event*,uint32_t len) {
     Send();
+}
+
+void PosixRWSocket::OnDisConnect(Event*, uint16_t err) {
+    auto sock = shared_from_this();
+    __all_socket_map.erase(_sock);
+
+    auto cppnet_base = _cppnet_base.lock();
+    if (cppnet_base) {
+        cppnet_base->OnDisConnect(sock, err);
+    }
+
+    // not active disconnection
+    if (_event && !(_event->GetType() & ET_DISCONNECT)) {
+        OsHandle::Close(_sock);
+    }
 }
 
 bool PosixRWSocket::Recv(uint32_t len) {
@@ -102,12 +181,12 @@ bool PosixRWSocket::Recv(uint32_t len) {
                 break;
 
             } else {
-                OnDisConnect(CEC_CONNECT_BREAK);
+                OnDisConnect(nullptr, CEC_CONNECT_BREAK);
                 return false;
             }
 
         } else if (ret._return_value == 0) {
-            OnDisConnect(CEC_CLOSED);
+            OnDisConnect(nullptr, CEC_CLOSED);
             return false;
 
         } else {
@@ -149,11 +228,11 @@ bool PosixRWSocket::Send() {
                 return false;
 
             } else if (errno == EBADMSG) {
-                OnDisConnect(CEC_CONNECT_BREAK);
+                OnDisConnect(nullptr, CEC_CONNECT_BREAK);
                 return false;
 
             } else {
-                OnDisConnect(CEC_CLOSED);
+                OnDisConnect(nullptr, CEC_CLOSED);
                 return false;
             }
         }
