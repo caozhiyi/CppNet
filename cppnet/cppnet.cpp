@@ -1,12 +1,12 @@
-#include "include/cppnet.h"
-
-#include "cppnet_base.h"
-#include "cppnet/cppnet_config.h"
-
 // Use of this source code is governed by a BSD 3-Clause License
 // that can be found in the LICENSE file.
 
 // Author: caozhiyi (caozhiyi5@gmail.com)
+
+#include "include/cppnet.h"
+
+#include "cppnet_base.h"
+#include "cppnet/cppnet_config.h"
 
 #include "common/log/log.h"
 #include "common/log/file_logger.h"
