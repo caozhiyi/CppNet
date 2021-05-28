@@ -9,12 +9,14 @@
 
 #include "cppnet/cppnet_base.h"
 #include "cppnet/socket/rw_socket.h"
+#include "cppnet/event/event_interface.h"
 
 #include "common/log/log.h"
 #include "common/os/convert.h"
 #include "common/network/socket.h"
 #include "common/network/io_handle.h"
 #include "common/alloter/pool_alloter.h"
+#include "cppnet/event/action_interface.h"
 
 namespace cppnet {
 
@@ -22,15 +24,30 @@ std::shared_ptr<ConnectSocket> MakeConnectSocket() {
     return std::make_shared<PosixConnectSocket>();
 }
 
-PosixConnectSocket::PosixConnectSocket() {
+PosixConnectSocket::PosixConnectSocket():
+    _accept_event(nullptr) {
 
 }
 
 PosixConnectSocket::~PosixConnectSocket() {
-
+    if (_accept_event) {
+        delete _accept_event;
+    }
 }
 
-void PosixConnectSocket::OnAccept() {
+void PosixConnectSocket::Accept() {
+    if (!_accept_event) {
+        _accept_event = new Event();
+        _accept_event->SetSocket(shared_from_this());
+    }
+    __all_socket_map[_sock] = shared_from_this();
+    auto actions = GetEventActions();
+    if (actions) {
+        actions->AddAcceptEvent(_accept_event);
+    }
+}
+
+void PosixConnectSocket::OnAccept(Event*) {
     while (true) {
         std::shared_ptr<AlloterWrap> alloter = std::make_shared<AlloterWrap>(MakePoolAlloterPtr());
         Address address;

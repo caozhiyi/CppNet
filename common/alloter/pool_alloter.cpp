@@ -34,7 +34,9 @@ void* PoolAlloter::Malloc(uint32_t size) {
         void* ret = _alloter->Malloc(size);
         return ret;
     }
-    
+#ifdef __use_iocp__
+    std::lock_guard<std::mutex> lock(_mutex);
+#endif
     MemNode** my_free = &(_free_list[FreeListIndex(size)]);
     MemNode* result = *my_free;
     if (result == nullptr) {
@@ -68,7 +70,10 @@ void PoolAlloter::Free(void* &data, uint32_t len) {
         data = nullptr;
         return;
     }
-    
+
+#ifdef __use_iocp__
+    std::lock_guard<std::mutex> lock(_mutex);
+#endif
     MemNode* node = (MemNode*)data;
     MemNode** my_free = &(_free_list[FreeListIndex(len)]);
     

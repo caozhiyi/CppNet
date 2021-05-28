@@ -27,14 +27,7 @@ ConnectSocket::ConnectSocket() {
 }
 
 ConnectSocket::~ConnectSocket() {
-    if (_sock > 0) {
-#ifdef __win__
-        __all_socket_map.Erase(_sock);
-#else
-        __all_socket_map.erase(_sock);
-#endif
-        OsHandle::Close(_sock);
-    }
+
 }
 
 bool ConnectSocket::Bind(const std::string& ip, uint16_t port) {
@@ -53,7 +46,7 @@ bool ConnectSocket::Bind(const std::string& ip, uint16_t port) {
     auto ret = OsHandle::Bind(_sock, _addr);
 
     if (ret._return_value < 0) {
-        LOG_FATAL("linux bind socket filed! error:%d, info:%s", ret._errno, ErrnoInfo(ret._errno));
+        LOG_FATAL("bind socket filed! error:%d, info:%s", ret._errno, ErrnoInfo(ret._errno));
         OsHandle::Close(_sock);
         return false;
     }
@@ -64,7 +57,7 @@ bool ConnectSocket::Bind(const std::string& ip, uint16_t port) {
 bool ConnectSocket::Listen() {
     auto ret = OsHandle::Listen(_sock);
     if (ret._return_value < 0) {
-        LOG_FATAL("linux listen socket filed! error:%d, info:%s", ret._errno, ErrnoInfo(ret._errno));
+        LOG_FATAL("listen socket filed! error:%d, info:%s", ret._errno, ErrnoInfo(ret._errno));
         OsHandle::Close(_sock);
         return false;
     }
@@ -75,18 +68,6 @@ bool ConnectSocket::Listen() {
     Accept();
 
     return true;
-}
-
-void ConnectSocket::Accept() {
-    if (!_accept_event) {
-        _accept_event = std::make_shared<Event>();
-        _accept_event->SetSocket(shared_from_this());
-    }
-    __all_socket_map[_sock] = shared_from_this();
-    auto actions = GetEventActions();
-    if (actions) {
-        actions->AddAcceptEvent(_accept_event);
-    }
 }
 
 }

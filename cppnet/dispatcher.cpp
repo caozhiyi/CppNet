@@ -16,6 +16,11 @@
 #include "common/timer/timer.h"
 #include "common/alloter/pool_alloter.h"
 
+#ifdef __win__
+#include "cppnet/socket/win/win_rw_socket.h"
+#else
+#endif
+
 namespace cppnet {
 
 thread_local std::unordered_map<uint64_t, std::shared_ptr<TimerEvent>> Dispatcher::__all_timer_event_map;
@@ -141,18 +146,14 @@ void Dispatcher::Listen(uint64_t sock, const std::string& ip, uint16_t port) {
 
 void Dispatcher::Connect(const std::string& ip, uint16_t port) {
     if (std::this_thread::get_id() == _local_thread_id) {
-        auto alloter = std::make_shared<AlloterWrap>(MakePoolAlloterPtr());
-        auto sock = MakeRWSocket(alloter);
-
+        auto sock = MakeRWSocket();
         sock->SetEventActions(_event_actions);
         sock->SetCppNetBase(_cppnet_base.lock());
         sock->Connect(ip, port);
     
     } else {
         auto task = [ip, port, this]() {
-            auto alloter = std::make_shared<AlloterWrap>(MakePoolAlloterPtr());
-            auto sock = MakeRWSocket(alloter);
-
+            auto sock = MakeRWSocket();
             sock->SetEventActions(_event_actions);
             sock->SetCppNetBase(_cppnet_base.lock());
             sock->Connect(ip, port);

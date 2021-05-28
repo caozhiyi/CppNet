@@ -17,13 +17,20 @@ BlockMemoryPool::BlockMemoryPool(uint32_t large_sz, uint32_t add_num) :
 }
 
 BlockMemoryPool::~BlockMemoryPool() {
+#ifdef __use_iocp__
+    std::lock_guard<std::mutex> lock(_mutex);
+#endif
     // free all memory
     for (auto iter = _free_mem_vec.begin(); iter != _free_mem_vec.end(); ++iter) {
         free(*iter);
     }
+    _free_mem_vec.clear();
 }
 
 void* BlockMemoryPool::PoolLargeMalloc() {
+#ifdef __use_iocp__
+    std::lock_guard<std::mutex> lock(_mutex);
+#endif
     if (_free_mem_vec.empty()) {
         Expansion();
     }
@@ -34,11 +41,17 @@ void* BlockMemoryPool::PoolLargeMalloc() {
 }
 
 void BlockMemoryPool::PoolLargeFree(void* &m) {
+#ifdef __use_iocp__
+    std::lock_guard<std::mutex> lock(_mutex);
+#endif
     _free_mem_vec.push_back(m);
     // TODO release some block.
 }
 
 uint32_t BlockMemoryPool::GetSize() {
+#ifdef __use_iocp__
+    std::lock_guard<std::mutex> lock(_mutex);
+#endif
     return (uint32_t)_free_mem_vec.size();
 }
 
@@ -47,6 +60,9 @@ uint32_t BlockMemoryPool::GetBlockLength() {
 }
 
 void BlockMemoryPool::ReleaseHalf() {
+#ifdef __use_iocp__
+    std::lock_guard<std::mutex> lock(_mutex);
+#endif
     size_t size = _free_mem_vec.size();
     size_t hale = size / 2;
     for (auto iter = _free_mem_vec.begin(); iter != _free_mem_vec.end();) {

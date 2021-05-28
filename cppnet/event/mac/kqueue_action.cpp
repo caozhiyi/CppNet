@@ -73,7 +73,7 @@ bool KqueueEventActions::Dealloc() {
     return true;
 }
 
-bool KqueueEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
+bool KqueueEventActions::AddSendEvent(Event* event) {
     if (event->GetType() & ET_WRITE) {
         return false;
     }
@@ -82,7 +82,7 @@ bool KqueueEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
     auto sock = event->GetSocket();
     if (sock) {
         struct kevent ev;
-        EV_SET(&ev, sock->GetSocket(), EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, (void*)&event);
+        EV_SET(&ev, sock->GetSocket(), EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, (void*)event);
 
         _change_list.push_back(ev);
         return true;
@@ -91,7 +91,7 @@ bool KqueueEventActions::AddSendEvent(std::shared_ptr<Event>& event) {
     return false;
 }
 
-bool KqueueEventActions::AddRecvEvent(std::shared_ptr<Event>& event) {
+bool KqueueEventActions::AddRecvEvent(Event* event) {
     if (event->GetType() & ET_READ) {
         return false;
     }
@@ -100,7 +100,7 @@ bool KqueueEventActions::AddRecvEvent(std::shared_ptr<Event>& event) {
     auto sock = event->GetSocket();
     if (sock) {
         struct kevent ev;
-        EV_SET(&ev, sock->GetSocket(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, (void*)&event);
+        EV_SET(&ev, sock->GetSocket(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, (void*)event);
         _change_list.push_back(ev);
         return true;
     }
@@ -108,7 +108,7 @@ bool KqueueEventActions::AddRecvEvent(std::shared_ptr<Event>& event) {
     return false;
 }
 
-bool KqueueEventActions::AddAcceptEvent(std::shared_ptr<Event>& event) {
+bool KqueueEventActions::AddAcceptEvent(Event* event) {
     if (event->GetType() & ET_ACCEPT) {
         return false;
     }
@@ -117,7 +117,7 @@ bool KqueueEventActions::AddAcceptEvent(std::shared_ptr<Event>& event) {
     auto sock = event->GetSocket();
     if (sock) {
         struct kevent ev;
-        EV_SET(&ev, sock->GetSocket(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, (void*)&event);
+        EV_SET(&ev, sock->GetSocket(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, (void*)event);
     
         _change_list.push_back(ev);
         return true;
@@ -126,7 +126,7 @@ bool KqueueEventActions::AddAcceptEvent(std::shared_ptr<Event>& event) {
     return false;
 }
 
-bool KqueueEventActions::AddConnection(std::shared_ptr<Event>& event, Address& address) {
+bool KqueueEventActions::AddConnection(Event* event, Address& address) {
     if (event->GetType() & ET_CONNECT) {
         return false;
     }
@@ -159,7 +159,7 @@ bool KqueueEventActions::AddConnection(std::shared_ptr<Event>& event, Address& a
     return false;
 }
 
-bool KqueueEventActions::AddDisconnection(std::shared_ptr<Event>& event) {
+bool KqueueEventActions::AddDisconnection(Event* event) {
     if (event->GetType() & ET_DISCONNECT) {
         return false;
     }
@@ -176,7 +176,7 @@ bool KqueueEventActions::AddDisconnection(std::shared_ptr<Event>& event) {
     return true;
 }
 
-bool KqueueEventActions::DelEvent(std::shared_ptr<Event>& event) {
+bool KqueueEventActions::DelEvent(Event* event) {
     auto sock = event->GetSocket();
     if (!sock) {
         return false;
@@ -222,7 +222,7 @@ void KqueueEventActions::Wakeup() {
 
 void KqueueEventActions::OnEvent(std::vector<struct kevent>& event_vec, int16_t num) {
     std::shared_ptr<Socket> sock;
-    std::shared_ptr<Event> event;
+    Event* event;
 
     for (int i = 0; i < num; i++) {
         if (event_vec[i].ident == _pipe[0]) {
@@ -232,7 +232,7 @@ void KqueueEventActions::OnEvent(std::vector<struct kevent>& event_vec, int16_t 
             continue;
         }
 
-        event = (*(std::shared_ptr<Event>*)event_vec[i].udata);
+        event = (Event*)event_vec[i].udata;
         sock = event->GetSocket();
         if (!sock) {
             LOG_WARN("kqueue weak up but socket already destroy, index : %d", i);

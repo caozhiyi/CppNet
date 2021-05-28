@@ -30,14 +30,13 @@ public:
     virtual bool Dealloc() = 0;
 
     // net io event
-    virtual bool AddSendEvent(std::shared_ptr<Event>& event) = 0;
-    virtual bool AddRecvEvent(std::shared_ptr<Event>& event) = 0;
-    virtual bool AddAcceptEvent(std::shared_ptr<Event>& event) = 0;
+    virtual bool AddSendEvent(Event* event) = 0;
+    virtual bool AddRecvEvent(Event* event) = 0;
+    virtual bool AddAcceptEvent(Event* event) = 0;
+    virtual bool AddConnection(Event* event, Address& addr) = 0;
+    virtual bool AddDisconnection(Event* event) = 0;
 
-    virtual bool AddConnection(std::shared_ptr<Event>& event, Address& addr) = 0;
-    virtual bool AddDisconnection(std::shared_ptr<Event>& event) = 0;
-
-    virtual bool DelEvent(std::shared_ptr<Event>& event) = 0;
+    virtual bool DelEvent(Event* event) = 0;
     // io thread process
     virtual void ProcessEvent(int32_t wait_ms) = 0;
     // weak up net io thread

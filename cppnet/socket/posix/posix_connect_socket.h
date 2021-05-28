@@ -10,13 +10,17 @@
 
 namespace cppnet {
 
+class Event;
 class PosixConnectSocket:
     public ConnectSocket { 
 public:
     PosixConnectSocket();
     ~PosixConnectSocket();
 
-    virtual void OnAccept();
+    virtual void Accept();
+    virtual void OnAccept(Event* event);
+private:
+    Event*  _accept_event;
 };
 
 }
