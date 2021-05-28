@@ -22,7 +22,7 @@ void WriteFunc(Handle handle, uint32_t len) {
 }
 
 
-void ReadFunc(Handle handle, std::shared_ptr<InnerBuffer> data, uint32_t len) {
+void ReadFunc(Handle handle, std::shared_ptr<Buffer> data, uint32_t len) {
     std::cout << " [ReadFunc]" << std::endl;
 
     char buf[1024] = {0};

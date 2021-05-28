@@ -33,7 +33,7 @@ void WriteFunc(Handle handle, uint32_t len) {
     //std::cout << "something err while write : " << std::endl;
 }
 
-void ReadFunc(Handle handle, std::shared_ptr<cppnet::InnerBuffer> data, uint32_t len) {
+void ReadFunc(Handle handle, std::shared_ptr<cppnet::Buffer> data, uint32_t len) {
     auto iter = _recv_map.find(handle);
     if (iter == _recv_map.end()) {
         std::cout << "can't find handle" << std::endl;

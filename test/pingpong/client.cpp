@@ -47,7 +47,7 @@ class Session {
 
     void OnConnection(Handle handle);
 
-    void OnMessage(Handle handle, std::shared_ptr<cppnet::InnerBuffer> data, uint32_t) {
+    void OnMessage(Handle handle, std::shared_ptr<cppnet::Buffer> data, uint32_t) {
        char buff[65535];
        ++_messages_read;
        int len_get = data->GetCanReadLength();
@@ -86,7 +86,7 @@ public:
         return _message;
     }
 
-    void OnMessage(Handle handle, std::shared_ptr<cppnet::InnerBuffer> data, uint32_t len) {
+    void OnMessage(Handle handle, std::shared_ptr<cppnet::Buffer> data, uint32_t len) {
         auto iter = _sessions.find(handle);
         if (iter != _sessions.end()) {
             iter->second->OnMessage(handle, data, len);
