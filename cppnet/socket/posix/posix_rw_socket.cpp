@@ -32,18 +32,24 @@ PosixRWSocket::PosixRWSocket():
     RWSocket(),
     _event(nullptr) {
 
+    _write_buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
+    _read_buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
 }
 
 PosixRWSocket::PosixRWSocket(std::shared_ptr<AlloterWrap> alloter): 
     RWSocket(alloter),
     _event(nullptr) {
-
+    
+    _write_buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
+    _read_buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
 }
 
 PosixRWSocket::PosixRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter):
     RWSocket(sock, alloter),
     _event(nullptr) {
 
+    _write_buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
+    _read_buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
 }
 
 PosixRWSocket::~PosixRWSocket() {
@@ -53,7 +59,7 @@ PosixRWSocket::~PosixRWSocket() {
 }
 
 void PosixRWSocket::Read() {
-    if (_event) {
+    if (!_event) {
         _event = _alloter->PoolNew<Event>();
         _event->SetSocket(shared_from_this());
     }
@@ -199,7 +205,7 @@ bool PosixRWSocket::Recv(uint32_t len) {
             need_expend = true;
         }
     }
-    cppnet_base->OnRead(shared_from_this(), off_set);
+    cppnet_base->OnRead(shared_from_this(), _read_buffer, off_set);
     return true;
 }
 

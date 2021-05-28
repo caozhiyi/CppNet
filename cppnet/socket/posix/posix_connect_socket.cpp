@@ -47,7 +47,7 @@ void PosixConnectSocket::Accept() {
     }
 }
 
-void PosixConnectSocket::OnAccept() {
+void PosixConnectSocket::OnAccept(Event*) {
     while (true) {
         std::shared_ptr<AlloterWrap> alloter = std::make_shared<AlloterWrap>(MakePoolAlloterPtr());
         Address address;

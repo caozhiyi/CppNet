@@ -70,18 +70,4 @@ bool ConnectSocket::Listen() {
     return true;
 }
 
-/*
-void ConnectSocket::Accept() {
-    if (!_accept_event) {
-        _accept_event = std::make_shared<Event>();
-        _accept_event->SetSocket(shared_from_this());
-    }
-    __all_socket_map[_sock] = shared_from_this();
-    auto actions = GetEventActions();
-    if (actions) {
-        actions->AddWinAcceptEvent(_accept_event);
-    }
-}
-*/
-
 }

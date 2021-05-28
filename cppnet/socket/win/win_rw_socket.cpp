@@ -135,7 +135,7 @@ void WinRWSocket::OnRead(Event* event, uint32_t len) {
     RemvoeEvent(event);
     _is_reading = false;
 
-    cppnet_base->OnRead(shared_from_this(), len);
+    cppnet_base->OnRead(shared_from_this(), _read_buffer, len);
 
     if (_read_buffer->GetCanReadLength() == 0) {
         _read_buffer.reset();

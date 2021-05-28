@@ -18,7 +18,7 @@ public:
     ~PosixConnectSocket();
 
     virtual void Accept();
-    virtual void OnAccept();
+    virtual void OnAccept(Event* event);
 private:
     Event*  _accept_event;
 };
