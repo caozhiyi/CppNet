@@ -6,19 +6,12 @@
 #include <string>
 #include <errno.h>
 
-#include "rw_socket.h"
 #include "connect_socket.h"
 #include "common/log/log.h"
 #include "common/os/convert.h"
 #include "common/network/socket.h"
 #include "common/network/address.h"
 #include "common/network/io_handle.h"
-#include "common/alloter/pool_alloter.h"
-
-#include "cppnet/cppnet_base.h"
-#include "cppnet/cppnet_config.h"
-#include "cppnet/event/event_interface.h"
-#include "cppnet/event/action_interface.h"
 
 namespace cppnet {
 

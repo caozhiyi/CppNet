@@ -6,7 +6,7 @@
 #ifndef CPPNET_SOCKET_POSIX_READ_WRITE_SOCKET
 #define CPPNET_SOCKET_POSIX_READ_WRITE_SOCKET
 
-#include "../rw_socket.h"
+#include "cppnet/socket/rw_socket.h"
 
 namespace cppnet {
 

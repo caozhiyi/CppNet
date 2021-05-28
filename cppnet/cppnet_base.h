@@ -13,7 +13,7 @@
 
 namespace cppnet {
 
-class Buffer;
+class InnerBuffer;
 class RWSocket;
 class Dispatcher;
 class RangeRandom;
@@ -48,7 +48,7 @@ public:
     // call back
     void OnTimer(std::shared_ptr<RWSocket> sock);
     void OnAccept(std::shared_ptr<RWSocket> sock);
-    void OnRead(std::shared_ptr<RWSocket> sock, std::shared_ptr<Buffer> buffer, uint32_t len);
+    void OnRead(std::shared_ptr<RWSocket> sock, std::shared_ptr<InnerBuffer> buffer, uint32_t len);
     void OnWrite(std::shared_ptr<RWSocket> sock, uint32_t len);
     void OnConnect(std::shared_ptr<RWSocket> sock, uint16_t err);
     void OnDisConnect(std::shared_ptr<RWSocket> sock, uint16_t err);

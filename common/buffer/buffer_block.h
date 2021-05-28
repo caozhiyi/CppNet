@@ -13,7 +13,9 @@
 namespace cppnet {
 
 class BlockMemoryPool;
-class BufferBlock: public Buffer, public ListSolt<BufferBlock> {
+class BufferBlock: 
+    public InnerBuffer, 
+    public ListSolt<BufferBlock> {
 public:
     BufferBlock(std::shared_ptr<BlockMemoryPool>& alloter);
     ~BufferBlock();
@@ -22,8 +24,8 @@ public:
     // return read size
     uint32_t ReadNotMovePt(char* res, uint32_t len);
 
-    uint32_t Read(std::shared_ptr<Buffer> buffer, uint32_t len = 0);
-    uint32_t Write(std::shared_ptr<Buffer> buffer, uint32_t len = 0);
+    uint32_t Read(std::shared_ptr<InnerBuffer> buffer, uint32_t len = 0);
+    uint32_t Write(std::shared_ptr<InnerBuffer> buffer, uint32_t len = 0);
 
     uint32_t Read(char* res, uint32_t len);
     uint32_t Write(const char* data, uint32_t len);

@@ -41,7 +41,7 @@ uint32_t BufferQueue::ReadNotMovePt(char* res, uint32_t len) {
     return read_len;
 }
 
-uint32_t BufferQueue::Read(std::shared_ptr<Buffer> buffer, uint32_t len) {
+uint32_t BufferQueue::Read(std::shared_ptr<InnerBuffer> buffer, uint32_t len) {
     if (!buffer) {
         return 0;
     }
@@ -103,7 +103,7 @@ uint32_t BufferQueue::Read(std::shared_ptr<Buffer> buffer, uint32_t len) {
     return total_read_len;
 }
 
-uint32_t BufferQueue::Write(std::shared_ptr<Buffer> buffer, uint32_t len) {
+uint32_t BufferQueue::Write(std::shared_ptr<InnerBuffer> buffer, uint32_t len) {
     if (!buffer) {
         return 0;
     }

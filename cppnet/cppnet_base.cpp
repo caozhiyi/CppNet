@@ -131,7 +131,7 @@ void CppNetBase::OnAccept(std::shared_ptr<RWSocket> sock) {
     }
 }
 
-void CppNetBase::OnRead(std::shared_ptr<RWSocket> sock, std::shared_ptr<Buffer> buffer, uint32_t len) {
+void CppNetBase::OnRead(std::shared_ptr<RWSocket> sock, std::shared_ptr<InnerBuffer> buffer, uint32_t len) {
     if (_read_cb) {
         _read_cb(sock, buffer, len);
     }

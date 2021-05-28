@@ -8,7 +8,7 @@
 
 #include <memory>
 #include <string>
-#include "cppnet_type.h"
+#include <cstdint>
 
 namespace cppnet {
 

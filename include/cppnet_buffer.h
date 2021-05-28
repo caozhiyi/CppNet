@@ -3,20 +3,17 @@
 
 // Author: caozhiyi (caozhiyi5@gmail.com)
 
-#ifndef COMMON_BUFFER_BUFFER_INTERFACE
-#define COMMON_BUFFER_BUFFER_INTERFACE
+#ifndef INCLUDE_CPPNET_BUFFER
+#define INCLUDE_CPPNET_BUFFER
 
-#include "include/cppnet_buffer.h"
+#include <memory>
 
 namespace cppnet {
 
-class BlockMemoryPool;
-class InnerBuffer:
-    public Buffer {
-
+class Buffer {
 public:
-    InnerBuffer() {}
-    virtual ~InnerBuffer() {}
+    Buffer() {}
+    virtual ~Buffer() {}
 
     // read to res buf but don't chenge the read point
     // return read size
@@ -43,17 +40,6 @@ public:
 
     // return can read bytes
     virtual uint32_t FindStr(const char* s, uint32_t s_len) = 0;
-
-    virtual uint32_t Read(std::shared_ptr<InnerBuffer> buffer, uint32_t len = 0) = 0;
-    virtual uint32_t Write(std::shared_ptr<InnerBuffer> buffer, uint32_t len = 0) = 0;
-
-    // move read point
-    virtual int32_t MoveReadPt(int32_t len) = 0;
-    // move write point
-    virtual int32_t MoveWritePt(int32_t len) = 0;
-
-    // return block memory pool
-    virtual std::shared_ptr<BlockMemoryPool> GetBlockMemoryPool() = 0;
 };
 
 }

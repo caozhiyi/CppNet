@@ -12,10 +12,6 @@
 namespace cppnet {
 
 class Event;
-class Buffer;
-class AlloterWrap;
-class BlockMemoryPool;
-
 class ConnectSocket:
     public Socket, 
     public std::enable_shared_from_this<ConnectSocket> { 

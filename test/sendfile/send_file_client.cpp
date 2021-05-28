@@ -32,7 +32,7 @@ public:
         }
     }
 
-    void OnRecv(Handle handle, std::shared_ptr<cppnet::Buffer> data, uint32_t len) {
+    void OnRecv(Handle handle, std::shared_ptr<cppnet::InnerBuffer> data, uint32_t len) {
         char ret_char[4] = {0};
         if (data->GetCanReadLength() >= 2) {
             data->Read(ret_char, 4);

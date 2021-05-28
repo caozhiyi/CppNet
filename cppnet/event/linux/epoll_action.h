@@ -8,7 +8,7 @@
 
 #include <mutex>
 #include <sys/epoll.h>
-#include "../action_interface.h"
+#include "cppnet/event/action_interface.h"
 
 namespace cppnet {
 

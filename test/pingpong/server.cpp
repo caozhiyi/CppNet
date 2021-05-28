@@ -33,7 +33,7 @@ void OnConnection(const Handle& handle, uint32_t error) {
     }
 }
 
-void OnMessage(const Handle& handle, std::shared_ptr<cppnet::Buffer> data, uint32_t) {
+void OnMessage(const Handle& handle, std::shared_ptr<cppnet::InnerBuffer> data, uint32_t) {
     char buff[65535];
     
     while (data->GetCanReadLength()) {

@@ -33,7 +33,7 @@ uint32_t BufferBlock::ReadNotMovePt(char* res, uint32_t len) {
     return _Read(res, len, false);
 }
 
-uint32_t BufferBlock::Read(std::shared_ptr<Buffer> buffer, uint32_t len) {
+uint32_t BufferBlock::Read(std::shared_ptr<InnerBuffer> buffer, uint32_t len) {
     if (!_buffer_start) {
         return 0;
     }
@@ -72,7 +72,7 @@ uint32_t BufferBlock::Read(std::shared_ptr<Buffer> buffer, uint32_t len) {
     return read_done_size;
 }
 
-uint32_t BufferBlock::Write(std::shared_ptr<Buffer> buffer, uint32_t len) {
+uint32_t BufferBlock::Write(std::shared_ptr<InnerBuffer> buffer, uint32_t len) {
     if (len == 0) {
         len = buffer->GetCanReadLength();
     }

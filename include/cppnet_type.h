@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <functional>
 
-#include "common/buffer/buffer_interface.h"
+#include "cppnet_buffer.h"
 
 namespace cppnet {
 

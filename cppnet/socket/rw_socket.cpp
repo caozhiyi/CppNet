@@ -9,12 +9,9 @@
 #include "cppnet/dispatcher.h"
 #include "cppnet/cppnet_base.h"
 #include "cppnet/cppnet_config.h"
-#include "cppnet/event/event_interface.h"
-#include "cppnet/event/action_interface.h"
 
 #include "common/log/log.h"
 #include "common/alloter/pool_block.h"
-#include "common/buffer/buffer_queue.h"
 #include "common/alloter/pool_alloter.h"
 #include "common/alloter/alloter_interface.h"
 
@@ -73,7 +70,7 @@ void RWSocket::StopTimer(uint64_t timer_id) {
     }
 }
 
-void RWSocket::OnConnect(Event* event, uint16_t err) {
+void RWSocket::OnConnect(Event*, uint16_t err) {
     auto sock = shared_from_this();
     if (err == CEC_SUCCESS) {
         __all_socket_map[_sock] = sock;

@@ -16,7 +16,6 @@
 #include <unordered_map>
 #endif
 
-
 namespace cppnet {
 
 class Address;

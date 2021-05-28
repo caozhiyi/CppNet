@@ -68,9 +68,6 @@ private:
     std::weak_ptr<CppNetBase> _cppnet_base;
 
     static thread_local std::unordered_map<uint64_t, std::shared_ptr<TimerEvent>> __all_timer_event_map;
-
-    static std::mutex _wait_destroy_map_mutex;
-    static std::unordered_map<std::thread::id, std::shared_ptr<std::thread>> _wait_destroy_thread_map;
 };
 
 }

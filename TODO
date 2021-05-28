@@ -5,5 +5,5 @@
 [x] remove default thread number to iocp
 [x] format files name
 [ ] valgrind check memory 
-[ ] restruct event action support iocp
-[ ] add thread safe alloter
+[x] restruct event action support iocp
+[x] add thread safe alloter

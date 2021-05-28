@@ -25,9 +25,6 @@ namespace cppnet {
 
 thread_local std::unordered_map<uint64_t, std::shared_ptr<TimerEvent>> Dispatcher::__all_timer_event_map;
 
-std::mutex Dispatcher::_wait_destroy_map_mutex;
-std::unordered_map<std::thread::id, std::shared_ptr<std::thread>> Dispatcher::_wait_destroy_thread_map;
-
 #ifdef __win__
 static std::map<uint32_t, std::shared_ptr<EventActions>> __unique_actions_map;
 #endif

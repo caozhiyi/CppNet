@@ -19,7 +19,8 @@ namespace cppnet {
 class AlloterWrap;
 class BufferBlock;
 class BlockMemoryPool;
-class BufferQueue: public Buffer {
+class BufferQueue:
+    public InnerBuffer {
 public:
     BufferQueue(const std::shared_ptr<BlockMemoryPool>& block_pool, 
     const std::shared_ptr<AlloterWrap>& alloter);
@@ -29,8 +30,8 @@ public:
     // return read size
     virtual uint32_t ReadNotMovePt(char* res, uint32_t len);
 
-    virtual uint32_t Read(std::shared_ptr<Buffer> buffer, uint32_t len = 0);
-    virtual uint32_t Write(std::shared_ptr<Buffer> buffer, uint32_t len = 0);
+    virtual uint32_t Read(std::shared_ptr<InnerBuffer> buffer, uint32_t len = 0);
+    virtual uint32_t Write(std::shared_ptr<InnerBuffer> buffer, uint32_t len = 0);
 
     virtual uint32_t Read(char* res, uint32_t len);
     virtual uint32_t Write(const char* data, uint32_t len);
