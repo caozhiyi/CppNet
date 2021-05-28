@@ -179,7 +179,7 @@ void WinConnectSocket::OnAccept(Event* event) {
 
 	// call accept call back function
 	cppnet_base->OnAccept(sock);
-	cppnet_base->OnRead(sock, accept_event->GetBufOffset());
+	cppnet_base->OnRead(sock, buffer, accept_event->GetBufOffset());
 
 	//post accept again
 	Accept(accept_event->GetIndex());

@@ -243,19 +243,19 @@ bool IOCPEventActions::AddConnection(Event* event, Address& address) {
 
     auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
     if (ret) {
-        rw_sock->OnConnect(CEC_SUCCESS);
+        rw_sock->OnConnect(event, CEC_SUCCESS);
         return true;
     }
 
     int32_t err = WSAGetLastError();
     if (WSA_IO_PENDING == err || ERROR_SUCCESS == err) {
         if (CheckConnect(rw_sock->GetSocket())) {
-            rw_sock->OnConnect(CEC_SUCCESS);
+            rw_sock->OnConnect(event, CEC_SUCCESS);
             return true;
         }
     }
 
-    rw_sock->OnConnect(CEC_CONNECT_REFUSE);
+    rw_sock->OnConnect(event, CEC_CONNECT_REFUSE);
     return true;
 }
 
@@ -425,7 +425,7 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
         context->_event_type = 0;
         event->RemoveType(ET_CONNECT);
         std::shared_ptr<RWSocket> rw_socket = std::dynamic_pointer_cast<RWSocket>(sock);
-        rw_socket->OnConnect(CEC_SUCCESS);
+        rw_socket->OnConnect(event, CEC_SUCCESS);
         break;
     }
     case INC_CONNECTION_CLOSE:
@@ -458,7 +458,7 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
         context->_event_type = 0;
         event->ForceSetType(ET_DISCONNECT);
         std::shared_ptr<RWSocket> rw_socket = std::dynamic_pointer_cast<RWSocket>(sock);
-        rw_socket->OnConnect(CEC_CONNECT_REFUSE);
+        rw_socket->OnConnect(event, CEC_CONNECT_REFUSE);
         break;
     }
     default:
