@@ -36,6 +36,7 @@ EpollEventActions::EpollEventActions():
     _epoll_handler(-1) {
     _active_list.resize(1024);
     memset(_pipe, 0, sizeof(_pipe));
+    memset(&_pipe_content, 0, sizeof(_pipe_content));
 }
 
 EpollEventActions::~EpollEventActions() {
