@@ -216,6 +216,9 @@
     <ClInclude Include="common\log\log_stream.h">
       <Filter>common\log</Filter>
     </ClInclude>
+    <ClInclude Include="include\cppnet_buffer.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\alloter\normal_alloter.cpp">

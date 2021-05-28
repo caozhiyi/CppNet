@@ -193,6 +193,7 @@
     <ClInclude Include="cppnet\socket\win\win_connect_socket.h" />
     <ClInclude Include="cppnet\socket\win\win_rw_socket.h" />
     <ClInclude Include="include\cppnet.h" />
+    <ClInclude Include="include\cppnet_buffer.h" />
     <ClInclude Include="include\cppnet_socket.h" />
     <ClInclude Include="include\cppnet_type.h" />
   </ItemGroup>

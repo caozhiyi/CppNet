@@ -6,6 +6,7 @@
 #include "expend_func.h"
 #include "iocp_action.h"
 
+#include "include/cppnet_type.h"
 #include "cppnet/cppnet_config.h"
 #include "cppnet/event/win/accept_event.h"
 #include "cppnet/socket/win/win_rw_socket.h"
