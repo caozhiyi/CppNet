@@ -20,7 +20,6 @@ public:
     virtual uint32_t ReadNotMovePt(char* res, uint32_t len) = 0;
 
     virtual uint32_t Read(char* res, uint32_t len) = 0;
-    virtual uint32_t Write(const char* data, uint32_t len) = 0;
     
     // clear all data
     virtual void Clear() = 0;
@@ -34,8 +33,7 @@ public:
     // when find specified character but res'length is too short, 
     // return 0 and the last param return need length
     virtual uint32_t ReadUntil(char* res, uint32_t len, const char* find, uint32_t find_len, uint32_t& need_len) = 0;
-    
-    virtual uint32_t GetCanWriteLength() = 0;
+
     virtual uint32_t GetCanReadLength() = 0;
 
     // return can read bytes
