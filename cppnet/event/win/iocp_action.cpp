@@ -19,6 +19,8 @@
 
 namespace cppnet {
 
+ThreadSafeUnorderedMap<uint64_t, std::shared_ptr<Socket>> IOCPEventActions::__connecting_socket_map;
+
 std::shared_ptr<EventActions> MakeEventActions() {
     return std::make_shared<IOCPEventActions>();
 }
@@ -221,6 +223,8 @@ bool IOCPEventActions::AddConnection(Event* event, Address& address) {
         }
     }
 
+    context->_event_type = ET_CONNECT;
+
     DWORD dwBytes = 0;
     int32_t ret = 0;
     if (address.GetType() == AT_IPV4) {
@@ -256,7 +260,7 @@ bool IOCPEventActions::AddConnection(Event* event, Address& address) {
         }
     }
 
-    rw_sock->OnConnect(event, CEC_CONNECT_REFUSE);
+    __connecting_socket_map[sock->GetSocket()] = sock;
     return true;
 }
 
@@ -428,7 +432,14 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
         context->_event_type = 0;
         event->RemoveType(ET_CONNECT);
         std::shared_ptr<RWSocket> rw_socket = std::dynamic_pointer_cast<RWSocket>(sock);
-        rw_socket->OnConnect(event, CEC_SUCCESS);
+
+        if (CheckConnect(rw_socket->GetSocket())) {
+            rw_socket->OnConnect(event, CEC_SUCCESS);
+
+        } else {
+            rw_socket->OnConnect(event, CEC_CONNECT_REFUSE);
+        }
+        __connecting_socket_map.Erase(rw_socket->GetSocket());
         break;
     }
     case INC_CONNECTION_CLOSE:

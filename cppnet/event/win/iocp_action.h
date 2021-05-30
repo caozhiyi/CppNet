@@ -6,8 +6,10 @@
 #ifndef CPPNET_EVENT_WIN_IOCP_ACTION
 #define CPPNET_EVENT_WIN_IOCP_ACTION
 
+#include <memory>
 #include <WS2tcpip.h>
-#include "../action_interface.h"
+#include "cppnet/event/action_interface.h"
+#include "common/structure/thread_safe_unordered_map.h"
 
 namespace cppnet {
 
@@ -32,6 +34,7 @@ struct EventOverlapped {
     ~EventOverlapped() {}
 };
 
+class Socket;
 // iocp event interface
 class IOCPEventActions:
     public EventActions {
@@ -61,6 +64,7 @@ private:
 
 protected:
     void*     _iocp_handler;
+    static ThreadSafeUnorderedMap<uint64_t, std::shared_ptr<Socket>> __connecting_socket_map;
 };
 
 }
