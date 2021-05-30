@@ -24,7 +24,7 @@ CppNet::~CppNet() {
 
 void CppNet::Init(int32_t thread_num) {
     _cppnet_base->Init(thread_num);
-    if (__open_log) {
+    if (__print_log) {
         std::shared_ptr<Logger> file_log = std::make_shared<FileLogger>(__log_file_name);
         std::shared_ptr<Logger> std_log = std::make_shared<StdoutLogger>();
         file_log->SetLogger(std_log);

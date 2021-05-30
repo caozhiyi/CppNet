@@ -17,11 +17,17 @@
 namespace cppnet {
 
 WinRWSocket::WinRWSocket():
-    RWSocket() {
+    RWSocket(),
+    _shutdown(false),
+    _is_reading(false) {
+
 }
 
 WinRWSocket::WinRWSocket(std::shared_ptr<AlloterWrap> alloter):
-    RWSocket(alloter) {
+    RWSocket(alloter),
+    _shutdown(false),
+    _is_reading(false) {
+
 }
 
 WinRWSocket::WinRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter):
@@ -133,7 +139,6 @@ void WinRWSocket::OnRead(Event* event, uint32_t len) {
     }
 
     RemvoeEvent(event);
-    _is_reading = false;
 
     cppnet_base->OnRead(shared_from_this(), _read_buffer, len);
 
@@ -141,6 +146,7 @@ void WinRWSocket::OnRead(Event* event, uint32_t len) {
         _read_buffer.reset();
     }
 
+    _is_reading = false;
     // read again
     Read();
 }
