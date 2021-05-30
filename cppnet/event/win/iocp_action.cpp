@@ -222,13 +222,13 @@ bool IOCPEventActions::AddConnection(Event* event, Address& address) {
     }
 
     DWORD dwBytes = 0;
-    int32_t ret = -1;
+    int32_t ret = 0;
     if (address.GetType() == AT_IPV4) {
         SOCKADDR_IN addr;
         addr.sin_family = AF_INET6;
         addr.sin_port = htons(address.GetAddrPort());
         addr.sin_addr.S_un.S_addr = inet_addr(address.GetIp().c_str());
-        ConnectEx((SOCKET)sock->GetSocket(), (sockaddr*)&addr, sizeof(addr), nullptr, 0, &dwBytes, &context->_overlapped);
+        ret = ConnectEx((SOCKET)sock->GetSocket(), (sockaddr*)&addr, sizeof(addr), nullptr, 0, &dwBytes, &context->_overlapped);
 
     } else {
         SOCKADDR_IN6 addr;
@@ -237,7 +237,7 @@ bool IOCPEventActions::AddConnection(Event* event, Address& address) {
         addr.sin6_family = AF_INET6;
         addr.sin6_port = htons(address.GetAddrPort());
         inet_pton(AF_INET6, address.GetIp().c_str(), &addr.sin6_addr);
-        ConnectEx((SOCKET)sock->GetSocket(), (sockaddr*)&addr, sizeof(addr), nullptr, 0, &dwBytes, &context->_overlapped);
+        ret = ConnectEx((SOCKET)sock->GetSocket(), (sockaddr*)&addr, sizeof(addr), nullptr, 0, &dwBytes, &context->_overlapped);
     }
 
     setsockopt((SOCKET)sock->GetSocket(), SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, NULL, 0);
@@ -375,9 +375,11 @@ bool IOCPEventActions::AddToIOCP(uint64_t sock) {
 
 void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
     std::shared_ptr<Socket> sock;
-    Event* event;
-
-    event = (Event*)context->_event;
+    Event* event = (Event*)context->_event;
+    if (!event) {
+        LOG_ERROR("event point is already destroy");
+        return;
+    }
     sock = event->GetSocket();
     if (!sock) {
         LOG_ERROR("socket point is already destroy");

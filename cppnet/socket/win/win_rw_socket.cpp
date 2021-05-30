@@ -91,6 +91,15 @@ void WinRWSocket::Connect(const std::string& ip, uint16_t port) {
         _sock = ret._return_value;
     }
 
+    // add to iocp.
+    auto action = GetEventActions();
+    auto iocp = std::dynamic_pointer_cast<IOCPEventActions>(action);
+    if (!iocp->AddToIOCP(_sock)) {
+        LOG_FATAL("add connect socket to iocp failed!");
+        OsHandle::Close(_sock);
+        return;
+    }
+
     _addr.SetIp(ip);
     _addr.SetAddrPort(port);
 
