@@ -4,7 +4,6 @@
 #include <iostream>
 
 #include "include/cppnet.h"
-#include "include/cppnet_socket.h"
 
 using namespace cppnet;
 
@@ -18,7 +17,7 @@ void WriteFunc(Handle handle, uint32_t len) {
 void ReadFunc(Handle handle, cppnet::BufferPtr data, uint32_t len) {
     char msg_buf[__buf_len] = {0};
     uint32_t need_len = 0;
-    uint32_t find_len = strlen(__buf_spilt);
+    uint32_t find_len = (uint32_t)strlen(__buf_spilt);
     // get recv data to send back.
     uint32_t size = data->ReadUntil(msg_buf, __buf_len, __buf_spilt, find_len, need_len);
     handle->Write(msg_buf, size);

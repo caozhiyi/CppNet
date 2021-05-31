@@ -15,11 +15,11 @@
 
 namespace cppnet {
 
-// all memory must return memory pool before destory.
+// all memory must return memory pool before destroy.
 class BlockMemoryPool {
 public:
     // bulk memory size. 
-    // everytime add nodes num
+    // every time add nodes num
     BlockMemoryPool(uint32_t large_sz, uint32_t add_num);
     virtual ~BlockMemoryPool();
 

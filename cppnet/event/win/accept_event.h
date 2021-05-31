@@ -12,7 +12,8 @@
 namespace cppnet {
 
 class WinAcceptEvent:
-    public Event{
+    public Event {
+
 public:
     WinAcceptEvent():
         _client_sock(0),

@@ -25,7 +25,7 @@ static const uint16_t __mem_block_size     = 1024;
 // how many block memory will be add to block memory pool.
 static const uint16_t __mem_block_add_step = 5;
 // max number of blocks in memory pool. If block memory more than this number, will reduce to half.
-static const uint16_t __max_block_num      = 10;
+static const uint16_t __max_block_num      = 20;
 // max data to write when net is busy.
 static const uint32_t __max_write_cache    = 1024 * 1024 * 4;
 

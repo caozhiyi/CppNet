@@ -5,7 +5,7 @@
 
 #include <winsock2.h>
 #include <Mswsock.h >
-#include "../socket.h"
+#include "common/network/socket.h"
 
 namespace cppnet {
 

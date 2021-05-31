@@ -6,18 +6,17 @@
 #ifndef INCLUDE_CPPNET_SOCKET
 #define INCLUDE_CPPNET_SOCKET
 
-#include <memory>
 #include <string>
 #include <cstdint>
 
 namespace cppnet {
 
-// cpp net socket interface
+// cppnet socket interface
 class CNSocket {
 public:
     CNSocket();
     virtual ~CNSocket();
-    // get socket ip and adress
+    // get socket IP and address
     virtual bool GetAddress(std::string& ip, uint16_t& port);
     // post sync write event.
     virtual bool Write(const char* src, uint32_t len);

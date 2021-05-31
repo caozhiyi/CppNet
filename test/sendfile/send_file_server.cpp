@@ -8,7 +8,6 @@
 #include "md5.h"
 #include "common.h"
 #include "include/cppnet.h"
-#include "include/cppnet_socket.h"
 
 using namespace cppnet;
 
@@ -55,12 +54,12 @@ void ReadFunc(Handle handle, std::shared_ptr<cppnet::Buffer> data, uint32_t len)
         std::cout << "get file length : " << iter->second._head._length << std::endl;
         std::cout << "get file md5    : " << iter->second._head._md5 << std::endl;
         if (*(iter->second._file)) {
-            handle->Write("OK", strlen("OK"));
+            handle->Write("OK", (uint32_t)strlen("OK"));
             std::cout << "start to recv. " << std::endl;
             iter->second._status = sending;
 
         } else {
-            handle->Write("NO", strlen("NO"));
+            handle->Write("NO", (uint32_t)strlen("NO"));
             std::cout << "refuse to recv. " << std::endl;
         }
 
@@ -77,11 +76,11 @@ void ReadFunc(Handle handle, std::shared_ptr<cppnet::Buffer> data, uint32_t len)
                 char md5_buf[128] = { 0 };
                 Compute_file_md5(iter->second._head._name, md5_buf);
                 if (strcmp(md5_buf, iter->second._head._md5) == 0) {
-                    handle->Write("OK", strlen("OK"));
+                    handle->Write("OK", (uint32_t)strlen("OK"));
                     std::cout << "recv ok. " << std::endl;
 
                 } else {
-                    handle->Write("NO", strlen("NO"));
+                    handle->Write("NO", (uint32_t)strlen("NO"));
                     std::cout << "recv failed. " << std::endl;
                 }
             }

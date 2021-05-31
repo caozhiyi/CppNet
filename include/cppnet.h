@@ -8,12 +8,15 @@
 
 #include <string>
 #include <memory>
+
 #include "cppnet_type.h"
+#include "cppnet_buffer.h"
+#include "cppnet_socket.h"
 
 namespace cppnet {
 
 class CppNetBase;
-// cppnet instace
+// cppnet instance
 class CppNet {
 public:
     CppNet();

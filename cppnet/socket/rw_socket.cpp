@@ -13,7 +13,6 @@
 #include "common/log/log.h"
 #include "common/alloter/pool_block.h"
 #include "common/alloter/pool_alloter.h"
-#include "common/alloter/alloter_interface.h"
 
 namespace cppnet {
 

@@ -4,11 +4,10 @@
 #include <iostream>
 #include <functional>
 
-#include "common/util/time.h"
 #include "md5.h"
 #include "common.h"
 #include "include/cppnet.h"
-#include "include/cppnet_socket.h"
+#include "common/util/time.h"
 
 using namespace cppnet;
 
@@ -90,7 +89,7 @@ private:
 
         sprintf(_header._name, "%s", _file_name.c_str());
         _file.seekg(0, _file.end);
-        _header._length = _file.tellg();
+        _header._length = (int)_file.tellg();
         _file.seekg(0, _file.beg);
 
         Compute_file_md5(_file_name.c_str(), _header._md5);
@@ -101,7 +100,7 @@ private:
         char buf[__read_len];
         while (!_file.eof()) {
             _file.read(buf, __read_len);
-            int len =  _file.gcount();
+            int len =  (int)_file.gcount();
             if (!handle->Write(buf, len)) {
                 _block = true;
                 return;

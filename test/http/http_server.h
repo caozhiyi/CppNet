@@ -10,7 +10,6 @@
 #include "http_response.h"
 
 #include "include/cppnet.h"
-#include "include/cppnet_socket.h"
 
 typedef std::function<void (const HttpRequest&, HttpResponse&)> HttpCallback;
 

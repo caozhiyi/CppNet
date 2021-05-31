@@ -11,7 +11,9 @@
 
 namespace cppnet {
 
-class StdoutLogger: public Logger {
+class StdoutLogger: 
+    public Logger {
+
 public:
     StdoutLogger();
     ~StdoutLogger();

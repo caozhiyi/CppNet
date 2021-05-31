@@ -15,6 +15,7 @@ class Event;
 class ConnectSocket:
     public Socket, 
     public std::enable_shared_from_this<ConnectSocket> { 
+
 public:
     ConnectSocket();
     virtual ~ConnectSocket();

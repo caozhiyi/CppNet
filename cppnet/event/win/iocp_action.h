@@ -35,16 +35,17 @@ struct EventOverlapped {
 };
 
 class Socket;
-// iocp event interface
+// IOCP event interface
 class IOCPEventActions:
     public EventActions {
+
 public:
     IOCPEventActions();
     virtual ~IOCPEventActions();
 
     virtual bool Init(uint32_t thread_num = 0);
     virtual bool Dealloc();
-    // net io event
+    // net IO event
     virtual bool AddSendEvent(Event* event);
     virtual bool AddRecvEvent(Event* event);
     virtual bool AddAcceptEvent(Event* event);
@@ -52,9 +53,9 @@ public:
     virtual bool AddDisconnection(Event* event);
 
     virtual bool DelEvent(Event* event);
-    // io thread process
+    // IO thread process
     virtual void ProcessEvent(int32_t wait_ms);
-    // weak up net io thread
+    // weak up net IO thread
     virtual void Wakeup();
 
     bool AddToIOCP(uint64_t sock);

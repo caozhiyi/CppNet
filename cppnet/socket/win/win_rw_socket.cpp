@@ -91,7 +91,7 @@ void WinRWSocket::Connect(const std::string& ip, uint16_t port) {
         _sock = ret._return_value;
     }
 
-    // add to iocp.
+    // add to IOCP.
     auto action = GetEventActions();
     auto iocp = std::dynamic_pointer_cast<IOCPEventActions>(action);
     if (!iocp->AddToIOCP(_sock)) {

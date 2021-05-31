@@ -2,7 +2,6 @@
 #include <iostream>
 
 #include "include/cppnet.h"
-#include "include/cppnet_socket.h"
 
 using namespace cppnet;
 

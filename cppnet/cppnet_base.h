@@ -13,12 +13,15 @@
 
 namespace cppnet {
 
-class InnerBuffer;
+
 class RWSocket;
 class Dispatcher;
 class RangeRandom;
+class InnerBuffer;
 
-class CppNetBase: public std::enable_shared_from_this<CppNetBase> {
+class CppNetBase: 
+    public std::enable_shared_from_this<CppNetBase> {
+
 public:
     CppNetBase();
     ~CppNetBase();

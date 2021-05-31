@@ -12,7 +12,9 @@
 namespace cppnet {
     
 template<typename T>
-class ThreadWithQueue: public Thread {
+class ThreadWithQueue: 
+    public Thread {
+
 public:
     ThreadWithQueue() {}
     virtual ~ThreadWithQueue() {}

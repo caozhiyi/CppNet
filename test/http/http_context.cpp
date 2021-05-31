@@ -1,5 +1,6 @@
 #include <algorithm>
 #include "http_context.h"
+#include "include/cppnet_buffer.h"
 
 const char CRLF[] = "\r\n";
 const int CRLF_LEN = 2;

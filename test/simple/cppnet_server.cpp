@@ -4,7 +4,6 @@
 #include <iostream>
 
 #include "include/cppnet.h"
-#include "include/cppnet_socket.h"
 
 using namespace cppnet;
 
@@ -32,7 +31,7 @@ void ReadFunc(Handle handle, std::shared_ptr<Buffer> data, uint32_t len) {
     std::cout << "Read size : " << len << std::endl << std::endl;
 
     auto msg = GetMsg();
-    handle->Write(msg.c_str(), msg.length());
+    handle->Write(msg.c_str(), (uint32_t)msg.length());
 }
 
 void ConnectFunc(Handle handle, uint32_t err) {
@@ -43,7 +42,7 @@ void ConnectFunc(Handle handle, uint32_t err) {
         std::cout << "[ConnectFunc] : ip : " << ip << "port : " << port << std::endl;
 
         auto msg = GetMsg();
-        handle->Write(msg.c_str(), msg.length());
+        handle->Write(msg.c_str(), (uint32_t)msg.length());
 
     } else {
         std::cout << "[ConnectFunc] some thing error : " << err << std::endl;

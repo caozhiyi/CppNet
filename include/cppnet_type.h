@@ -10,17 +10,16 @@
 #include <cstdint>
 #include <functional>
 
-#include "cppnet_buffer.h"
-
 namespace cppnet {
 
 // socket
+class Buffer;
 class CNSocket;
 typedef std::shared_ptr<CNSocket> Handle;
 typedef std::shared_ptr<Buffer>   BufferPtr;
 
 // call back define
-// param : param is setted when set
+// param : param is set when call
 typedef std::function<void(Handle)>                                            timer_call_back;
 typedef std::function<void(void*)>                                             user_timer_call_back;
 
@@ -29,7 +28,7 @@ typedef std::function<void(void*)>                                             u
 typedef std::function<void(Handle handle, uint32_t err)>                       connect_call_back;
 
 // handle : handle of socket
-// len    : sended date len
+// len    : send date len
 typedef std::function<void(Handle handle, uint32_t len)>                       write_call_back;
 
 // handle : handle of socket

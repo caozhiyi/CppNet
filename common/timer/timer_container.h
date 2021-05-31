@@ -15,7 +15,9 @@ namespace cppnet {
 // It inherits from the timer interface, 
 // so can set another timer wheel container to sub timer to support more timer set.
 // More timer define see timer.h file.
-class TimerContainer : public Timer {
+class TimerContainer: 
+    public Timer {
+
 public:
     TimerContainer(std::shared_ptr<Timer> t, TIMER_CAPACITY accuracy, TIMER_CAPACITY capacity);
     ~TimerContainer();

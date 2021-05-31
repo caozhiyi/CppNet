@@ -55,7 +55,7 @@ bool WinConnectSocket::Bind(const std::string& ip, uint16_t port) {
         _sock = ret._return_value;
     }
 
-    // add to iocp.
+    // add to IOCP.
     auto action = GetEventActions();
     auto iocp = std::dynamic_pointer_cast<IOCPEventActions>(action);
     if (!iocp->AddToIOCP(_sock)) {
@@ -130,7 +130,7 @@ void WinConnectSocket::OnAccept(Event* event) {
 	AcceptExSockAddrs(accept_event->GetBuf(), __iocp_buff_size - ((sizeof(SOCKADDR_STORAGE) + 16) * 2),
 		sizeof(SOCKADDR_STORAGE) + 16, sizeof(SOCKADDR_STORAGE) + 16, (LPSOCKADDR*)&LocalAddr, &localLen, (LPSOCKADDR*)&client_addr, &remote_len);
 
-    // Does this call have any effect ?
+    // does this call have any effect ?
     setsockopt(accept_event->GetClientSocket(), SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT,
         (char *)&_sock, sizeof(_sock));
 
@@ -169,7 +169,7 @@ void WinConnectSocket::OnAccept(Event* event) {
     auto buffer = sock->GetReadBuffer();
     buffer->Write(accept_event->GetBuf(), accept_event->GetBufOffset());
 
-	// add socket to iocp
+	// add socket to IOCP
     auto action = GetEventActions();
     auto iocp = std::dynamic_pointer_cast<IOCPEventActions>(action);
     iocp->AddToIOCP(accept_event->GetClientSocket());
@@ -181,7 +181,7 @@ void WinConnectSocket::OnAccept(Event* event) {
 	cppnet_base->OnAccept(sock);
 	cppnet_base->OnRead(sock, buffer, accept_event->GetBufOffset());
 
-	//post accept again
+	// post accept again
 	Accept(accept_event->GetIndex());
 
 	// wait for read

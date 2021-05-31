@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <algorithm>
 #include "pool_block.h"
+#include "cppnet/cppnet_config.h"
 
 namespace cppnet {
 
@@ -41,11 +42,22 @@ void* BlockMemoryPool::PoolLargeMalloc() {
 }
 
 void BlockMemoryPool::PoolLargeFree(void* &m) {
+    bool release = false;
+    {
 #ifdef __use_iocp__
-    std::lock_guard<std::mutex> lock(_mutex);
+        std::lock_guard<std::mutex> lock(_mutex);
 #endif
-    _free_mem_vec.push_back(m);
-    // TODO release some block.
+        _free_mem_vec.push_back(m);
+
+        if (_free_mem_vec.size() > __max_block_num) {
+            release = true;
+        }
+    }
+    
+    // release some block.
+    if (release) {
+        ReleaseHalf();
+    }
 }
 
 uint32_t BlockMemoryPool::GetSize() {

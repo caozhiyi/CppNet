@@ -26,7 +26,7 @@ public:
     const std::shared_ptr<AlloterWrap>& alloter);
     virtual ~BufferQueue();
 
-    // read to res buf but don't chenge the read point
+    // read to res buf but don't change the read point
     // return read size
     virtual uint32_t ReadNotMovePt(char* res, uint32_t len);
 
@@ -50,7 +50,7 @@ public:
     
     // do not read when can't find specified character.
     // return read bytes when read otherwise return 0
-    // when find specified character but res'length is too short, 
+    // when find specified character but res length is too short, 
     // return 0 and the last param return need length
     virtual uint32_t ReadUntil(char* res, uint32_t len, const char* find, uint32_t find_len, uint32_t& need_len);
     

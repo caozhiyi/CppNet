@@ -4,8 +4,6 @@
 #include <algorithm> // for std::find
 
 #include "include/cppnet.h"
-#include "include/cppnet_socket.h"
-
 #include "common/util/time.h"
 
 using namespace cppnet;
@@ -66,7 +64,7 @@ int main() {
         for (auto iter = handle_vec.begin(); iter != handle_vec.end(); ++iter) {
             cppnet::Sleep(1000);
             std::string msg = GetMsg();
-            (*iter)->Write(msg.c_str(), msg.length());
+            (*iter)->Write(msg.c_str(), (uint32_t)msg.length());
         }
     }
     

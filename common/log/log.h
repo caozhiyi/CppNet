@@ -47,7 +47,9 @@ static const uint16_t __log_block_size = 1024;
 
 class Logger;
 class BaseLogger;
-class SingletonLogger: public Singleton<SingletonLogger> {
+class SingletonLogger: 
+    public Singleton<SingletonLogger> {
+
 public:
     SingletonLogger();
     ~SingletonLogger();

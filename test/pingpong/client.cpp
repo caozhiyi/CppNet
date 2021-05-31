@@ -7,7 +7,6 @@
 #include <unordered_map>
 
 #include "include/cppnet.h"
-#include "include/cppnet_socket.h"
 
 #ifdef __win__
 #include <winsock2.h>
@@ -156,7 +155,7 @@ private:
 void Session::OnConnection(Handle handle) {
     //SetNoDelay(handle);
     auto msg = _owner->Message();
-    handle->Write(msg.c_str(), msg.length());
+    handle->Write(msg.c_str(), (uint32_t)msg.length());
 }
 
 int main(int argc, char* argv[]) {

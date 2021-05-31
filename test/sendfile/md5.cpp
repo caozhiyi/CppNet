@@ -199,7 +199,7 @@ int Compute_file_md5(const char *file_path, char *md5_str)
 	MD5Init(&md5);
 
 	while (file.get((char*)data, READ_DATA_SIZE)) {
-		MD5Update(&md5, data, file.gcount());
+		MD5Update(&md5, data, (unsigned int)file.gcount());
 	}
 
 	file.close();

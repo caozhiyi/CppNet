@@ -22,7 +22,10 @@ enum FileLoggerSpiltUnit {
     FLSU_HOUR = 2,
 };
 
-class FileLogger: public Logger, public ThreadWithQueue<std::shared_ptr<Log>> {
+class FileLogger: 
+    public Logger, 
+    public ThreadWithQueue<std::shared_ptr<Log>> {
+
 public:
     FileLogger(const std::string& file, 
         FileLoggerSpiltUnit unit = FLSU_DAY, 
