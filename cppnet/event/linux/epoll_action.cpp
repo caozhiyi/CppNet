@@ -240,7 +240,9 @@ void EpollEventActions::ProcessEvent(int32_t wait_ms) {
 }
 
 void EpollEventActions::Wakeup() {
-   write(_pipe[1], "1", 1);
+   if(write(_pipe[1], "1", 1) <= 0) {
+       LOG_ERROR_S << "write to pipe failed when weak up.";
+   }
 }
 
 void EpollEventActions::OnEvent(std::vector<epoll_event>& event_vec, int16_t num) {
@@ -251,7 +253,9 @@ void EpollEventActions::OnEvent(std::vector<epoll_event>& event_vec, int16_t num
         if ((uint32_t)event_vec[i].data.fd == _pipe[0]) {
             LOG_WARN("weak up the io thread, index : %d", i);
             char buf[4];
-            read(_pipe[0], buf, 1);
+            if(read(_pipe[0], buf, 1) <= 0) {
+                LOG_ERROR_S << "read from pipe failed when weak up.";
+            }
             continue;
         }
 
