@@ -46,4 +46,6 @@ include_directories(${CMAKE_SOURCE_DIR})
 add_subdirectory(common)
 add_subdirectory(cppnet)
 
-add_library(${PROJECT_NAME} STATIC ${cppnet_source} ${common_source})
+add_library(${PROJECT_NAME} STATIC ${common_source} ${cppnet_source})
+
+add_subdirectory(test)

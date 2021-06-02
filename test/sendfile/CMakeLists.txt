@@ -1,24 +1,26 @@
+cmake_minimum_required(VERSION 3.10)
+
 project(sendfileserver)
-add_executable(${PROJECT_NAME} SendFileServer.cpp md5.cpp)
-set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "test/sendfile")
-if(UNIX)
-    target_link_libraries(${PROJECT_NAME} libcppnet.a)
-    target_link_libraries(${PROJECT_NAME} pthread)
-else()
-    target_link_libraries(${PROJECT_NAME} ws2_32)
+add_executable(${PROJECT_NAME} send_file_server.cpp md5.cpp)
+
+if(WIN32)
     target_link_libraries(${PROJECT_NAME} cppnet)
+    target_link_libraries(${PROJECT_NAME} ws2_32)
+else()
+    target_link_libraries(${PROJECT_NAME} cppnet)
+    target_link_libraries(${PROJECT_NAME} pthread)
 endif()
 
 
 
 project(sendfileclient)
-add_executable(${PROJECT_NAME} SendFileClient.cpp md5.cpp)
-set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "test/sendfile")
-if(UNIX)
-    target_link_libraries(${PROJECT_NAME} libcppnet.a)
-    target_link_libraries(${PROJECT_NAME} pthread)
-else()
-    target_link_libraries(${PROJECT_NAME} ws2_32)
+add_executable(${PROJECT_NAME} send_file_client.cpp md5.cpp)
+
+if(WIN32)
     target_link_libraries(${PROJECT_NAME} cppnet)
+    target_link_libraries(${PROJECT_NAME} ws2_32)
+else()
+    target_link_libraries(${PROJECT_NAME} cppnet)
+    target_link_libraries(${PROJECT_NAME} pthread)
 endif()
 
