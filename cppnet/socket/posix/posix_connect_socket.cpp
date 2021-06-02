@@ -78,7 +78,7 @@ void PosixConnectSocket::OnAccept(Event*) {
         sock->SetDispatcher(GetDispatcher());
 
         __all_socket_map[ret._return_value] = sock;
-        LOG_DEBUG_S << "connect nums:" << __all_socket_map.size() << " sock:" << ret._return_value << " used:" << sock.use_count();
+        LOG_DEBUG_S << "connect nums:" << (uint32_t)__all_socket_map.size() << " sock:" << ret._return_value << " used:" << sock.use_count();
         //call accept call back function
         cppnet_base->OnAccept(sock);
 
