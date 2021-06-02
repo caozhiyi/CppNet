@@ -9,6 +9,7 @@
 #include "connect_socket.h"
 #include "common/log/log.h"
 #include "common/os/convert.h"
+#include "cppnet/cppnet_config.h"
 #include "common/network/socket.h"
 #include "common/network/address.h"
 #include "common/network/io_handle.h"
@@ -38,7 +39,7 @@ bool ConnectSocket::Bind(const std::string& ip, uint16_t port) {
 
     auto ret = OsHandle::Bind(_sock, _addr);
 
-    if (ret._return_value < 0) {
+    if (ret._return_value < 0 && __reuse_port) {
         LOG_FATAL("bind socket filed! error:%d, info:%s", ret._errno, ErrnoInfo(ret._errno));
         OsHandle::Close(_sock);
         return false;
@@ -49,7 +50,7 @@ bool ConnectSocket::Bind(const std::string& ip, uint16_t port) {
 
 bool ConnectSocket::Listen() {
     auto ret = OsHandle::Listen(_sock);
-    if (ret._return_value < 0) {
+    if (ret._return_value < 0 && __reuse_port) {
         LOG_FATAL("listen socket filed! error:%d, info:%s", ret._errno, ErrnoInfo(ret._errno));
         OsHandle::Close(_sock);
         return false;
