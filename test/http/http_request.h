@@ -138,6 +138,14 @@ class HttpRequest {
     return _headers_map;
   }
 
+  void Clear() {
+    _method = Invalid;
+    _version = Unknown;
+    _headers_map.clear();
+    _path.clear();
+    _query.clear();
+  }
+
   void Swap(HttpRequest& that) {
     std::swap(_method, that._method);
     std::swap(_version, that._version);

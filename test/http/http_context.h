@@ -25,8 +25,7 @@ class HttpContext {
 
         void Reset() {
             _state = ExpectRequestLine;
-            HttpRequest dummy;
-            _request.Swap(dummy);
+            _request.Clear();
         }
 
         const HttpRequest& GetRequest() const { 
