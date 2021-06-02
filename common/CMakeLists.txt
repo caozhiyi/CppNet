@@ -1,0 +1,26 @@
+cmake_minimum_required(VERSION 3.10)
+
+project(cppnet CXX)
+
+aux_source_directory(${PROJECT_SOURCE_DIR}/alloter src_files)
+aux_source_directory(${PROJECT_SOURCE_DIR}/buffer src_files)
+aux_source_directory(${PROJECT_SOURCE_DIR}/log src_files)
+aux_source_directory(${PROJECT_SOURCE_DIR}/os src_files)
+aux_source_directory(${PROJECT_SOURCE_DIR}/network src_files)
+aux_source_directory(${PROJECT_SOURCE_DIR}/structure src_files)
+aux_source_directory(${PROJECT_SOURCE_DIR}/thread src_files)
+aux_source_directory(${PROJECT_SOURCE_DIR}/timer src_files)
+aux_source_directory(${PROJECT_SOURCE_DIR}/util src_files)
+
+IF (WIN32)
+	aux_source_directory(${PROJECT_SOURCE_DIR}/network/win src_files)
+	aux_source_directory(${PROJECT_SOURCE_DIR}/os/win src_files)
+ELSEIF (APPLE)
+	aux_source_directory(${PROJECT_SOURCE_DIR}/network/posix src_files)
+	aux_source_directory(${PROJECT_SOURCE_DIR}/os/posix src_files)
+ELSEIF (UNIX)
+	aux_source_directory(${PROJECT_SOURCE_DIR}/network/posix src_files)
+	aux_source_directory(${PROJECT_SOURCE_DIR}/os/posix src_files)
+ENDIF ()
+
+set(common_source ${src_files} PARENT_SCOPE)
