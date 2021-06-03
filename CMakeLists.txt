@@ -34,6 +34,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
 if (WIN32)
 add_definitions(-D__win__)
+add_definitions(-D__use_iocp__)
 endif ()
 
 # output
