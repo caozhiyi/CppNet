@@ -1,0 +1,10 @@
+- [x] IOCP supports multiple accept events
+- [x] logger support stream 
+- [x] support IPV6 
+- [x] remove default thread number to iocp
+- [x] format files name
+- [x] restruct event action support iocp
+- [x] add thread safe alloter
+- [x] valgrind check memory 
+- [ ] performance testing
+- [ ] update document
