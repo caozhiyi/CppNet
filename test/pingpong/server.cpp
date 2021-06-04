@@ -3,8 +3,6 @@
 
 #include "include/cppnet.h"
 
-using namespace cppnet;
-
 #ifdef __win__
 #include <winsock2.h>
 void SetNoDelay(const uint64_t& sock) {
@@ -23,16 +21,16 @@ void SetNoDelay(const uint64_t& sock) {
 
 static std::atomic_int count;
 
-void OnConnection(const Handle& handle, uint32_t error) {
+void OnConnection(const cppnet::Handle& handle, uint32_t error) {
 
     count++;
-    if (error == CEC_SUCCESS) {
+    if (error == cppnet::CEC_SUCCESS) {
         std::cout << " accept a socket. count: " << count << std::endl;
-        //SetNoDelay(handle);
+        SetNoDelay(handle->GetSocket());
     }
 }
 
-void OnMessage(const Handle& handle, std::shared_ptr<cppnet::Buffer> data, uint32_t) {
+void OnMessage(const cppnet::Handle& handle, cppnet::BufferPtr data, uint32_t) {
     char buff[65535];
     
     while (data->GetCanReadLength()) {
@@ -43,7 +41,7 @@ void OnMessage(const Handle& handle, std::shared_ptr<cppnet::Buffer> data, uint3
 
 int main() {
     cppnet::CppNet net;
-    net.Init(4);
+    net.Init(8);
 
     net.SetAcceptCallback(OnConnection);
     net.SetReadCallback(OnMessage);

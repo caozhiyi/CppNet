@@ -24,15 +24,13 @@ void SetNoDelay(const uint64_t& sock) {
 }
 #endif
 
-using namespace cppnet;
-
 class Client;
 class Session {
     public:
     Session(Client* owner) : 
-          _owner(owner),
-          _bytes_read(0),
-          _messages_read(0) {
+        _owner(owner),
+        _bytes_read(0),
+        _messages_read(0) {
 
     }
 
@@ -44,15 +42,16 @@ class Session {
        return _messages_read;
     }
 
-    void OnConnection(Handle handle);
+    void OnConnection(cppnet::Handle handle);
 
-    void OnMessage(Handle handle, std::shared_ptr<cppnet::Buffer> data, uint32_t) {
+    void OnMessage(cppnet::Handle handle, cppnet::BufferPtr data, uint32_t) {
        char buff[65535];
        ++_messages_read;
-       int len_get = data->GetCanReadLength();
+
+       uint32_t len_get = data->GetCanReadLength();
        _bytes_read += len_get;
        while (data->GetCanReadLength()) {
-           int ret = data->Read(buff, 65535);
+           uint32_t ret = data->Read(buff, 65535);
            handle->Write(buff, ret);
        }
     }
@@ -85,17 +84,18 @@ public:
         return _message;
     }
 
-    void OnMessage(Handle handle, std::shared_ptr<cppnet::Buffer> data, uint32_t len) {
+    void OnMessage(cppnet::Handle handle, cppnet::BufferPtr data, uint32_t len) {
         auto iter = _sessions.find(handle);
         if (iter != _sessions.end()) {
             iter->second->OnMessage(handle, data, len);
         }
     }
 
-    void OnConnect(Handle handle, uint32_t error) {
-       std::cout << "OnConnect :" << _num_connected.load() << std::endl;
-        if (error == CEC_SUCCESS) {
+    void OnConnect(cppnet::Handle handle, uint32_t error) {
+        std::cout << "OnConnect :" << _num_connected.load() << std::endl;
+        if (error == cppnet::CEC_SUCCESS) {
             _num_connected++;
+
             if (_num_connected.load() == _session_count) {
                 std::cout << "all connected" << std::endl;
             }
@@ -104,11 +104,11 @@ public:
             _sessions[handle] = std::move(session);
 
         } else {
-          std::cout << " something error while connect. error :  " << error << std::endl;
+            std::cout << " something error while connect. error :  " << error << std::endl;
         }
     }
 
-  void OnDisconnect(Handle, uint32_t) {
+  void OnDisconnect(cppnet::Handle, uint32_t) {
       std::cout << "disconnected :" << _num_connected.load() << std::endl;
       _num_connected--;
       if (_num_connected== 0) {
@@ -148,12 +148,12 @@ private:
     int          _block_size;
     std::string       _message;
     std::atomic_uint  _num_connected;
-    cppnet::CppNet*  _net;
-    std::unordered_map<Handle, std::unique_ptr<Session>> _sessions;
+    cppnet::CppNet*   _net;
+    std::unordered_map<cppnet::Handle, std::unique_ptr<Session>> _sessions;
 };
 
-void Session::OnConnection(Handle handle) {
-    //SetNoDelay(handle);
+void Session::OnConnection(cppnet::Handle handle) {
+    SetNoDelay(handle->GetSocket());
     auto msg = _owner->Message();
     handle->Write(msg.c_str(), (uint32_t)msg.length());
 }
@@ -165,10 +165,10 @@ int main(int argc, char* argv[]) {
        return -1;
     }
     
-    std::string ip  = std::string(argv[1]);
-    int port        = atoi(argv[2]);
-    int threadCount = atoi(argv[3]);
-    int block_size  = atoi(argv[4]);
+    std::string ip    = std::string(argv[1]);
+    int port          = atoi(argv[2]);
+    int threadCount   = atoi(argv[3]);
+    int block_size    = atoi(argv[4]);
     int session_count = atoi(argv[5]);
     int timeout       = atoi(argv[6]);
 
