@@ -11,7 +11,6 @@ On Linux and Mac OS, can executed directly in `cppnet` directory
 make
 ```
 The `cppnet` static library can be compiled.  
-Other example code,  
 For other sample codes, you need to enter the corresponding subdirectories and execute the `make` command respectively.   
 All compilation outputs are in the current execution directory.     
 

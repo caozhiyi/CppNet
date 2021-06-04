@@ -29,4 +29,4 @@ cmake ..
 make
 ```
 或使用对应VS编译。   
-所有可执行产出物均在当前`build`目录的`bin`目录下，`Cppnet`静态库在当前`build`目录的`lib`目录下。   
+所有可执行产出物均在当前`build`目录的`bin`目录下，`cppnet`静态库在当前`build`目录的`lib`目录下。   
