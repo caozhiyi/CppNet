@@ -67,7 +67,7 @@ void CppNet::SetAcceptCallback(const connect_call_back& cb) {
     _cppnet_base->SetAcceptCallback(cb);
 }
 
-bool CppNet::ListenAndAccept(const std::string& ip, int16_t port) {
+bool CppNet::ListenAndAccept(const std::string& ip, uint16_t port) {
     return _cppnet_base->ListenAndAccept(ip, port);
 }
 
@@ -75,7 +75,7 @@ void CppNet::SetConnectionCallback(const connect_call_back& cb) {
     _cppnet_base->SetConnectionCallback(cb);
 }
 
-bool CppNet::Connection(const std::string& ip, int16_t port) {
+bool CppNet::Connection(const std::string& ip, uint16_t port) {
     return _cppnet_base->Connection(ip, port);
 }
 

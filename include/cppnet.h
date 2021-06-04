@@ -41,11 +41,11 @@ public:
 
     //server
     void SetAcceptCallback(const connect_call_back& cb);
-    bool ListenAndAccept(const std::string& ip, int16_t port);
+    bool ListenAndAccept(const std::string& ip, uint16_t port);
 
     //client
     void SetConnectionCallback(const connect_call_back& cb);
-    bool Connection(const std::string& ip, int16_t port);
+    bool Connection(const std::string& ip, uint16_t port);
 
 private:
     std::shared_ptr<CppNetBase> _cppnet_base;

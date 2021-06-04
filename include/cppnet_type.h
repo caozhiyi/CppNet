@@ -40,12 +40,9 @@ typedef std::function<void(Handle handle, BufferPtr data,
 // error code
 enum CPPNET_ERROR_CODE {
     CEC_SUCCESS                = 0,    // success.
-    CEC_TIMEOUT                = 1,    // the event time out call back.
-    CEC_CLOSED                 = 2,    // remote close the socket.
-    CEC_INVALID_HANDLE         = 3,    // invalid cppnet handle, can find in socket manager.
-    CEC_FAILED                 = 4,    // call function failed.
-    CEC_CONNECT_BREAK          = 5,    // connect break.
-    CEC_CONNECT_REFUSE         = 6,    // remote refuse connect or server not exist.
+    CEC_CLOSED                 = 1,    // remote close the socket.
+    CEC_CONNECT_BREAK          = 2,    // connect break.
+    CEC_CONNECT_REFUSE         = 3,    // remote refuse connect or server not exist.
 };
 
 }
