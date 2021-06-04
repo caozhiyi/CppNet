@@ -10,27 +10,28 @@
 ## 简介
 
 Cppnet是一个封装在TCP协议上的proactor模式multi-thread C++11网络库，支持在windows，linux以及macOS上编译使用。     
- 简单：   
- + 对外只导出了少量的调用接口，所有的网络IO都封装为异步回调的形式
- + 接口声明都尽可能的像是调用系统socket API
- + 对客户端而言，只多了一个新增的buffer对象类型
- + 支持IPv6和IPv4
+ - **简单**：   
+    + 对外暴漏最少接口，所有的网络响应都封装为异步回调的形式
+    + 接口声明类似系统原生
+    + 只新增一个buffer接口集
+    + 支持IPv6和IPv4
 
- 快速：   
- + 分别采用epoll，IOCP，kqueue做底层事件驱动
- + 多线程惊群通过端口复用交由内核处理
- + 参照SGI STL和Nginx实现了内存池，每个连接都独享一个内存池对象，所有从内存池中申请的内存都由智能指针管理
- + 用时间轮实现定时器
+- **快速**：    
+    + 分别采用epoll，IOCP，kqueue做底层事件驱动
+    + 多线程惊群交由内核处理
+    + 参照SGI STL和Nginx实现了内存池，每个连接都独享一个内存池对象，所有从内存池中申请的内存都由智能指针管理
+    + 用时间轮实现定时器
 
- 明了：   
- + 结构上分为三层：事件驱动层，会话管理层，接口层，各层之间通过回调向上通知
- + 各个模块之间职责分工明确，上帝的事儿归上帝管，凯撒的事儿归凯撒管
- + 通过接口解耦模块，符合最小接口原则和依赖倒置原则
+- **明了**： 
+    + 结构上分为三层：事件驱动层，会话管理层，接口层，各层之间通过回调向上通知
+    + 各个模块之间职责分工明确，上帝的事儿归上帝管，凯撒的事儿归凯撒管
+    + 通过接口解耦模块，符合最小接口原则和依赖倒置原则
 
 ## 接口
 
 所有的接口文件都在 [include](/include) 中，其中关于库初始化和用户自定义定时器的接口定义在 [CppNet](/include/CppNet.h) 中：   
 ```c++
+// cppnet instance
 class CppNet {
 public:
     // common
@@ -60,37 +61,34 @@ public:
     bool Connection(const std::string& ip, int16_t port);
 };
 ```
-因为所有的网络IO接口都被定义为回调通知的模式，所以初始化库的时候需要设置各个调用的回调函数。     
+因为所有的网络IO接口都被定义为回调通知的模式，所以初始化库的时候需要设置各个通知的回调函数。     
 这里通过设置回调而不是提供虚函数继承的方式，是希望尽量的简单，减少类的继承关系，增加回调的灵活性，你可以将回调设置为任意一个函数。      
 关于网络IO的接口定义在[Socket](/include/Socket.h)中：   
 ```c++
 class CNSocket {
 public:
-    // get socket ip and adress
-    virtual bool GetAddress(std::string& ip, uint16_t& port);
+    // get socket
+    virtual uint64_t GetSocket() = 0;
+    // get socket IP and address
+    virtual bool GetAddress(std::string& ip, uint16_t& port) = 0;
     // post sync write event.
-    virtual bool Write(const char* src, uint32_t len);
+    virtual bool Write(const char* src, uint32_t len) = 0;
     // close the connect
-    virtual bool Close();
+    virtual bool Close() = 0;
     // add a timer. must set timer call back
     // interval support max 1 minute
     // return a timer id
-    virtual uint64_t AddTimer(uint32_t interval, bool always = false);
-    virtual void StopTimer(uint64_t timer_id);
+    virtual uint64_t AddTimer(uint32_t interval, bool always = false) = 0;
+    virtual void StopTimer(uint64_t timer_id) = 0;
 };
 ```
 接口的作用通过声明和注释即可明了。需要关注的是接口返回的错误码，与回调函数的声明一起定义在[CppDefine](/include/CppDefine.h)中：
 ```c++
-// error code
-enum CPPNET_ERROR_CODE {
+    // error code
     CEC_SUCCESS                = 0,    // success.
-    CEC_TIMEOUT                = 1,    // the event time out call back.
-    CEC_CLOSED                 = 2,    // remote close the socket.
-    CEC_INVALID_HANDLE         = 3,    // invalid cppnet handle, can find in socket manager.
-    CEC_FAILED                 = 4,    // call function failed.
-    CEC_CONNECT_BREAK          = 5,    // connect break.
-    CEC_CONNECT_REFUSE         = 6,    // remote refuse connect or server not exist.
-};
+    CEC_CLOSED                 = 1,    // remote close the socket.
+    CEC_CONNECT_BREAK          = 2,    // connect break.
+    CEC_CONNECT_REFUSE         = 3,    // remote refuse connect or server not exist.
 ```
 关于连接状态的所有通知都会回调到连接相关的函数中。    
 
@@ -109,17 +107,9 @@ enum CPPNET_ERROR_CODE {
 <p align="left"><img width="896" src="./doc/image/muduo_vs_cppnet.png" alt="mudo vs cppnet"></p>
 
 
-## 编译(Windows)
+## 编译
 
-你可以使用vs2019来编译Cppnet库和示例。    
-
-## 编译(Linux & macOS)
-
-只需要在源码目录下执行make即可编译Cppnet库。   
-其他示例则需要在编译完静态库之后，分别在本地目录里执行make。   
-```
-$ make -j4
-```
+编译可参考[这里](/doc/build/build_cn.md)
 
 ## 协议
 
