@@ -1,6 +1,6 @@
 # Build
 
-`Cppnet`it supports three compilation methods:
+`cppnet` supports three compilation methods:
 - Linux and Mac OS use `make`
 - Windows use `VS 2019`
 - use `cmake`

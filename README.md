@@ -10,19 +10,19 @@ See the details in chinese [Wiki](https://github.com/caozhiyi/CppNet/wiki)
 ## Introduction
 
 Cppnet is a proactor mode and multithreaded network with C++11 on tcp. Support Window, Linux and macOS.    
- - Simple:    
+ - `Simple`:    
     + Only export a little interfaces, all net io insterface are asynchronous callbacks
     + Insterface as much as possible like calling the socket API of the system
     + There is only one additional buffer interface for the client
     + Support both IPv4 and IPv6
 
- - Fast: 
+ - `Fast`: 
     + Use epoll, IOCP and kqueue
     + Multithreaded threads are handled by the kernel
     + Each socket has a single memory pool object. All memory requested from the memory pool is managed by an intelligent pointer 
     + Using time wheel to realize timer   
  
- - Clear：
+ - `Clear`:
     + Three layers: event-driven layer, session management layer and interface layer
     + Upward notification through callbacks between layers. Clear division of responsibilities among modules, pay to Caesar what belongs to Caesar and God what belongs to God
     + The interface decoupling module is used to meet the minimum interface principle and dependency inversion principle  
