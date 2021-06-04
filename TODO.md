@@ -8,3 +8,4 @@
 - [x] valgrind check memory 
 - [ ] performance testing
 - [ ] update document
+- [ ] client socket add accept socket number
