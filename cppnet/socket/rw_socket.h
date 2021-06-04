@@ -31,15 +31,15 @@ public:
     virtual uint64_t GetSocket() { return _sock; }
     virtual bool GetAddress(std::string& ip, uint16_t& port);
 
-    virtual bool Close();
+    virtual void Close();
 
     virtual void Read() {}
     virtual bool Write(const char* src, uint32_t len) { return false; }
     virtual void Connect(const std::string& ip, uint16_t port) {}
     virtual void Disconnect() {}
 
-    virtual uint64_t AddTimer(uint32_t interval, bool always = false);
-    virtual void StopTimer(uint64_t timer_id);
+    virtual void AddTimer(uint32_t interval, bool always = false);
+    virtual void StopTimer();
 
     virtual void OnTimer();
     virtual void OnRead(Event* event, uint32_t len = 0) {}
@@ -55,6 +55,7 @@ public:
     std::shared_ptr<AlloterWrap> GetAlloter() { return _alloter; }
 
 protected:
+    uint32_t _timer_id;
     std::shared_ptr<AlloterWrap>     _alloter;
     std::shared_ptr<BlockMemoryPool> _block_pool;
 };

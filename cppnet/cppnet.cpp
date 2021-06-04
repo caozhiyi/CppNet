@@ -55,6 +55,10 @@ void CppNet::SetDisconnectionCallback(const connect_call_back& cb) {
     _cppnet_base->SetDisconnectionCallback(cb);
 }
 
+void CppNet::SetTimerCallback(const timer_call_back& cb) {
+    _cppnet_base->SetTimerCallback(cb);
+}
+
 uint64_t CppNet::AddTimer(int32_t interval, const user_timer_call_back& cb, void* param, bool always) {
     return _cppnet_base->AddTimer(interval, cb, param, always);
 }

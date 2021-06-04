@@ -24,7 +24,7 @@ public:
     // common
     // init cppnet library.
     // thread_num : the number of running threads.
-    void Init(int32_t thread_num);
+    void Init(int32_t thread_num = 0);
     void Destory();
 
     // thread join
@@ -34,6 +34,9 @@ public:
     void SetReadCallback(const read_call_back& cb);
     void SetWriteCallback(const write_call_back& cb);
     void SetDisconnectionCallback(const connect_call_back& cb);
+
+    // if use socket timer, set it
+    void SetTimerCallback(const timer_call_back& cb);
 
     // return timer id
     uint64_t AddTimer(int32_t interval, const user_timer_call_back& cb, void* param = nullptr, bool always = false);

@@ -23,12 +23,11 @@ public:
     // post sync write event.
     virtual bool Write(const char* src, uint32_t len) = 0;
     // close the connect
-    virtual bool Close() = 0;
+    virtual void Close() = 0;
     // add a timer. must set timer call back
     // interval support max 1 minute
-    // return a timer id
-    virtual uint64_t AddTimer(uint32_t interval, bool always = false) = 0;
-    virtual void StopTimer(uint64_t timer_id) = 0;
+    virtual void AddTimer(uint32_t interval, bool always = false) = 0;
+    virtual void StopTimer() = 0;
 };
 
 }

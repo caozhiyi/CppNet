@@ -27,6 +27,9 @@ public:
     // do not read when buffer less than len. 
     // return len when read otherwise return 0
     virtual uint32_t ReadUntil(char* res, uint32_t len) = 0;
+
+    // move read point
+    virtual int32_t MoveReadPt(int32_t len) = 0;
     
     // do not read when can't find specified character.
     // return read bytes when read otherwise return 0

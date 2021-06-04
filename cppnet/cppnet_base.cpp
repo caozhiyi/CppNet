@@ -38,7 +38,7 @@ CppNetBase::~CppNetBase() {
 
 void CppNetBase::Init(uint32_t thread_num) {
     uint32_t cpus = GetCpuNum();
-    if (thread_num == 0 || thread_num > cpus * 2) {
+    if (thread_num == 0 || thread_num >= cpus * 2) {
         thread_num = cpus;
     }
     _random = std::make_shared<RangeRandom>(0, thread_num - 1);

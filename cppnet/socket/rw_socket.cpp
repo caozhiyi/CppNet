@@ -27,12 +27,19 @@ RWSocket::RWSocket(std::shared_ptr<AlloterWrap> alloter):
 
 RWSocket::RWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter):
     Socket(sock),
+    _timer_id(0),
     _alloter(alloter) {
     _block_pool = _alloter->PoolNewSharePtr<BlockMemoryPool>(__mem_block_size, __mem_block_add_step);
 }
 
 RWSocket::~RWSocket() {
-
+    if (_timer_id > 0) {
+        auto dispatcher = GetDispatcher();
+        if (dispatcher) {
+            dispatcher->StopTimer(_timer_id);
+        }
+        _timer_id = 0;
+    }
 }
 
 bool RWSocket::GetAddress(std::string& ip, uint16_t& port) {
@@ -41,9 +48,15 @@ bool RWSocket::GetAddress(std::string& ip, uint16_t& port) {
     return true;
 }
 
-bool RWSocket::Close() {
+void RWSocket::Close() {
     Disconnect();
-    return true;
+    if (_timer_id > 0) {
+        auto dispatcher = GetDispatcher();
+        if (dispatcher) {
+            dispatcher->StopTimer(_timer_id);
+        }
+        _timer_id = 0;
+    }
 }
 
 void RWSocket::OnTimer() {
@@ -54,18 +67,26 @@ void RWSocket::OnTimer() {
     cppnet_base->OnTimer(shared_from_this());
 }
 
-uint64_t RWSocket::AddTimer(uint32_t interval, bool always) {
+void RWSocket::AddTimer(uint32_t interval, bool always) {
+    if (_timer_id > 0) {
+        return;
+    }
+    
     auto dispatcher = GetDispatcher();
     if (dispatcher) {
-        return dispatcher->AddTimer(shared_from_this(), interval, always);
+        _timer_id = dispatcher->AddTimer(shared_from_this(), interval, always);
     }
-    return 0;
 }
 
-void RWSocket::StopTimer(uint64_t timer_id) {
+void RWSocket::StopTimer() {
+    if (_timer_id == 0) {
+        return;
+    }
+    
     auto dispatcher = GetDispatcher();
     if (dispatcher) {
-        dispatcher->StopTimer(timer_id);
+        dispatcher->StopTimer(_timer_id);
+        _timer_id = 0;
     }
 }
 

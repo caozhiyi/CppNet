@@ -211,7 +211,7 @@ uint32_t Dispatcher::AddTimer(std::shared_ptr<RWSocket> sock, uint32_t interval,
     return timer_id;
 }
 
-void Dispatcher::StopTimer(uint64_t timer_id) {
+void Dispatcher::StopTimer(uint32_t timer_id) {
     if (std::this_thread::get_id() == _local_thread_id) {
         auto iter = __all_timer_event_map.find(timer_id);
         if (iter == __all_timer_event_map.end()) {
