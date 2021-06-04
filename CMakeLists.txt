@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(cppnet)
+project(cppnet CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CXX_FLAGS
- -g
+ -O2
  -D_FILE_OFFSET_BITS=64
  -Wall
  -Wextra
@@ -28,9 +28,6 @@ if(CMAKE_BUILD_BITS EQUAL 32)
 else()
   list(APPEND CXX_FLAGS "-m64")
 endif()
-
-set(CMAKE_CXX_FLAGS_DEBUG "-O0")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
 if (WIN32)
 add_definitions(-D__win__)
