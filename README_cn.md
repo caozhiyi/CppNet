@@ -29,68 +29,12 @@ Cppnet是一个封装在TCP协议上的proactor模式multi-thread C++11网络库
 
 ## 接口
 
-所有的接口文件都在 [include](/include) 中，其中关于库初始化和用户自定义定时器的接口定义在 [CppNet](/include/CppNet.h) 中：   
-```c++
-// cppnet instance
-class CppNet {
-public:
-    // common
-    // init cppnet library.
-    // thread_num : the number of running threads.
-    void Init(int32_t thread_num);
-    void Destory();
-
-    // thread join
-    void Join();
-
-    // must set callback before listen
-    void SetReadCallback(const read_call_back& cb);
-    void SetWriteCallback(const write_call_back& cb);
-    void SetDisconnectionCallback(const connect_call_back& cb);
-
-    // return timer id
-    uint64_t AddTimer(int32_t interval, const user_timer_call_back& cb, void* param = nullptr, bool always = false);
-    void RemoveTimer(uint64_t timer_id);
-
-    //server
-    void SetAcceptCallback(const connect_call_back& cb);
-    bool ListenAndAccept(const std::string& ip, int16_t port);
-
-    //client
-    void SetConnectionCallback(const connect_call_back& cb);
-    bool Connection(const std::string& ip, int16_t port);
-};
-```
-因为所有的网络IO接口都被定义为回调通知的模式，所以初始化库的时候需要设置各个通知的回调函数。     
-这里通过设置回调而不是提供虚函数继承的方式，是希望尽量的简单，减少类的继承关系，增加回调的灵活性，你可以将回调设置为任意一个函数。      
-关于网络IO的接口定义在[Socket](/include/Socket.h)中：   
-```c++
-class CNSocket {
-public:
-    // get socket
-    virtual uint64_t GetSocket() = 0;
-    // get socket IP and address
-    virtual bool GetAddress(std::string& ip, uint16_t& port) = 0;
-    // post sync write event.
-    virtual bool Write(const char* src, uint32_t len) = 0;
-    // close the connect
-    virtual bool Close() = 0;
-    // add a timer. must set timer call back
-    // interval support max 1 minute
-    // return a timer id
-    virtual uint64_t AddTimer(uint32_t interval, bool always = false) = 0;
-    virtual void StopTimer(uint64_t timer_id) = 0;
-};
-```
-接口的作用通过声明和注释即可明了。需要关注的是接口返回的错误码，与回调函数的声明一起定义在[CppDefine](/include/CppDefine.h)中：
-```c++
-    // error code
-    CEC_SUCCESS                = 0,    // success.
-    CEC_CLOSED                 = 1,    // remote close the socket.
-    CEC_CONNECT_BREAK          = 2,    // connect break.
-    CEC_CONNECT_REFUSE         = 3,    // remote refuse connect or server not exist.
-```
-关于连接状态的所有通知都会回调到连接相关的函数中。    
+`cppnet`对外接口主要包括三种类型，也分别定义在三个头文件中：
+- 初始化和全局配置类，定义在[cppnet](/include/cppnet.h)
+- `socket`操作类，[cppnet_socket](/include/cppnet_socket.h)
+- `buffer`读取类，定义在[cppnet_buffer](/include/cppnet_buffer.h)
+   
+接口详情请参考[API](/doc/api/api_cn.md)。
 
 ## 示例
 
@@ -109,7 +53,7 @@ public:
 
 ## 编译
 
-编译可参考[这里](/doc/build/build_cn.md)
+请看[编译](/doc/build/build_cn.md)
 
 ## 协议
 

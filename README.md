@@ -29,7 +29,8 @@ Cppnet is a proactor mode and multithreaded network with C++11 on tcp. Support W
 
 ## Interface
 
-All the interface files are in [include](/include). The interface definitions for library initialization and timer are in [CppNet](/include/CppNet.h):    
+All the interface files are in [include](/include).   
+The interface definitions for library initialization and timer are in [cppnet](/include/cppnet.h):    
 ```c++
 // cppnet instance
 class CppNet {
@@ -37,7 +38,7 @@ public:
     // common
     // init cppnet library.
     // thread_num : the number of running threads.
-    void Init(int32_t thread_num);
+    void Init(int32_t thread_num = 0);
     void Destory();
 
     // thread join
@@ -47,6 +48,9 @@ public:
     void SetReadCallback(const read_call_back& cb);
     void SetWriteCallback(const write_call_back& cb);
     void SetDisconnectionCallback(const connect_call_back& cb);
+
+    // if use socket timer, set it
+    void SetTimerCallback(const timer_call_back& cb);
 
     // return timer id
     uint64_t AddTimer(int32_t interval, const user_timer_call_back& cb, void* param = nullptr, bool always = false);
@@ -63,7 +67,7 @@ public:
 ```
 Since all network IO interfaces are defined as callback notification modes, callback functions for each call need to be set when initializing the library.     
 By setting callbacks instead of providing virtual function inheritance, we hope to be as simple as possible, reduce the inheritance relationship of classes, and increase the flexibility of callbacks. You can set callbacks to any function.         
-The interface definition for network IO are in [Socket](/include/Socket.h):      
+The interface definition for network IO are in [cppnet_socket](/include/cppnet_socket.h):      
 ```c++
 class CNSocket {
 public:
@@ -74,15 +78,14 @@ public:
     // post sync write event.
     virtual bool Write(const char* src, uint32_t len) = 0;
     // close the connect
-    virtual bool Close() = 0;
+    virtual void Close() = 0;
     // add a timer. must set timer call back
     // interval support max 1 minute
-    // return a timer id
-    virtual uint64_t AddTimer(uint32_t interval, bool always = false) = 0;
-    virtual void StopTimer(uint64_t timer_id) = 0;
+    virtual void AddTimer(uint32_t interval, bool always = false) = 0;
+    virtual void StopTimer() = 0;
 };
 ```
-The function of the interface is evident through declarations and annotations. Attention should be paid to the error code returned by the interface, defined in [CppDefine](/include/CppDefine.h):    
+The function of the interface is evident through declarations and annotations. Attention should be paid to the error code returned by the interface, defined in [cppnet_type](/include/cppnet_type.h):    
 ```c++
     // error code
     CEC_SUCCESS                = 0,    // success.
@@ -108,7 +111,7 @@ Only use apache ab test HTTP echo，comparison with Muduo. The command executed 
 
 ## Build
 
-Look at [here](/doc/build/build.md)
+Look at [Build](/doc/build/build.md)
 
 ## Licenses
 
