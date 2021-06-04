@@ -22,11 +22,13 @@ class RWSocket:
     public std::enable_shared_from_this<RWSocket> { 
 
 public:
+
     RWSocket();
     RWSocket(std::shared_ptr<AlloterWrap> alloter);
     RWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter);
     virtual ~RWSocket();
 
+    virtual uint64_t GetSocket() { return _sock; }
     virtual bool GetAddress(std::string& ip, uint16_t& port);
 
     virtual bool Close();
