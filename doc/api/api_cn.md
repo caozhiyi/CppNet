@@ -1,6 +1,6 @@
 # API
 
-`cppnet`对外接口主要包括三种类型，也分别定义在三个头文件中：
+`cppnet`对外接口主要包括三种类型：
 - 初始化和全局配置类
 - `socket`操作类
 - `buffer`读取类
@@ -232,10 +232,10 @@ virtual uint32_t ReadUntil(char* res, uint32_t len, const char* find, uint32_t f
 
 `参数`：   
 `res`：读取缓存地址。    
-`len`：读取缓存长度。
-`find`：指定字符串地址。
-`find_len`：指定字符串长度。
-`need_len`：返回需要字节长度。
+`len`：读取缓存长度。   
+`find`：指定字符串地址。   
+`find_len`：指定字符串长度。   
+`need_len`：返回需要字节长度。   
 
 #### **可读数据长度**
 ```c++
@@ -244,7 +244,7 @@ virtual uint32_t GetCanReadLength() = 0;
 
 #### **查找字符串**
 ```c++
-    virtual uint32_t FindStr(const char* s, uint32_t s_len) = 0;
+virtual uint32_t FindStr(const char* s, uint32_t s_len) = 0;
 ```
 `说明`：  
 返回查找到字符串首位置的索引。   

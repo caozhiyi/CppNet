@@ -29,71 +29,12 @@ Cppnet is a proactor mode and multithreaded network with C++11 on tcp. Support W
 
 ## Interface
 
-All the interface files are in [include](/include).   
-The interface definitions for library initialization and timer are in [cppnet](/include/cppnet.h):    
-```c++
-// cppnet instance
-class CppNet {
-public:
-    // common
-    // init cppnet library.
-    // thread_num : the number of running threads.
-    void Init(int32_t thread_num = 0);
-    void Destory();
-
-    // thread join
-    void Join();
-
-    // must set callback before listen
-    void SetReadCallback(const read_call_back& cb);
-    void SetWriteCallback(const write_call_back& cb);
-    void SetDisconnectionCallback(const connect_call_back& cb);
-
-    // if use socket timer, set it
-    void SetTimerCallback(const timer_call_back& cb);
-
-    // return timer id
-    uint64_t AddTimer(int32_t interval, const user_timer_call_back& cb, void* param = nullptr, bool always = false);
-    void RemoveTimer(uint64_t timer_id);
-
-    //server
-    void SetAcceptCallback(const connect_call_back& cb);
-    bool ListenAndAccept(const std::string& ip, int16_t port);
-
-    //client
-    void SetConnectionCallback(const connect_call_back& cb);
-    bool Connection(const std::string& ip, int16_t port);
-};
-```
-Since all network IO interfaces are defined as callback notification modes, callback functions for each call need to be set when initializing the library.     
-By setting callbacks instead of providing virtual function inheritance, we hope to be as simple as possible, reduce the inheritance relationship of classes, and increase the flexibility of callbacks. You can set callbacks to any function.         
-The interface definition for network IO are in [cppnet_socket](/include/cppnet_socket.h):      
-```c++
-class CNSocket {
-public:
-    // get socket
-    virtual uint64_t GetSocket() = 0;
-    // get socket IP and address
-    virtual bool GetAddress(std::string& ip, uint16_t& port) = 0;
-    // post sync write event.
-    virtual bool Write(const char* src, uint32_t len) = 0;
-    // close the connect
-    virtual void Close() = 0;
-    // add a timer. must set timer call back
-    // interval support max 1 minute
-    virtual void AddTimer(uint32_t interval, bool always = false) = 0;
-    virtual void StopTimer() = 0;
-};
-```
-The function of the interface is evident through declarations and annotations. Attention should be paid to the error code returned by the interface, defined in [cppnet_type](/include/cppnet_type.h):    
-```c++
-    // error code
-    CEC_SUCCESS                = 0,    // success.
-    CEC_CLOSED                 = 1,    // remote close the socket.
-    CEC_CONNECT_BREAK          = 2,    // connect break.
-    CEC_CONNECT_REFUSE         = 3,    // remote refuse connect or server not exist.
-```
-All notifications about the connection status are called back to the connection related functions.     
+`cppnet` has types of external interfaces, which are also defined in three header files   
+- Initialization and global configuration, defined in [cppnet](/include/cppnet.h)   
+- `socket` operation, defined in [cppnet_socket](/include/cppnet_socket.h)   
+- `buffer` read, defined in [cppnet_buffer](/include/cppnet_buffer.h)   
+   
+API details see [API](/doc/api/api.md).   
 
 ## Example
 
