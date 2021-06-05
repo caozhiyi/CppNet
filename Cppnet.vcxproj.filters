@@ -287,9 +287,6 @@
     <ClCompile Include="cppnet\cppnet_base.cpp">
       <Filter>cppnet</Filter>
     </ClCompile>
-    <ClCompile Include="cppnet\cppnet_socket.cpp">
-      <Filter>cppnet</Filter>
-    </ClCompile>
     <ClCompile Include="cppnet\dispatcher.cpp">
       <Filter>cppnet</Filter>
     </ClCompile>
