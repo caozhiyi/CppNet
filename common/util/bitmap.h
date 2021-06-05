@@ -32,6 +32,9 @@ public:
     // if return -1, means the bitmap has no value
     int32_t GetMinAfter(uint32_t index = 0);
 
+    // bitmap is empty
+    bool Empty();
+
 private:
     std::vector<int64_t> _bitmap;
 };

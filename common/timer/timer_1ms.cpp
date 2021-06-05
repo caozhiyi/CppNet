@@ -69,6 +69,10 @@ int32_t Timer1ms::CurrentTimer() {
 }
 
 int32_t Timer1ms::MinTime() {
+    if (_bitmap.Empty()) {
+        return NO_TIMER;
+    }
+    
     int32_t next_setp = _bitmap.GetMinAfter(_cur_index);
 
     if (next_setp >= 0) {
@@ -87,6 +91,10 @@ int32_t Timer1ms::MinTime() {
 }
 
 uint32_t Timer1ms::TimerRun(uint32_t time) {
+    if (_bitmap.Empty()) {
+        return 0;
+    }
+
     time = time % __timer_capacity;
     _cur_index += time;
 

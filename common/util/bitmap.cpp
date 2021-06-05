@@ -30,6 +30,10 @@ bool Bitmap::Init(uint32_t size) {
         vec_size++;
     }
     _bitmap.resize(vec_size);
+    for (size_t i = 0; i < _bitmap.size(); i++) {
+        _bitmap[i] = 0;
+    }
+    
     return true;
 }
 
@@ -110,6 +114,15 @@ int32_t Bitmap::GetMinAfter(uint32_t index) {
         }
     }
     return -1;
+}
+
+bool Bitmap::Empty() {
+    for (size_t i = 0; i < _bitmap.size(); i++) {
+        if (_bitmap[i] != 0) {
+            return false;
+        }
+    }
+    return true;
 }
 
 }

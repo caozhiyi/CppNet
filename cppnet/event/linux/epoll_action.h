@@ -38,6 +38,7 @@ public:
 private:
     void OnEvent(std::vector<epoll_event>& event_vec, int16_t num);
     bool AddEvent(epoll_event* ev, int32_t event_flag, uint64_t sock, bool in_actions);
+    bool MakeEpollEvent(Event* event, epoll_event* &ep_event);
 
 protected:
     std::mutex  _mutex;

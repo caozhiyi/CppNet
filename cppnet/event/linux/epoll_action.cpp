@@ -81,22 +81,30 @@ bool EpollEventActions::AddSendEvent(Event* event) {
     }
     event->AddType(ET_WRITE);
 
-    auto sock = event->GetSocket();
-    if (sock) {
-        epoll_event* ep_event = (epoll_event*)event->GetData();
-        if (!ep_event) {
-            auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
-            ep_event = rw_sock->GetAlloter()->PoolNew<epoll_event>();
-            memset(ep_event, 0, sizeof(epoll_event));
-            event->SetData(ep_event);
-        }
-        ep_event->data.ptr = (void*)event;
-        if (AddEvent(ep_event, EPOLLOUT, sock->GetSocket(), event->GetType() & ET_INACTIONS)) {
-            event->AddType(ET_INACTIONS);
-            return true;
+    epoll_event* ep_event = (epoll_event*)event->GetData();
+    if (!ep_event) {
+        if (!MakeEpollEvent(event, ep_event)) {
+            return false;
         }
     }
-    LOG_WARN("socket is already distroyed! event %s", "AddSendEvent");
+
+    // already in epoll
+    if (ep_event->events & EPOLLOUT) {
+        return true;
+    }
+
+    auto sock = event->GetSocket();
+    if (!sock) {
+        LOG_WARN("socket is already distroyed! event %s", "AddSendEvent");
+        return false;
+    }
+
+    if (AddEvent(ep_event, EPOLLOUT, sock->GetSocket(), event->GetType() & ET_INACTIONS)) {
+        event->AddType(ET_INACTIONS);
+        return true;
+    }
+
+    LOG_WARN("add event to socket failed! event %s", "AddSendEvent");
     return false;
 }
 
@@ -106,22 +114,30 @@ bool EpollEventActions::AddRecvEvent(Event* event) {
     }
     event->AddType(ET_READ);
     
-    auto sock = event->GetSocket();
-    if (sock) {
-        epoll_event* ep_event = (epoll_event*)event->GetData();
-        if (!ep_event) {
-            auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
-            ep_event = rw_sock->GetAlloter()->PoolNew<epoll_event>();
-            memset(ep_event, 0, sizeof(epoll_event));
-            event->SetData(ep_event);
-        }
-        ep_event->data.ptr = (void*)event;
-        if (AddEvent(ep_event, EPOLLIN, sock->GetSocket(), event->GetType() & ET_INACTIONS)) {
-            event->AddType(ET_INACTIONS);
-            return true;
+    epoll_event* ep_event = (epoll_event*)event->GetData();
+    if (!ep_event) {
+        if (!MakeEpollEvent(event, ep_event)) {
+            return false;
         }
     }
-    LOG_WARN("socket is already distroyed! event %s", "AddRecvEvent");
+
+    // already in epoll
+    if (ep_event->events & EPOLLIN) {
+        return true;
+    }
+
+    auto sock = event->GetSocket();
+    if (!sock) {
+        LOG_WARN("socket is already distroyed! event %s", "AddSendEvent");
+        return false;
+    }
+
+    if (AddEvent(ep_event, EPOLLIN, sock->GetSocket(), event->GetType() & ET_INACTIONS)) {
+        event->AddType(ET_INACTIONS);
+        return true;
+    }
+
+    LOG_WARN("add event to socket failed! event %s", "AddRecvEvent");
     return false;
 }
 
@@ -130,23 +146,33 @@ bool EpollEventActions::AddAcceptEvent(Event* event) {
         return false;
     }
     event->AddType(ET_ACCEPT);
-    
-    auto sock = event->GetSocket();
-    if (sock) {
-        epoll_event* ep_event = (epoll_event*)event->GetData();
-        if (!ep_event) {
-            // TODO where to delete it.
-            ep_event = new epoll_event;
-            memset(ep_event, 0, sizeof(epoll_event));
-            event->SetData(ep_event);
-        }
+
+    epoll_event* ep_event = (epoll_event*)event->GetData();
+    if (!ep_event) {
+        // TODO where to delete it.
+        ep_event = new epoll_event;
+        memset(ep_event, 0, sizeof(epoll_event));
+        event->SetData(ep_event);
+
         ep_event->data.ptr = (void*)event;
-        if (AddEvent(ep_event, EPOLLIN, sock->GetSocket(), event->GetType() & ET_INACTIONS)) {
-            event->AddType(ET_INACTIONS);
-            return true;
-        }
     }
-    LOG_WARN("socket is already distroyed! event %s", "AddAcceptEvent");
+
+     // already in epoll
+    if (ep_event->events & EPOLLIN) {
+        return true;
+    }
+
+    auto sock = event->GetSocket();
+    if (!sock) {
+        LOG_WARN("socket is already distroyed! event %s", "AddSendEvent");
+        return false;
+    }
+
+    if (AddEvent(ep_event, EPOLLIN, sock->GetSocket(), event->GetType() & ET_INACTIONS)) {
+        event->AddType(ET_INACTIONS);
+        return true;
+    }
+    
     return false;
 }
 
@@ -316,6 +342,22 @@ bool EpollEventActions::AddEvent(epoll_event* ev, int32_t event_flag, uint64_t s
         LOG_ERROR("modify event to epoll faild! error :%d, sock: %d", errno, sock);
     }
     return false;
+}
+
+bool EpollEventActions::MakeEpollEvent(Event* event, epoll_event* &ep_event) {
+    auto sock = event->GetSocket();
+    if (!sock) {
+        LOG_WARN("socket is already distroyed! event %s", "AddSendEvent");
+        return false;
+    }
+
+    auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
+    ep_event = rw_sock->GetAlloter()->PoolNew<epoll_event>();
+    memset(ep_event, 0, sizeof(epoll_event));
+    event->SetData(ep_event);
+    ep_event->data.ptr = (void*)event;
+
+    return true;
 }
 
 }
