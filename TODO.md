@@ -10,3 +10,4 @@
 - [ ] update document
 - [ ] client socket add accept socket number
 - [ ] delete cppnet instance destory lib
+- [ ] add socket content
