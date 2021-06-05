@@ -161,6 +161,7 @@ void WinConnectSocket::OnAccept(Event* event) {
     std::shared_ptr<AlloterWrap> alloter = std::make_shared<AlloterWrap>(MakePoolAlloterPtr());
 	auto sock = MakeRWSocket(accept_event->GetClientSocket(), std::move(alloter));
 
+	sock->SetListenPort(_addr.GetAddrPort());
 	sock->SetCppNetBase(cppnet_base);
 	sock->SetEventActions(_event_actions);
 	sock->SetAddress(std::move(address));

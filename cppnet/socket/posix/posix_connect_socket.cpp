@@ -72,6 +72,7 @@ void PosixConnectSocket::OnAccept(Event*) {
         //create a new socket.
         auto sock = MakeRWSocket(ret._return_value, alloter);
 
+        sock->SetListenPort(_addr.GetAddrPort());
         sock->SetCppNetBase(cppnet_base);
         sock->SetEventActions(_event_actions);
         sock->SetAddress(std::move(address));

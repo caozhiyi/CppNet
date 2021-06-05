@@ -29,6 +29,8 @@ public:
     virtual ~RWSocket();
 
     virtual uint64_t GetSocket() { return _sock; }
+    virtual void SetListenPort(uint16_t port) { _listen_port = port; }
+    virtual uint16_t GetListenPort() { return _listen_port; }
     virtual bool GetAddress(std::string& ip, uint16_t& port);
 
     virtual void Close();
@@ -56,6 +58,7 @@ public:
 
 protected:
     uint32_t _timer_id;
+    uint16_t _listen_port;
     std::shared_ptr<AlloterWrap>     _alloter;
     std::shared_ptr<BlockMemoryPool> _block_pool;
 };
