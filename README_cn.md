@@ -48,7 +48,8 @@ Cppnet是一个封装在TCP协议上的proactor模式multi-thread C++11网络库
 
 ## 效率
 
-目前用Apache `ab` 对[test](/test)目录中的`http`测试服务做了压测，并与`muduo`做了对比，详情请看[ab压测](/doc/efficiency/apache_ab_bench_cn.md)。
+目前用Apache `ab` 对[test](/test)目录中的`http`测试服务做了压测，并与`muduo`做了对比。   
+详情请看[ab压测](/doc/efficiency/apache_ab_bench_cn.md)。
 
 ## 编译
 
@@ -56,4 +57,4 @@ Cppnet是一个封装在TCP协议上的proactor模式multi-thread C++11网络库
 
 ## 协议
 
-CppNet使用BSD 3-Clause使用条款，详情请看[https://opensource.org/licenses/BSD-3-Clause](https://opensource.org/licenses/BSD-3-Clause)。
+CppNet使用BSD 3-Clause使用条款，详情请看[BSD-3-Clause](https://opensource.org/licenses/BSD-3-Clause)。

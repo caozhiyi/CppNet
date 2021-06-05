@@ -34,7 +34,7 @@ Cppnet is a proactor mode and multithreaded network with C++11 on tcp. Support W
 - `socket` operation, defined in [cppnet_socket](/include/cppnet_socket.h)   
 - `buffer` read, defined in [cppnet_buffer](/include/cppnet_buffer.h)   
    
-API details see [API](/doc/api/api.md).   
+For details, see [API](/doc/api/api.md).   
 
 ## Example
 
@@ -48,7 +48,8 @@ All simples are in [test](/test):
 
 ## Efficiency
 
-Apache `ab` is used to pressure test the `http` test service in the [test](/test) directory, and compared with `muduo`. For details, see [ab benchmark](/doc/efficiency/apache_ab_bench.md)。
+Apache `ab` is used to pressure test the `http` test service in the [test](/test) directory, and compared with `muduo`.    
+For details, see [ab benchmark](/doc/efficiency/apache_ab_bench.md)。
 
 ## Build
 
@@ -56,4 +57,4 @@ Look at [Build](/doc/build/build.md)
 
 ## Licenses
 
-This program is under the terms of the BSD 3-Clause License. See [https://opensource.org/licenses/BSD-3-Clause](https://opensource.org/licenses/BSD-3-Clause).
+This program is under the terms of the BSD 3-Clause License. For details, see [BSD-3-Clause](https://opensource.org/licenses/BSD-3-Clause).
