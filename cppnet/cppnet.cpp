@@ -15,14 +15,23 @@
 namespace cppnet {
 
 CppNet::CppNet() {
-    _cppnet_base = std::make_shared<CppNetBase>();
+
 }
 
 CppNet::~CppNet() {
-    
+    if (_cppnet_base) {
+        _cppnet_base->Dealloc();
+    }
 }
 
 void CppNet::Init(int32_t thread_num) {
+    if (!_cppnet_base) {
+        _cppnet_base = std::make_shared<CppNetBase>();
+
+    } else {
+        return;
+    }
+    
     _cppnet_base->Init(thread_num);
     if (__print_log) {
         std::shared_ptr<Logger> file_log = std::make_shared<FileLogger>(__log_file_name);
@@ -37,6 +46,7 @@ void CppNet::Init(int32_t thread_num) {
 
 void CppNet::Destory() {
     _cppnet_base->Dealloc();
+    _cppnet_base.reset();
 }
 
 void CppNet::Join() {

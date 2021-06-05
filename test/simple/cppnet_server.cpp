@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "include/cppnet.h"
+#include "common/util/time.h"
 
 using namespace cppnet;
 
@@ -39,7 +40,7 @@ void ConnectFunc(Handle handle, uint32_t err) {
         std::string ip;
         uint16_t port;
         handle->GetAddress(ip, port);
-        std::cout << "[ConnectFunc] : ip : " << ip << "port : " << port << "listen port" << handle->GetListenPort() << std::endl;
+        std::cout << "[ConnectFunc] : ip: " << ip << "port: " << port << "listen port: " << handle->GetListenPort() << std::endl;
 
         auto msg = GetMsg();
         handle->Write(msg.c_str(), (uint32_t)msg.length());
