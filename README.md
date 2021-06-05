@@ -39,16 +39,16 @@ API details see [API](/doc/api/api.md).
 ## Example
 
 All simples are in [test](/test):   
-[simple](/test/simple): A most simple example.   
-[echo](/test/echo): A test program of echo with 10000 connection.   
-[http](/test/http): A simple HTTP server is implemented with reference to muduo.   
-[sendfile](/test/sendfile): An example of sending and receiving files.   
-[pingpong](/test/pingpong): A pingpong test program.   
-[rpc](/test/rpc): A interesting rpc program.   
+- [simple](/test/simple): A most simple example.   
+- [echo](/test/echo): A test program of echo with 10000 connection.   
+- [http](/test/http): A simple HTTP server is implemented with reference to muduo.   
+- [sendfile](/test/sendfile): An example of sending and receiving files.   
+- [pingpong](/test/pingpong): A pingpong test program.   
+- [rpc](/test/rpc): A interesting rpc program.   
 
 ## Efficiency
-Only use apache ab test HTTP echo，comparison with Muduo. The command executed is：ab -kc[1-2000] -n100000 http://127.0.0.1:8000/hello.
-<p align="left"><img width="896" src="./doc/image/muduo_vs_cppnet.png" alt="mudo vs cppnet"></p>
+
+Apache `ab` is used to pressure test the `http` test service in the [test](/test) directory, and compared with `muduo`. For details, see [ab benchmark](/doc/efficiency/apache_ab_bench.md)。
 
 ## Build
 

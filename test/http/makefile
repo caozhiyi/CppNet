@@ -9,7 +9,7 @@ INCLUDES = -I../../
 #debug
 #CCFLAGS = -lpthread -fPIC -m64 -g -std=c++11 -lstdc++ -pipe 
 
-CCFLAGS = -lpthread -fPIC -m64 -O2 -std=c++11 -lstdc++ -pipe -march=corei7 
+CCFLAGS = -lpthread -fPIC -m64 -O2 -std=c++11 -lstdc++ -pipe
 
 TARGET = ../../libcppnet.a
 SERBIN = httpser
