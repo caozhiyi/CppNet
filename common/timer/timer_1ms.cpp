@@ -91,10 +91,6 @@ int32_t Timer1ms::MinTime() {
 }
 
 uint32_t Timer1ms::TimerRun(uint32_t time) {
-    if (_bitmap.Empty()) {
-        return 0;
-    }
-
     time = time % __timer_capacity;
     _cur_index += time;
 

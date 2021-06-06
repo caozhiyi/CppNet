@@ -100,10 +100,6 @@ int32_t TimerContainer::CurrentTimer() {
 }
 
 uint32_t TimerContainer::TimerRun(uint32_t time) {
-    if (_bitmap.Empty()) {
-        return 0;
-    }
-
     time = time % _capacity;
     _cur_index += time / _accuracy;
 
