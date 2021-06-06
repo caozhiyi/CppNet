@@ -10,10 +10,6 @@ using namespace cppnet;
 static const int __buf_len = 2048;
 static const char* __buf_spilt = "\r\n";
 
-void WriteFunc(Handle handle, uint32_t len) {
-    // do nothing 
-}
-
 void ReadFunc(Handle handle, cppnet::BufferPtr data, uint32_t len) {
     char msg_buf[__buf_len] = {0};
     uint32_t need_len = 0;
@@ -36,7 +32,6 @@ int main() {
     net.Init(4);
 
     net.SetAcceptCallback(ConnectFunc);
-    net.SetWriteCallback(WriteFunc);
     net.SetReadCallback(ReadFunc);
     net.SetDisconnectionCallback(ConnectFunc);
 

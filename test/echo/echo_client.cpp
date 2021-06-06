@@ -1,4 +1,5 @@
 #include <string>
+#include <atomic>
 #include <vector>
 #include <iostream>
 #include <algorithm> // for std::find
@@ -8,16 +9,14 @@
 
 using namespace cppnet;
 
+std::atomic_bool __stop(false);
 int msg_index = 0;
 std::vector<cppnet::Handle> handle_vec;
 static const char* __buf_spilt = "\r\n";
 
+
 std::string GetMsg() {
     return "It is a test msg, It is a long test msg. index : " + std::to_string(msg_index++) + __buf_spilt;
-}
-
-void WriteFunc(const Handle& handle, uint32_t len) {
-    // do nothing 
 }
 
 void ReadFunc(Handle handle, cppnet::BufferPtr data, uint32_t len) {
@@ -36,36 +35,32 @@ void ConnectFunc(Handle handle, uint32_t error) {
 }
 
 void DisConnectionFunc(Handle handle, uint32_t err) {
-    std::cout << "disconnect : " << handle << std::endl;
-    auto iter = std::find(handle_vec.begin(), handle_vec.end(), handle);
-    if (iter != handle_vec.end()) {
-        handle_vec.erase(iter);
+    __stop = true;
+    if (handle_vec.empty()) {
+        std::cout << "20 clients all disconnect" << std::endl;
     }
 }
 
 int main() {
-
     cppnet::CppNet net;
     net.Init(1);
 
     net.SetConnectionCallback(ConnectFunc);
-    net.SetWriteCallback(WriteFunc);
     net.SetReadCallback(ReadFunc);
     net.SetDisconnectionCallback(DisConnectionFunc);
     for (size_t i = 0; i < 200; i++) {
         net.Connection("127.0.0.1", 8921);
     }
-
     // wait all connect success.
-    cppnet::Sleep(5000);
+    cppnet::Sleep(2000);
 
-    while (1) {
-        // sleep 1s;
-        for (auto iter = handle_vec.begin(); iter != handle_vec.end(); ++iter) {
-            cppnet::Sleep(1000);
-            std::string msg = GetMsg();
-            (*iter)->Write(msg.c_str(), (uint32_t)msg.length());
-        }
+    std::cout << "200 clients all connected" << std::endl;
+
+    // sleep 1s;
+    for (auto iter = handle_vec.begin(); iter != handle_vec.end() && !__stop; ++iter) {
+        cppnet::Sleep(1000);
+        std::string msg = GetMsg();
+        (*iter)->Write(msg.c_str(), (uint32_t)msg.length());
     }
     
     net.Join();
