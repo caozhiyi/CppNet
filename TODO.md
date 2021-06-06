@@ -6,8 +6,11 @@
 - [x] restruct event action support iocp
 - [x] add thread safe alloter
 - [x] valgrind check memory 
-- [ ] performance testing
+- [x] ab performance testing
 - [x] update document
 - [x] client socket add accept socket number
 - [x] delete cppnet instance destory lib
 - [ ] add socket content
+- [ ] pingpong performance testing
+- [ ] pingpong test on windows
+- [ ] multi listen port example
