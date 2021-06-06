@@ -153,7 +153,11 @@ void PosixRWSocket::OnDisConnect(Event*, uint16_t err) {
     SetShutdown();
 
     // peer disconnect or connection break.
-    if (_event && !(err != CEC_SUCCESS)) {
+    if (_event && err != CEC_SUCCESS) {
+        auto actions = GetEventActions();
+        if (actions) {
+            actions->DelEvent(_event);
+        }
         OsHandle::Close(_sock);
     }
 }

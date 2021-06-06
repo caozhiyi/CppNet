@@ -3,6 +3,10 @@
 
 // Author: caozhiyi (caozhiyi5@gmail.com)
 
+#ifndef __win__
+#include <signal.h>
+#endif
+
 #include "cppnet_base.h"
 #include "cppnet/dispatcher.h"
 #include "include/cppnet_type.h"
@@ -15,7 +19,6 @@
 #include "common/network/socket.h"
 #include "common/network/io_handle.h"
 #include "common/buffer/buffer_queue.h"
-
 
 namespace cppnet {
 
@@ -52,6 +55,12 @@ void CppNetBase::Init(uint32_t thread_num) {
     }
 
 #else
+    //Disable  SIGPIPE signal
+    sigset_t set;
+    sigprocmask(SIG_SETMASK, NULL, &set);
+    sigaddset(&set, SIGPIPE);
+    sigprocmask(SIG_SETMASK, &set, NULL);
+
     for (uint32_t i = 0; i < thread_num; i++) {
         auto dispatcher = std::make_shared<Dispatcher>(shared_from_this());
         _dispatchers.push_back(dispatcher);
