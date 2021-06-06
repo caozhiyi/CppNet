@@ -5,7 +5,7 @@
     <a href="https://opensource.org/licenses/BSD-3-Clause"><img src="https://img.shields.io/badge/license-bsd-orange.svg" alt="Licenses"></a>
 </p> 
 
-查看更多细节 [Wiki](https://github.com/caozhiyi/CppNet/wiki)
+查看更多细节 [wiki](https://github.com/caozhiyi/CppNet/wiki)
 
 ## 简介
 

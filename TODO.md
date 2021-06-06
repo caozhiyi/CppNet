@@ -7,7 +7,7 @@
 - [x] add thread safe alloter
 - [x] valgrind check memory 
 - [ ] performance testing
-- [ ] update document
+- [x] update document
 - [x] client socket add accept socket number
 - [x] delete cppnet instance destory lib
 - [ ] add socket content

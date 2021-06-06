@@ -6,7 +6,7 @@
 </p> 
 
 See [chinese](/README_cn.md)    
-See the details in chinese [Wiki](https://github.com/caozhiyi/CppNet/wiki)
+See the details in chinese [wiki](https://github.com/caozhiyi/CppNet/wiki)
 ## Introduction
 
 Cppnet is a proactor mode and multithreaded network with C++11 on tcp. Support Window, Linux and macOS.    
@@ -29,7 +29,7 @@ Cppnet is a proactor mode and multithreaded network with C++11 on tcp. Support W
 
 ## Interface
 
-`cppnet` has types of external interfaces, which are also defined in three header files   
+`cppnet` has three types of external interfaces, which are also defined in three header files   
 - Initialization and global configuration, defined in [cppnet](/include/cppnet.h)   
 - `socket` operation, defined in [cppnet_socket](/include/cppnet_socket.h)   
 - `buffer` read, defined in [cppnet_buffer](/include/cppnet_buffer.h)   
