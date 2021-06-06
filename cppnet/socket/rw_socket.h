@@ -6,6 +6,7 @@
 #ifndef CPPNET_SOCKET_READ_WRITE_SOCKET
 #define CPPNET_SOCKET_READ_WRITE_SOCKET
 
+#include <atomic>
 #include "socket_interface.h"
 #include "include/cppnet_socket.h"
 
@@ -49,8 +50,8 @@ public:
     virtual void OnConnect(Event* event, uint16_t err);
     virtual void OnDisConnect(Event* event, uint16_t err) {}
 
-    virtual void SetShutdown() { }
-    virtual bool IsShutdown() { return false; }
+    virtual void SetShutdown() { _shutdown = true; }
+    virtual bool IsShutdown() { return _shutdown; }
 
     virtual std::shared_ptr<BufferQueue> GetReadBuffer() { return nullptr; }
 
@@ -59,6 +60,7 @@ public:
 protected:
     uint32_t _timer_id;
     uint16_t _listen_port;
+    std::atomic_bool _shutdown;
     std::shared_ptr<AlloterWrap>     _alloter;
     std::shared_ptr<BlockMemoryPool> _block_pool;
 };

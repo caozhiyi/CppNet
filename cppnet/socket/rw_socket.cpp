@@ -29,6 +29,7 @@ RWSocket::RWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter):
     Socket(sock),
     _timer_id(0),
     _listen_port(0),
+    _shutdown(false),
     _alloter(alloter) {
     _block_pool = _alloter->PoolNewSharePtr<BlockMemoryPool>(__mem_block_size, __mem_block_add_step);
 }

@@ -92,12 +92,11 @@ public:
     }
 
     void OnConnect(cppnet::Handle handle, uint32_t error) {
-        std::cout << "OnConnect :" << _num_connected.load() << std::endl;
         if (error == cppnet::CEC_SUCCESS) {
             _num_connected++;
 
             if (_num_connected.load() == _session_count) {
-                std::cout << "all connected" << std::endl;
+                std::cout << _session_count << " sessions all connected" << std::endl;
             }
             auto session = std::unique_ptr<Session>(new Session(this));
             session->OnConnection(handle);
@@ -109,10 +108,10 @@ public:
     }
 
   void OnDisconnect(cppnet::Handle, uint32_t) {
-      std::cout << "disconnected :" << _num_connected.load() << std::endl;
       _num_connected--;
+
       if (_num_connected== 0) {
-          std::cout << "all disconnected" << std::endl;
+          std::cout << _session_count << " sessions all disconnected" << std::endl;
 
           int64_t totalBytesRead = 0;
           int64_t totalMessagesRead = 0;
@@ -135,7 +134,7 @@ public:
 private:
 
     void HandleTimeout(void*) {
-        std::cout << "stop" << std::endl;;
+        std::cout << "timeout, to stop connections" << std::endl;;
         for (auto& session : _sessions) {
             session.first->Close();
         }

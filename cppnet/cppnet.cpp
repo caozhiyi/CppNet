@@ -46,7 +46,6 @@ void CppNet::Init(int32_t thread_num) {
 
 void CppNet::Destory() {
     _cppnet_base->Dealloc();
-    _cppnet_base.reset();
 }
 
 void CppNet::Join() {

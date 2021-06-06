@@ -19,13 +19,8 @@ void SetNoDelay(const uint64_t& sock) {
 }
 #endif
 
-static std::atomic_int count;
-
 void OnConnection(const cppnet::Handle& handle, uint32_t error) {
-
-    count++;
     if (error == cppnet::CEC_SUCCESS) {
-        std::cout << " accept a socket. count: " << count << std::endl;
         SetNoDelay(handle->GetSocket());
     }
 }
@@ -41,7 +36,7 @@ void OnMessage(const cppnet::Handle& handle, cppnet::BufferPtr data, uint32_t) {
 
 int main() {
     cppnet::CppNet net;
-    net.Init(8);
+    net.Init(2);
 
     net.SetAcceptCallback(OnConnection);
     net.SetReadCallback(OnMessage);

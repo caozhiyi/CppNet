@@ -18,21 +18,18 @@ namespace cppnet {
 
 WinRWSocket::WinRWSocket():
     RWSocket(),
-    _shutdown(false),
     _is_reading(false) {
 
 }
 
 WinRWSocket::WinRWSocket(std::shared_ptr<AlloterWrap> alloter):
     RWSocket(alloter),
-    _shutdown(false),
     _is_reading(false) {
 
 }
 
 WinRWSocket::WinRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter):
     RWSocket(sock, alloter),
-    _shutdown(false),
     _is_reading(false) {
 
 }

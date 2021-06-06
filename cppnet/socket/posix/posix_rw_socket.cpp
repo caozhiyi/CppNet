@@ -144,13 +144,16 @@ void PosixRWSocket::OnDisConnect(Event*, uint16_t err) {
     auto sock = shared_from_this();
     __all_socket_map.erase(_sock);
 
-    auto cppnet_base = _cppnet_base.lock();
-    if (cppnet_base) {
-        cppnet_base->OnDisConnect(sock, err);
+    if (!IsShutdown()) {
+        auto cppnet_base = _cppnet_base.lock();
+        if (cppnet_base) {
+            cppnet_base->OnDisConnect(sock, err);
+        }
     }
+    SetShutdown();
 
-    // not active disconnection
-    if (_event && !(_event->GetType() & ET_DISCONNECT)) {
+    // peer disconnect or connection break.
+    if (_event && !(err != CEC_SUCCESS)) {
         OsHandle::Close(_sock);
     }
 }
