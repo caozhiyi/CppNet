@@ -35,8 +35,6 @@ class HttpServer {
         void OnRequest(cppnet::Handle handle, const HttpRequest&);
 
     private:
-        std::mutex _mutex;
-        std::unordered_map<cppnet::Handle, std::shared_ptr<HttpContext>> _context_map;
         HttpCallback _http_call_back;
 };
 

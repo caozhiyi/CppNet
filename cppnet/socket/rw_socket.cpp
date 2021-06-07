@@ -27,6 +27,7 @@ RWSocket::RWSocket(std::shared_ptr<AlloterWrap> alloter):
 
 RWSocket::RWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter):
     Socket(sock),
+    _context(nullptr),
     _timer_id(0),
     _listen_port(0),
     _shutdown(false),

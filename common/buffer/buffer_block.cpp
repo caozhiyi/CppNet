@@ -142,8 +142,7 @@ int32_t BufferBlock::MoveReadPt(int32_t len) {
             size_t size = _write - _read;
             // res can load all
             if ((int32_t)size <= len) {
-                _read = _write;
-                _can_read = false;
+                Clear();
                 return (int32_t)size;
 
             // only read len
@@ -163,8 +162,7 @@ int32_t BufferBlock::MoveReadPt(int32_t len) {
             size_t size =  size_start + size_end;
             // res can load all
             if ((int32_t)size <= len) {
-                _read = _write;
-                _can_read = false;
+                Clear();
                 return (int32_t)size;
 
             // only read len
@@ -287,8 +285,7 @@ int32_t BufferBlock::MoveWritePt(int32_t len) {
             size_t size = _write - _read;
             // rewrite all buffer
             if ((int32_t)size <= len) {
-                _write = _read;
-                _can_read = false;
+                Clear();
                 return (int32_t)size;
 
             // only rewrite part of buffer
@@ -308,8 +305,7 @@ int32_t BufferBlock::MoveWritePt(int32_t len) {
             size_t size =  size_start + size_end;
             // rewrite all buffer
             if ((int32_t)size <= len) {
-                _write = _read;
-                _can_read = false;
+                Clear();
                 return (int32_t)size;
 
             // only rewrite part of buffer
@@ -503,10 +499,6 @@ const char* BufferBlock::_FindStrInMem(const char* buffer, const char* ch, uint3
 }
     
 uint32_t BufferBlock::_Read(char* res, uint32_t len, bool move_pt) {
-    if (!_buffer_start) {
-        return 0;
-    }
-
     /*s-----------r-----w-------------e*/
     if (_read < _write) {
         size_t size = _write - _read;
@@ -514,8 +506,7 @@ uint32_t BufferBlock::_Read(char* res, uint32_t len, bool move_pt) {
         if (size <= len) {
             memcpy(res, _read, size);
             if(move_pt) {
-                _read = _write;
-                _can_read = false;
+                Clear();
             }
             return (uint32_t)size;
 
@@ -543,8 +534,7 @@ uint32_t BufferBlock::_Read(char* res, uint32_t len, bool move_pt) {
             memcpy(res + size_end, _buffer_start, size_start);
             if(move_pt) {
                 // reset point
-                _read = _write;
-                _can_read = false;
+                Clear();
             }
             return (uint32_t)size;
 
@@ -570,14 +560,6 @@ uint32_t BufferBlock::_Read(char* res, uint32_t len, bool move_pt) {
 }
     
 uint32_t BufferBlock::_Write(const char* data, uint32_t len) {
-    if (!_buffer_start) {
-        return 0;
-    }
-
-    if(!_can_read && _read == _write) {
-        _write = _read = _buffer_start;
-    }
-    
     /*s-----------w-----r-------------e*/
     if (_write < _read) {
         size_t size = _read - _write;
@@ -612,7 +594,6 @@ uint32_t BufferBlock::_Write(const char* data, uint32_t len) {
 
         // all buffer will be used
         if (size <= len) {
-
             memcpy(_write, data, size_end);
             memcpy(_buffer_start, data + size_end, size_start);
 

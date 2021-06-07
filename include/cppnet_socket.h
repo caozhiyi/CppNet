@@ -32,6 +32,9 @@ public:
     // interval support max 1 minute
     virtual void AddTimer(uint32_t interval, bool always = false) = 0;
     virtual void StopTimer() = 0;
+
+    virtual void SetContext(void* context) = 0;
+    virtual void* GetContext() = 0;
 };
 
 }

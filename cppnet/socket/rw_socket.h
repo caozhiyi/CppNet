@@ -50,6 +50,9 @@ public:
     virtual void OnConnect(Event* event, uint16_t err);
     virtual void OnDisConnect(Event* event, uint16_t err) {}
 
+    virtual void SetContext(void* context) { _context = context; }
+    virtual void* GetContext() { return _context; }
+
     virtual void SetShutdown() { _shutdown = true; }
     virtual bool IsShutdown() { return _shutdown; }
 
@@ -58,6 +61,7 @@ public:
     std::shared_ptr<AlloterWrap> GetAlloter() { return _alloter; }
 
 protected:
+    void*    _context;
     uint32_t _timer_id;
     uint16_t _listen_port;
     std::atomic_bool _shutdown;
