@@ -50,19 +50,28 @@ BaseLogger::BaseLogger(uint16_t cache_size, uint16_t block_size):
     _block_size(block_size) {
 
     _allocter = MakeNormalAlloterPtr();
-    for (uint16_t i = 0; i < _cache_size; i++) {
-        _cache_queue.Push(NewLog());
-    }
 }
 
 BaseLogger::~BaseLogger() {
-    size_t size = _cache_queue.Size();
-    Log* log = nullptr;
-    void* del = nullptr;
-    for (size_t i = 0; i < size; i++) {
-        if(_cache_queue.Pop(log)) {
-            del = (void*)log;
-            _allocter->Free(del);
+    SetLevel(LL_NULL);
+}
+
+void BaseLogger::SetLevel(LogLevel level) { 
+    _level = level; 
+    if (_level > LL_NULL && _cache_queue.Empty()) {
+        for (uint16_t i = 0; i < _cache_size; i++) {
+            _cache_queue.Push(NewLog());
+        }
+
+    } else if (_level == LL_NULL) {
+        size_t size = _cache_queue.Size();
+        Log* log = nullptr;
+        void* del = nullptr;
+        for (size_t i = 0; i < size; i++) {
+            if (_cache_queue.Pop(log)) {
+                del = (void*)log;
+                _allocter->Free(del);
+            }
         }
     }
 }

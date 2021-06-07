@@ -27,7 +27,7 @@ public:
 
     void SetLogger(std::shared_ptr<Logger> log) { _logger = log; }
 
-    void SetLevel(LogLevel level) { _level = level; }
+    void SetLevel(LogLevel level);
 
     void Debug(const char* file, uint32_t line, const char* content, va_list list);
     void Info(const char* file, uint32_t line, const char* content, va_list list);

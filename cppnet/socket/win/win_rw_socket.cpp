@@ -144,14 +144,13 @@ void WinRWSocket::OnRead(Event* event, uint32_t len) {
         buffer->Read(_read_buffer, len);
     }
 
-    RemvoeEvent(event);
-
     cppnet_base->OnRead(shared_from_this(), _read_buffer, len);
 
     if (_read_buffer->GetCanReadLength() == 0) {
         _read_buffer.reset();
     }
 
+    RemvoeEvent(event);
     _is_reading = false;
     // read again
     Read();
@@ -191,14 +190,15 @@ void WinRWSocket::OnDisConnect(Event* event, uint16_t err) {
     RemvoeEvent(event);
 
     if (EventEmpty() && IsShutdown()) {
-        auto sock = shared_from_this();
-        auto cppnet_base = _cppnet_base.lock();
-        if (cppnet_base) {
-            cppnet_base->OnDisConnect(sock, err);
+        if (__all_socket_map.Find(_sock)) {
+            auto sock = shared_from_this();
+            auto cppnet_base = _cppnet_base.lock();
+            if (cppnet_base) {
+                cppnet_base->OnDisConnect(sock, err);
+            }
+            OsHandle::Close(_sock);
+            __all_socket_map.Erase(_sock);
         }
-
-        __all_socket_map.Erase(_sock);
-        OsHandle::Close(_sock);
     }
 }
 
