@@ -7,6 +7,7 @@
 #include "win_connect_socket.h"
 
 #include "cppnet/cppnet_base.h"
+#include "include/cppnet_type.h"
 #include "cppnet/socket/rw_socket.h"
 #include "cppnet/event/win/expend_func.h"
 #include "cppnet/event/win/iocp_action.h"
@@ -180,7 +181,14 @@ void WinConnectSocket::OnAccept(Event* event) {
 
 	// call accept call back function
 	cppnet_base->OnAccept(sock);
-	cppnet_base->OnRead(sock, buffer, accept_event->GetBufOffset());
+
+    // peer disconnect
+    if (accept_event->GetBufOffset() == 0) {
+        sock->SetShutdown();
+        cppnet_base->OnDisConnect(sock, CEC_CLOSED);
+    } else {
+        cppnet_base->OnRead(sock, buffer, accept_event->GetBufOffset());
+    }
 
 	// post accept again
 	Accept(accept_event->GetIndex());

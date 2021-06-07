@@ -351,7 +351,11 @@ void IOCPEventActions::ProcessEvent(int32_t wait_ms) {
                WSAECONNABORTED == dw_err   ||
                WSAENOTSOCK == dw_err       || 
                ERROR_OPERATION_ABORTED == dw_err) {
-        context->_event_type = INC_CONNECTION_BREAK;
+
+        // why ConnectEx get WSAENOTCONN?
+        if (!(context->_event_type == ET_CONNECT && WSAENOTCONN == dw_err)) {
+            context->_event_type = INC_CONNECTION_BREAK;
+        }
 
     } else if (ERROR_NETNAME_DELETED == dw_err) {
         context->_event_type = INC_CONNECTION_CLOSE;

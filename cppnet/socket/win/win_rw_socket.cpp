@@ -59,6 +59,10 @@ void WinRWSocket::Read() {
 }
 
 bool WinRWSocket::Write(const char* src, uint32_t len) {
+    if (IsShutdown()) {
+        LOG_WARN_S << "already shutdown when write. sock:" << _sock;
+        return false;
+    }
     // create new write buffer
     auto buffer = _alloter->PoolNewSharePtr<BufferQueue>(_block_pool, _alloter);
     buffer->Write(src, len);
