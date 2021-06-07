@@ -11,7 +11,7 @@
 - [x] client socket add accept socket number
 - [x] delete cppnet instance destory lib
 - [x] add socket content
+- [x] multi listen port example
 - [ ] pingpong performance testing
 - [ ] pingpong test on windows
-- [ ] multi listen port example
 - [ ] quick start document
