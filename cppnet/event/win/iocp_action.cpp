@@ -229,7 +229,7 @@ bool IOCPEventActions::AddConnection(Event* event, Address& address) {
     int32_t ret = 0;
     if (address.GetType() == AT_IPV4) {
         SOCKADDR_IN addr;
-        addr.sin_family = AF_INET6;
+        addr.sin_family = AF_INET;
         addr.sin_port = htons(address.GetAddrPort());
         addr.sin_addr.S_un.S_addr = inet_addr(address.GetIp().c_str());
         ret = ConnectEx((SOCKET)sock->GetSocket(), (sockaddr*)&addr, sizeof(addr), nullptr, 0, &dwBytes, &context->_overlapped);

@@ -69,7 +69,7 @@ int main() {
     net.SetReadCallback(ReadFunc);
     net.SetDisconnectionCallback(DisConnectionFunc);
 
-    net.Connection("::0:1", 8999);
+    net.Connection("127.0.0.1", 8999);
 
     Sleep(8000);
 }
