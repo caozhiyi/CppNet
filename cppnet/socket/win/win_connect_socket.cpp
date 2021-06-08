@@ -131,6 +131,14 @@ void WinConnectSocket::OnAccept(Event* event) {
 	AcceptExSockAddrs(accept_event->GetBuf(), __iocp_buff_size - ((sizeof(SOCKADDR_STORAGE) + 16) * 2),
 		sizeof(SOCKADDR_STORAGE) + 16, sizeof(SOCKADDR_STORAGE) + 16, (LPSOCKADDR*)&LocalAddr, &localLen, (LPSOCKADDR*)&client_addr, &remote_len);
 
+    // peer disconnect without any data
+    if (accept_event->GetBufOffset() == 0) {
+        OsHandle::Close(accept_event->GetClientSocket());
+        // post accept again
+        Accept(accept_event->GetIndex());
+        return;
+    }
+
     // does this call have any effect ?
     setsockopt(accept_event->GetClientSocket(), SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT,
         (char *)&_sock, sizeof(_sock));
@@ -179,22 +187,17 @@ void WinConnectSocket::OnAccept(Event* event) {
 	// add socket global cache.
 	__all_socket_map[accept_event->GetClientSocket()] = sock;
 
-	// call accept call back function
+	// call accept callback function
 	cppnet_base->OnAccept(sock);
 
-    // peer disconnect
-    if (accept_event->GetBufOffset() == 0) {
-        sock->SetShutdown();
-        cppnet_base->OnDisConnect(sock, CEC_CLOSED);
-    } else {
-        cppnet_base->OnRead(sock, buffer, accept_event->GetBufOffset());
-    }
+    // call read callback function
+    cppnet_base->OnRead(sock, buffer, accept_event->GetBufOffset());
 
-	// post accept again
-	Accept(accept_event->GetIndex());
+    // post accept again
+    Accept(accept_event->GetIndex());
 
-	// wait for read
-	sock->Read();
+    // wait for read
+    sock->Read();
 }
 
 }
