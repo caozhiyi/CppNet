@@ -34,8 +34,8 @@ int main() {
     net.SetAcceptCallback(ConnectFunc);
     net.SetReadCallback(ReadFunc);
 
-    net.ListenAndAccept("::0:0", 8921);
-    net.ListenAndAccept("::0:0", 8922);
+    net.ListenAndAccept("0.0.0.0", 8921);
+    net.ListenAndAccept("0.0.0.0", 8922);
 
     net.Join();
 }

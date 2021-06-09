@@ -350,16 +350,16 @@ void IOCPEventActions::ProcessEvent(int32_t wait_ms) {
         // do nothing
 
     } else if (ERROR_SEM_TIMEOUT == dw_err || 
-               WSAENOTCONN == dw_err       || 
+             //WSAENOTCONN == dw_err       || 
                WSAECONNABORTED == dw_err   ||
                WSAENOTSOCK == dw_err       || 
                ERROR_OPERATION_ABORTED == dw_err) {
 
-        // why ConnectEx get WSAENOTCONN?
-        if (!((context->_event_type == ET_CONNECT || context->_event_type == ET_DISCONNECT) &&
-            WSAENOTCONN == dw_err)) {
+        // why ConnectEx get WSAENOTCONN? fucking 10057, shouldn't care?
+        //if (!((context->_event_type == ET_CONNECT || context->_event_type == ET_DISCONNECT) &&
+        //    WSAENOTCONN == dw_err)) {
             context->_event_type = INC_CONNECTION_BREAK;
-        }
+        //}
 
     } else if (ERROR_NETNAME_DELETED == dw_err) {
         context->_event_type = INC_CONNECTION_CLOSE;
@@ -401,6 +401,8 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
     switch (context->_event_type)
     {
     case ET_ACCEPT: {
+        context->_event_type = 0;
+        event->RemoveType(ET_ACCEPT);
         auto accpet_event = dynamic_cast<WinAcceptEvent*>(event);
         accpet_event->SetBufOffset(bytes);
         std::shared_ptr<WinConnectSocket> connect_sock = std::dynamic_pointer_cast<WinConnectSocket>(sock);

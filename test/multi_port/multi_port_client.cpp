@@ -25,8 +25,8 @@ int main() {
     net.Init(1);
     net.SetConnectionCallback(ConnectFunc);
 
-    net.Connection("::0:1", 8921);
-    net.Connection("::0:1", 8922);
+    net.Connection("127.0.0.1", 8921);
+    net.Connection("127.0.0.1", 8922);
 
     Sleep(2000);
 }

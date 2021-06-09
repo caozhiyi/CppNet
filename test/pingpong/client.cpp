@@ -109,7 +109,8 @@ public:
     }
 
   void OnDisconnect(cppnet::Handle, uint32_t) {
-      if (_num_connected.fetch_sub(1) == 1) {
+      _num_connected.fetch_sub(1);
+      if (_num_connected.load() == 0) {
           std::cout << _session_count << " sessions all disconnected" << std::endl;
 
           int64_t totalBytesRead = 0;
