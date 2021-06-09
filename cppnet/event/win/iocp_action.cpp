@@ -355,7 +355,8 @@ void IOCPEventActions::ProcessEvent(int32_t wait_ms) {
                WSAENOTSOCK == dw_err       || 
                ERROR_OPERATION_ABORTED == dw_err) {
 
-        // why ConnectEx get WSAENOTCONN? fucking 10057, shouldn't care?
+        // why ConnectEx get WSAENOTCONN? 
+        // fucking 10057, shouldn't care?
         //if (!((context->_event_type == ET_CONNECT || context->_event_type == ET_DISCONNECT) &&
         //    WSAENOTCONN == dw_err)) {
             context->_event_type = INC_CONNECTION_BREAK;

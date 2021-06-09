@@ -21,6 +21,7 @@ net.SetReadCallback(std::bind(&HttpServer::OnMessage, &server, std::placeholders
                                               std::placeholders::_3));
 net.SetDisconnectionCallback(std::bind(&HttpServer::OnDisConnection, &server, std::placeholders::_1, std::placeholders::_2));
 ```
+其他API详情可参考[API](../api/api_cn.md)。   
 相关使用示例可参考[test](../../test)。
 
 ### 最佳实践
@@ -47,3 +48,15 @@ virtual void* GetContext() = 0;
 **配置**   
 通用的配置都定义在[cppnet_config.h](../../cppnet/cppnet_config.h)文件中，其中各配置项作用可参考注释。   
 在Linux平台上，开启`EPOLLEXCLUSIVE`标识效率会提升近`40%`(参考[ab压测结果](../efficiency/apache_ab_bench_cn.md))，如果内核版本高于`4.5`建议开启此项设置。
+
+**多端口监听**   
+当有多个端口需要监听时，可重复调用
+```c++
+bool ListenAndAccept(const std::string& ip, uint16_t port);
+```
+接口。在连接建立的回调通知中，通过
+```c++
+virtual uint16_t GetListenPort() = 0;
+```
+接口获取监听端口，以区分不同服务。    
+使用过程可参考[multi_port](../../test/multi_port/multi_port_server.cpp)。  

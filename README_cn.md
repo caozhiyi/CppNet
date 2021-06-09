@@ -27,6 +27,9 @@ Cppnet是一个封装在TCP协议上的proactor模式multi-thread C++11网络库
     + 各个模块之间职责分工明确，上帝的事儿归上帝管，凯撒的事儿归凯撒管
     + 通过接口解耦模块，符合最小接口原则和依赖倒置原则
 
+## 快速开始
+快速使用`cppnet`，以及使用注意事项，请看[快速开始](doc/start/quick_start_cn.md)。
+
 ## 接口
 
 `cppnet`对外接口主要包括三种类型，也分别定义在三个头文件中：
@@ -39,12 +42,13 @@ Cppnet是一个封装在TCP协议上的proactor模式multi-thread C++11网络库
 ## 示例
 
 所有示例都在 [test](/test) 目录下:   
-- [simple](/test/simple)是一个简单的使用示例。   
-- [echo](/test/echo)实现了10000连接量的echo的测试程序。   
-- [http](/test/http)参照muduo实现了一个简单的http服务器。   
-- [sendfile](/test/sendfile)是一个文件发送和接收示例。   
-- [pingpong](/test/pingpong)是一个pingpong测试程序。   
-- [rpc](/test/rpc)是一个简单的rpc示例。   
+- [simple](/test/simple): 一个简单的使用示例。   
+- [echo](/test/echo): 实现了200连接量的echo的测试程序。   
+- [http](/test/http): 参照muduo实现了一个简单的http服务器。   
+- [sendfile](/test/sendfile): 文件发送和接收示例。   
+- [pingpong](/test/pingpong): pingpong测试程序。   
+- [rpc](/test/rpc): 简单的rpc示例。   
+- [multi_port](/test/multi_port): 多监听端口示例。    
 
 ## 效率
 

@@ -27,6 +27,9 @@ Cppnet is a proactor mode and multithreaded network with C++11 on tcp. Support W
     + Upward notification through callbacks between layers. Clear division of responsibilities among modules, pay to Caesar what belongs to Caesar and God what belongs to God
     + The interface decoupling module is used to meet the minimum interface principle and dependency inversion principle  
 
+## Quick Start
+Quick use of `cppnet` and precautions, see [quick start](doc/start/quick_start.md).
+
 ## Interface
 
 `cppnet` has three types of external interfaces, which are also defined in three header files   
@@ -39,12 +42,13 @@ For details, see [API](/doc/api/api.md).
 ## Example
 
 All simples are in [test](/test):   
-- [simple](/test/simple): A most simple example.   
-- [echo](/test/echo): A test program of echo with 10000 connection.   
-- [http](/test/http): A simple HTTP server is implemented with reference to muduo.   
-- [sendfile](/test/sendfile): An example of sending and receiving files.   
-- [pingpong](/test/pingpong): A pingpong test program.   
-- [rpc](/test/rpc): A interesting rpc program.   
+- [simple](/test/simple): Most simple example.   
+- [echo](/test/echo): Test program of echo with 200 connection.   
+- [http](/test/http): Simple HTTP server is implemented with reference to muduo.   
+- [sendfile](/test/sendfile): Example of sending and receiving files.   
+- [pingpong](/test/pingpong): Pingpong test program.   
+- [rpc](/test/rpc): Interesting rpc program.   
+- [multi_port](/test/multi_port): Example of multiple listening ports.      
 
 ## Efficiency
 

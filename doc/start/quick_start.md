@@ -21,6 +21,7 @@ net.SetReadCallback(std::bind(&HttpServer::OnMessage, &server, std::placeholders
                                               std::placeholders::_3));
 net.SetDisconnectionCallback(std::bind(&HttpServer::OnDisConnection, &server, std::placeholders::_1, std::placeholders::_2));
 ```
+Other API details, see [API](../api/api.md).   
 Relevant examples can be referred to [test](../../test).
 
 ### Best Practices
@@ -46,4 +47,16 @@ The `CNSocket` handle that is passed in each callback, it's life cycle is mainta
 
 **Configure**   
 Common configurations are defined in [cppnet_config.h](../../cppnet/cppnet_config.h), The function of each configuration item can be referred to the notes.      
-On the Linux platform, the efficiency of opening the `EPOLLEXCLUSIVE` will be improved by nearly `40%`(see [ab bench](../efficiency/apache_ab_bench.md)), If the kernel version is higher than '4.5', it is recommended to enable this setting.
+On the Linux platform, the efficiency of opening the `EPOLLEXCLUSIVE` will be improved by nearly `40%`(see [ab bench](../efficiency/apache_ab_bench.md)), If the kernel version is higher than `4.5`, it is recommended to enable this setting.
+
+**Multi Port**   
+When there are multiple ports to listen on, it can be called repeatedly
+```c++
+bool ListenAndAccept(const std::string& ip, uint16_t port);
+```
+In the callback notification of connection establishment, through 
+```c++
+virtual uint16_t GetListenPort() = 0;
+```
+interface gets the listening port to distinguish different services.  
+The use process can be referred to [multi_port](../../test/multi_port/multi_port_server.cpp)。  
