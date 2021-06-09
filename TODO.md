@@ -12,6 +12,6 @@
 - [x] delete cppnet instance destory lib
 - [x] add socket content
 - [x] multi listen port example
+- [x] pingpong test on windows
 - [ ] pingpong performance testing
-- [ ] pingpong test on windows
 - [ ] quick start document
