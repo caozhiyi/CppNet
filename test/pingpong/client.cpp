@@ -1,3 +1,4 @@
+#include <mutex>
 #include <atomic>
 #include <memory>
 #include <utility>
@@ -85,22 +86,22 @@ public:
     }
 
     void OnMessage(cppnet::Handle handle, cppnet::BufferPtr data, uint32_t len) {
-        auto iter = _sessions.find(handle);
-        if (iter != _sessions.end()) {
-            iter->second->OnMessage(handle, data, len);
-        }
+        auto session = (Session*)handle->GetContext();
+        session->OnMessage(handle, data, len);
     }
 
     void OnConnect(cppnet::Handle handle, uint32_t error) {
         if (error == cppnet::CEC_SUCCESS) {
             _num_connected++;
-
             if (_num_connected.load() == _session_count) {
                 std::cout << _session_count << " sessions all connected" << std::endl;
             }
-            auto session = std::unique_ptr<Session>(new Session(this));
+            auto session = new Session(this);
+            handle->SetContext(session);
             session->OnConnection(handle);
-            _sessions[handle] = std::move(session);
+
+            std::lock_guard<std::mutex> lock(_mutex);
+            _sessions[handle] = session;
 
         } else {
             std::cout << " something error while connect. error :  " << error << std::endl;
@@ -108,13 +109,13 @@ public:
     }
 
   void OnDisconnect(cppnet::Handle, uint32_t) {
-      _num_connected--;
-
-      if (_num_connected== 0) {
+      if (_num_connected.fetch_sub(1) == 1) {
           std::cout << _session_count << " sessions all disconnected" << std::endl;
 
           int64_t totalBytesRead = 0;
           int64_t totalMessagesRead = 0;
+
+          std::lock_guard<std::mutex> lock(_mutex);
           for (const auto& session : _sessions) {
               totalBytesRead += session.second->BytesRead();
               totalMessagesRead += session.second->MessagesRead();
@@ -134,7 +135,8 @@ public:
 private:
 
     void HandleTimeout(void*) {
-        std::cout << "timeout, to stop connections" << std::endl;;
+        std::cout << "timeout, to stop connections" << std::endl;
+        std::lock_guard<std::mutex> lock(_mutex);
         for (auto& session : _sessions) {
             session.first->Close();
         }
@@ -148,7 +150,9 @@ private:
     std::string       _message;
     std::atomic_uint  _num_connected;
     cppnet::CppNet*   _net;
-    std::unordered_map<cppnet::Handle, std::unique_ptr<Session>> _sessions;
+
+    std::mutex        _mutex;
+    std::unordered_map<cppnet::Handle, Session*> _sessions;
 };
 
 void Session::OnConnection(cppnet::Handle handle) {

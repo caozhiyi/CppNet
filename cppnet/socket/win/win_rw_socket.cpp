@@ -54,7 +54,12 @@ void WinRWSocket::Read() {
         if (actions->AddRecvEvent(rw_event)) {
             _is_reading = true;
             AddEvent(rw_event);
+            return;
         }
+    }
+
+    if (!IsShutdown()) {
+        _alloter->PoolDelete<Event>(rw_event);
     }
 }
 
@@ -78,6 +83,9 @@ bool WinRWSocket::Write(const char* src, uint32_t len) {
             AddEvent(rw_event);
             return true;
         }
+    }
+    if (!IsShutdown()) {
+        _alloter->PoolDelete<Event>(rw_event);
     }
     return false;
 }
@@ -111,7 +119,12 @@ void WinRWSocket::Connect(const std::string& ip, uint16_t port) {
     if (actions) {
         if (actions->AddConnection(rw_event, _addr)) {
             AddEvent(rw_event);
+            return;
         }
+    }
+
+    if (!IsShutdown()) {
+        _alloter->PoolDelete<Event>(rw_event);
     }
 }
 
@@ -191,6 +204,18 @@ void WinRWSocket::OnWrite(Event* event, uint32_t len) {
 }
 
 void WinRWSocket::OnDisConnect(Event* event, uint16_t err) {
+    // local disconnect
+    if (event->GetType() & ET_DISCONNECT) {
+        auto actions = GetEventActions();
+        if (actions) {
+            std::lock_guard<std::mutex> lock(_event_mutex);
+            for (auto iter = _event_set.begin(); iter != _event_set.end(); iter++) {
+                actions->DelEvent(*iter);
+            }
+            _event_set.clear();
+        }
+    }
+
     RemvoeEvent(event);
 
     if (EventEmpty() && IsShutdown()) {

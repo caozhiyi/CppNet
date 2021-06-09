@@ -277,8 +277,11 @@ bool IOCPEventActions::AddDisconnection(Event* event) {
     }
     auto rw_sock = std::dynamic_pointer_cast<WinRWSocket>(sock);
     if (rw_sock->IsShutdown()) {
+        LOG_WARN_S << "socket is shutdown when disconnect";
+        rw_sock->OnDisConnect(event, CEC_CLOSED);
         return false;
     }
+    rw_sock->SetShutdown();
 
     EventOverlapped* context = (EventOverlapped*)event->GetData();
     if (!context) {
@@ -290,7 +293,7 @@ bool IOCPEventActions::AddDisconnection(Event* event) {
 
     context->_event_type = ET_DISCONNECT;
     int32_t ret = DisconnectionEx((SOCKET)sock->GetSocket(), &context->_overlapped, TF_REUSE_SOCKET, 0);
-
+    
     if ((SOCKET_ERROR == ret) && (WSA_IO_PENDING != WSAGetLastError())) {
         LOG_FATAL("IOCP post disconnect event failed! error code: %d", WSAGetLastError());
         return false;
@@ -353,7 +356,8 @@ void IOCPEventActions::ProcessEvent(int32_t wait_ms) {
                ERROR_OPERATION_ABORTED == dw_err) {
 
         // why ConnectEx get WSAENOTCONN?
-        if (!(context->_event_type == ET_CONNECT && WSAENOTCONN == dw_err)) {
+        if (!((context->_event_type == ET_CONNECT || context->_event_type == ET_DISCONNECT) &&
+            WSAENOTCONN == dw_err)) {
             context->_event_type = INC_CONNECTION_BREAK;
         }
 
@@ -397,8 +401,6 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
     switch (context->_event_type)
     {
     case ET_ACCEPT: {
-        context->_event_type = 0;
-        event->RemoveType(ET_ACCEPT);
         auto accpet_event = dynamic_cast<WinAcceptEvent*>(event);
         accpet_event->SetBufOffset(bytes);
         std::shared_ptr<WinConnectSocket> connect_sock = std::dynamic_pointer_cast<WinConnectSocket>(sock);
@@ -406,8 +408,6 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
         break;
     }
     case ET_READ: {
-        context->_event_type = 0;
-        event->RemoveType(ET_READ);
         std::shared_ptr<WinRWSocket> rw_socket = std::dynamic_pointer_cast<WinRWSocket>(sock);
         if (bytes == 0) {
             rw_socket->SetShutdown();
@@ -419,8 +419,6 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
         break;
     }
     case ET_WRITE: {
-        context->_event_type = 0;
-        event->RemoveType(ET_WRITE);
         std::shared_ptr<WinRWSocket> rw_socket = std::dynamic_pointer_cast<WinRWSocket>(sock);
         if (bytes == 0) {
             rw_socket->SetShutdown();
@@ -433,8 +431,6 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
         break;
     }
     case ET_CONNECT: {
-        context->_event_type = 0;
-        event->RemoveType(ET_CONNECT);
         std::shared_ptr<RWSocket> rw_socket = std::dynamic_pointer_cast<RWSocket>(sock);
 
         if (CheckConnect(rw_socket->GetSocket())) {
@@ -448,8 +444,6 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
     }
     case INC_CONNECTION_CLOSE:
     case ET_DISCONNECT: {
-        context->_event_type = 0;
-        event->ForceSetType(ET_DISCONNECT);
         std::shared_ptr<WinRWSocket> rw_socket = std::dynamic_pointer_cast<WinRWSocket>(sock);
         if (rw_socket) {
             rw_socket->SetShutdown();
@@ -461,8 +455,6 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
         break;
     }
     case INC_CONNECTION_BREAK: {
-        context->_event_type = 0;
-        event->ForceSetType(ET_DISCONNECT);
         std::shared_ptr<WinRWSocket> rw_socket = std::dynamic_pointer_cast<WinRWSocket>(sock);
         if (rw_socket) {
             rw_socket->SetShutdown();
@@ -473,8 +465,6 @@ void IOCPEventActions::DoEvent(EventOverlapped *context, uint32_t bytes) {
         break;
     }
     case INC_CONNECTION_REFUSE: {
-        context->_event_type = 0;
-        event->ForceSetType(ET_DISCONNECT);
         std::shared_ptr<RWSocket> rw_socket = std::dynamic_pointer_cast<RWSocket>(sock);
         rw_socket->OnConnect(event, CEC_CONNECT_REFUSE);
         break;
