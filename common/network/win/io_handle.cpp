@@ -22,19 +22,19 @@ SysCallInt64Result OsHandle::TcpSocket(bool ipv4) {
 
     // both ipv6 and ipv4
     int32_t opt = 0;
-	if (setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&opt, sizeof(opt)) != 0) {
+    if (setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&opt, sizeof(opt)) != 0) {
         return { sock, WSAGetLastError() };
-	}
+    }
     return {sock, 0};
 }
 
 SysCallInt32Result OsHandle::Bind(int64_t sockfd, Address& address) {
     int32_t ret = -1;
     if (address.GetType() == AT_IPV4) {
-		SOCKADDR_IN addr;
-		addr.sin_family = AF_INET;
-		addr.sin_port = htons(address.GetAddrPort());
-		addr.sin_addr.S_un.S_addr = inet_addr(address.GetIp().c_str());
+        SOCKADDR_IN addr;
+        addr.sin_family = AF_INET;
+        addr.sin_port = htons(address.GetAddrPort());
+        addr.sin_addr.S_un.S_addr = inet_addr(address.GetIp().c_str());
         ret = bind((SOCKET)sockfd, (sockaddr*)&addr, sizeof(addr));
 
     } else {

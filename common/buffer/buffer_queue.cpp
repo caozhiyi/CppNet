@@ -188,9 +188,9 @@ uint32_t BufferQueue::Read(char* res, uint32_t len) {
         }
         _buffer_list.PopFront();
         buffer_read = _buffer_list.GetHead();
-		if (buffer_read->GetCanReadLength() == 0) {
+        if (buffer_read->GetCanReadLength() == 0) {
             break;
-		}
+        }
     }
     _can_read_length -= total_read_len;
     return total_read_len;
