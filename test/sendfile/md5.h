@@ -3,15 +3,15 @@
 
 #include <fstream>
 
-#define READ_DATA_SIZE	1024
-#define MD5_SIZE		16
-#define MD5_STR_LEN		(MD5_SIZE * 2)
+#define READ_DATA_SIZE    1024
+#define MD5_SIZE        16
+#define MD5_STR_LEN        (MD5_SIZE * 2)
 
 typedef struct
 {
-	unsigned int count[2];
-	unsigned int state[4];
-	unsigned char buffer[64];   
+    unsigned int count[2];
+    unsigned int state[4];
+    unsigned char buffer[64];   
 } MD5_CTX;
 
 
@@ -23,27 +23,27 @@ typedef struct
 
 #define FF(a,b,c,d,x,s,ac) \
 { \
-	a += F(b,c,d) + x + ac; \
-	a = ROTATE_LEFT(a,s); \
-	a += b; \
+    a += F(b,c,d) + x + ac; \
+    a = ROTATE_LEFT(a,s); \
+    a += b; \
 }
 #define GG(a,b,c,d,x,s,ac) \
 { \
-	a += G(b,c,d) + x + ac; \
-	a = ROTATE_LEFT(a,s); \
-	a += b; \
+    a += G(b,c,d) + x + ac; \
+    a = ROTATE_LEFT(a,s); \
+    a += b; \
 }
 #define HH(a,b,c,d,x,s,ac) \
 { \
-	a += H(b,c,d) + x + ac; \
-	a = ROTATE_LEFT(a,s); \
-	a += b; \
+    a += H(b,c,d) + x + ac; \
+    a = ROTATE_LEFT(a,s); \
+    a += b; \
 }
 #define II(a,b,c,d,x,s,ac) \
 { \
-	a += I(b,c,d) + x + ac; \
-	a = ROTATE_LEFT(a,s); \
-	a += b; \
+    a += I(b,c,d) + x + ac; \
+    a = ROTATE_LEFT(a,s); \
+    a += b; \
 }                                            
 void MD5Init(MD5_CTX *context);
 void MD5Update(MD5_CTX *context, unsigned char *input, unsigned int inputlen);

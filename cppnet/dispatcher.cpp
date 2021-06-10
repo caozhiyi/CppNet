@@ -30,29 +30,29 @@ static std::map<uint32_t, std::shared_ptr<EventActions>> __unique_actions_map;
 #endif
 
 Dispatcher::Dispatcher(std::shared_ptr<CppNetBase> base, uint32_t thread_num, uint32_t base_id):
-	_cur_utc_time(0),
-	_timer_id_creater(0),
-	_cppnet_base(base) {
+    _cur_utc_time(0),
+    _timer_id_creater(0),
+    _cppnet_base(base) {
 
-	_timer = MakeTimer1Min();
+    _timer = MakeTimer1Min();
 #ifdef __win__
-	auto iter = __unique_actions_map.find(base_id);
-	if (iter == __unique_actions_map.end()) {
-		_event_actions = MakeEventActions();
-		_event_actions->Init(thread_num);
-		__unique_actions_map[base_id] = _event_actions;
+    auto iter = __unique_actions_map.find(base_id);
+    if (iter == __unique_actions_map.end()) {
+        _event_actions = MakeEventActions();
+        _event_actions->Init(thread_num);
+        __unique_actions_map[base_id] = _event_actions;
 
-	}
-	else {
-		_event_actions = iter->second;
-	}
+    }
+    else {
+        _event_actions = iter->second;
+    }
 #else
-	_event_actions = MakeEventActions();
-	_event_actions->Init();
+    _event_actions = MakeEventActions();
+    _event_actions->Init();
 #endif
 
-	// start thread
-	Start();
+    // start thread
+    Start();
 }
 
 Dispatcher::Dispatcher(std::shared_ptr<CppNetBase> base, uint32_t base_id):
@@ -116,7 +116,7 @@ void Dispatcher::Stop() {
 }
 
 void Dispatcher::Listen(uint64_t sock, const std::string& ip, uint16_t port) {
-    if (std::this_thread::get_id() == _local_thread_id) {
+    auto task = [sock, ip, port, this]() {
         auto connect_sock = MakeConnectSocket();
         connect_sock->SetEventActions(_event_actions);
         connect_sock->SetCppNetBase(_cppnet_base.lock());
@@ -125,36 +125,28 @@ void Dispatcher::Listen(uint64_t sock, const std::string& ip, uint16_t port) {
 
         connect_sock->Bind(ip, port);
         connect_sock->Listen();
+    };
+
+    if (std::this_thread::get_id() == _local_thread_id) {
+        task();
 
     } else {
-        auto task = [sock, ip, port, this]() {
-            auto connect_sock = MakeConnectSocket();
-            connect_sock->SetEventActions(_event_actions);
-            connect_sock->SetCppNetBase(_cppnet_base.lock());
-            connect_sock->SetSocket(sock);
-            connect_sock->SetDispatcher(shared_from_this());
-
-            connect_sock->Bind(ip, port);
-            connect_sock->Listen();
-        };
         PostTask(task);
     }
 }
 
 void Dispatcher::Connect(const std::string& ip, uint16_t port) {
-    if (std::this_thread::get_id() == _local_thread_id) {
+    auto task = [ip, port, this]() {
         auto sock = MakeRWSocket();
         sock->SetEventActions(_event_actions);
         sock->SetCppNetBase(_cppnet_base.lock());
         sock->Connect(ip, port);
+    };
+
+    if (std::this_thread::get_id() == _local_thread_id) {
+        task();
     
     } else {
-        auto task = [ip, port, this]() {
-            auto sock = MakeRWSocket();
-            sock->SetEventActions(_event_actions);
-            sock->SetCppNetBase(_cppnet_base.lock());
-            sock->Connect(ip, port);
-        };
         PostTask(task);
     }
 }

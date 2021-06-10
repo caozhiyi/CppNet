@@ -336,9 +336,9 @@ void IOCPEventActions::ProcessEvent(int32_t wait_ms) {
         dw_err = GetLastError();
     }
 
-	if (over_lapped) {
-		context = CONTAINING_RECORD(over_lapped, EventOverlapped, _overlapped);
-		LOG_DEBUG("Get a new event: %s", TypeString((EventType)context->_event_type));
+    if (over_lapped) {
+        context = CONTAINING_RECORD(over_lapped, EventOverlapped, _overlapped);
+        LOG_DEBUG("Get a new event: %s", TypeString((EventType)context->_event_type));
 
     } else {
         LOG_ERROR("Get a new event but lapped is null");
