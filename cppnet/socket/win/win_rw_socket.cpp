@@ -211,8 +211,13 @@ void WinRWSocket::OnDisConnect(Event* event, uint16_t err) {
             std::lock_guard<std::mutex> lock(_event_mutex);
             for (auto iter = _event_set.begin(); iter != _event_set.end(); iter++) {
                 actions->DelEvent(*iter);
+                _event_set.erase(event);
+                EventOverlapped* data = (EventOverlapped*)event->GetData();
+                if (data) {
+                    _alloter->PoolDelete<EventOverlapped>(data);
+                }
+                _alloter->PoolDelete<Event>(event);
             }
-            _event_set.clear();
         }
     }
 

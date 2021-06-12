@@ -133,8 +133,7 @@ void Dispatcher::Listen(uint64_t sock, const std::string& ip, uint16_t port) {
     if (std::this_thread::get_id() == _local_thread_id) {
         task();
 
-    }
-    else {
+    } else {
         PostTask(task);
     }
 #endif
@@ -155,8 +154,7 @@ void Dispatcher::Connect(const std::string& ip, uint16_t port) {
     if (std::this_thread::get_id() == _local_thread_id) {
         task();
 
-    }
-    else {
+    } else {
         PostTask(task);
     }
 #endif
