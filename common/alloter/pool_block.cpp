@@ -12,8 +12,8 @@ namespace cppnet {
 
 
 BlockMemoryPool::BlockMemoryPool(uint32_t large_sz, uint32_t add_num) :
-                                  _number_large_add_nodes(add_num),
-                                  _large_size(large_sz){
+    _number_large_add_nodes(add_num),
+    _large_size(large_sz) {
 
 }
 

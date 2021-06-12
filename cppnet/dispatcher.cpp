@@ -127,12 +127,18 @@ void Dispatcher::Listen(uint64_t sock, const std::string& ip, uint16_t port) {
         connect_sock->Listen();
     };
 
+#ifdef __win__
+    task();
+#else
     if (std::this_thread::get_id() == _local_thread_id) {
         task();
 
-    } else {
+    }
+    else {
         PostTask(task);
     }
+#endif
+
 }
 
 void Dispatcher::Connect(const std::string& ip, uint16_t port) {
@@ -143,12 +149,17 @@ void Dispatcher::Connect(const std::string& ip, uint16_t port) {
         sock->Connect(ip, port);
     };
 
+#ifdef __win__
+    task();
+#else
     if (std::this_thread::get_id() == _local_thread_id) {
         task();
-    
-    } else {
+
+    }
+    else {
         PostTask(task);
     }
+#endif
 }
 
 void Dispatcher::PostTask(const Task& task) {

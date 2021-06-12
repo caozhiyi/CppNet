@@ -40,8 +40,11 @@ WinConnectSocket::WinConnectSocket() {
 }
 
 WinConnectSocket::~WinConnectSocket() {
-    __all_socket_map.Erase(_sock);
     for (auto iter = _accept_event_vec.begin(); iter != _accept_event_vec.end(); iter++) {
+        auto data = (*iter)->GetData();
+        if (data) {
+            delete (EventOverlapped*)data;
+        }
         delete *iter;
     }
 }
