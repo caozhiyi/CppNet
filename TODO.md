@@ -15,3 +15,5 @@
 - [x] pingpong test on windows
 - [x] quick start document
 - [ ] pingpong performance testing
+- [ ] IOCP lost disconnection event
+- [ ] windows timer wakeup other thread
