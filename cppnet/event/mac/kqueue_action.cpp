@@ -183,11 +183,11 @@ bool KqueueEventActions::DelEvent(Event* event) {
     }
     
     struct kevent read_ev;
-    EV_SET(&read_ev, sock->GetSocket(), EVFILT_READ, EV_DELETE | EV_DISABLE | EV_DISPATCH, 0, 0, NULL);
+    EV_SET(&read_ev, sock->GetSocket(), EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, NULL);
     _change_list.push_back(read_ev);
 
     struct kevent write_ev;
-    EV_SET(&write_ev, sock->GetSocket(), EVFILT_WRITE, EV_DELETE | EV_DISABLE | EV_DISPATCH, 0, 0, NULL);
+    EV_SET(&write_ev, sock->GetSocket(), EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, NULL);
     _change_list.push_back(write_ev);
 
     event->ClearType();
@@ -229,6 +229,10 @@ void KqueueEventActions::OnEvent(std::vector<struct kevent>& event_vec, int16_t 
             LOG_INFO("weak up the io thread, index : %d", i);
             char buf[4];
             read(_pipe[0], buf, 1);
+            continue;
+        }
+
+        if (event_vec[i].flags & EV_DELETE) {
             continue;
         }
 
