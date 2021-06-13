@@ -21,7 +21,7 @@ ab -kc[1-10000] -n100000 http://127.0.0.1:8921/hello
 <p align="left"><img width="896" src="../image/linux_apache_ab_bench.png" alt="linux_apache_ab_bench"></p>
 
 图中`cppnet_1`为使用`REUSE_PORT`，`cppnet_2`为使用`EPOLLEXCLUSIVE`。    
-使用`REUSE_PORT`时，整体效率上与`muduo`基本持平，在1000并发以下时，`cppnet`表现更优，1000发以上时，`muduo`表现更优。    
+使用`REUSE_PORT`时，整体效率稍稍优于`muduo`。    
 在使用`EPOLLEXCLUSIVE`时，性能整体都优于`muduo`(muduo尚未支持`EPOLLEXCLUSIVE`设置)。   
 
 ### Windows

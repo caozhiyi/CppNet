@@ -21,7 +21,7 @@ Compared with `Muduo` on Linux，because Linux support `REUSE_PORT` and `EPOLLEX
 <p align="left"><img width="896" src="../image/linux_apache_ab_bench.png" alt="linux_apache_ab_bench"></p>
 
 In the picture `cppnet_1` used `REUSE_PORT`，`cppnet_2` used `EPOLLEXCLUSIVE`.    
-When use `REUSE_PORT`, the overall efficiency is basically the same as that of `muduo`. When the concurrency is less than 1000, `cppnet` performs better, When more than 1000, `muduo` performed better.   
+When use `REUSE_PORT`, efficiency is slightly better than `muduo`.      
 When use `EPOLLEXCLUSIVE`, the overall performance is better than `muduo`(muduo does not support the `EPOLLEXCLUSIVE` setting).  
 
 ### Windows
