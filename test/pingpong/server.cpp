@@ -36,7 +36,7 @@ void OnMessage(const cppnet::Handle& handle, cppnet::BufferPtr data, uint32_t) {
 
 int main() {
     cppnet::CppNet net;
-    net.Init(2);
+    net.Init(4);
 
     net.SetAcceptCallback(OnConnection);
     net.SetReadCallback(OnMessage);

@@ -116,7 +116,6 @@ public:
           int64_t totalBytesRead = 0;
           int64_t totalMessagesRead = 0;
 
-          std::lock_guard<std::mutex> lock(_mutex);
           for (const auto& session : _sessions) {
               totalBytesRead += session.second->BytesRead();
               totalMessagesRead += session.second->MessagesRead();
