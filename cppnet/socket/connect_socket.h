@@ -22,11 +22,12 @@ public:
 
     virtual bool Bind(const std::string& ip, uint16_t port);
     virtual bool Listen();
-    virtual void Accept() {}
-    virtual void Accept(uint16_t index) {}
-    virtual void Close() {}
+    virtual void Accept();
+    virtual void Close();
 
-    virtual void OnAccept(Event* event) {}
+    virtual void OnAccept();
+private:
+    Event*  _accept_event;
 };
 
 std::shared_ptr<ConnectSocket> MakeConnectSocket();

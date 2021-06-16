@@ -14,16 +14,15 @@ SRCS = $(wildcard ./common/alloter/*.cpp       \
                   ./common/util/*.cpp          \
                   ./cppnet/event/*.cpp         \
                   ./cppnet/socket/*.cpp        \
-                  ./cppnet/socket/posix/*.cpp  \
                   ./cppnet/*.cpp               \
                   )
 
 ifeq ($(detected_OS),Linux)   #linux
-    SRCS += $(wildcard ./cppnet/event/linux/*.cpp)
+    SRCS += $(wildcard ./cppnet/event/epoll/*.cpp)
 endif
 
 ifeq ($(detected_OS),Darwin)  # Mac OS X
-    SRCS += $(wildcard ./cppnet/event/mac/*.cpp)
+    SRCS += $(wildcard ./cppnet/event/kqueue/*.cpp)
 endif
 
 OBJS = $(patsubst %.cpp, %.o, $(SRCS))
@@ -35,9 +34,9 @@ INCLUDES = -I.
 
 #debug
 
-#CCFLAGS = -lpthread -fPIC -m64 -g -std=c++11 -lstdc++ -pipe -Wall
+CCFLAGS = -lpthread -fPIC -m64 -g -std=c++11 -lstdc++ -pipe -Wall
 
-CCFLAGS = -lpthread -fPIC -m64 -O2 -std=c++11 -lstdc++ -pipe
+#CCFLAGS = -lpthread -fPIC -m64 -O2 -std=c++11 -lstdc++ -pipe
 
 TARGET = libcppnet.a
 

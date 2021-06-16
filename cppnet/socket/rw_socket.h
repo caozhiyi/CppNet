@@ -36,19 +36,19 @@ public:
 
     virtual void Close();
 
-    virtual void Read() {}
-    virtual bool Write(const char* src, uint32_t len) { return false; }
-    virtual void Connect(const std::string& ip, uint16_t port) {}
-    virtual void Disconnect() {}
+    virtual void Read();
+    virtual bool Write(const char* src, uint32_t len);
+    virtual void Connect(const std::string& ip, uint16_t port);
+    virtual void Disconnect();
 
     virtual void AddTimer(uint32_t interval, bool always = false);
     virtual void StopTimer();
 
     virtual void OnTimer();
-    virtual void OnRead(Event* event, uint32_t len = 0) {}
-    virtual void OnWrite(Event* event, uint32_t len = 0) {}
-    virtual void OnConnect(Event* event, uint16_t err);
-    virtual void OnDisConnect(Event* event, uint16_t err) {}
+    virtual void OnRead(uint32_t len = 0);
+    virtual void OnWrite(uint32_t len = 0);
+    virtual void OnConnect(uint16_t err);
+    virtual void OnDisConnect(uint16_t err);
 
     virtual void SetContext(void* context) { _context = context; }
     virtual void* GetContext() { return _context; }
@@ -56,15 +56,22 @@ public:
     virtual void SetShutdown() { _shutdown = true; }
     virtual bool IsShutdown() { return _shutdown; }
 
-    virtual std::shared_ptr<BufferQueue> GetReadBuffer() { return nullptr; }
-
     std::shared_ptr<AlloterWrap> GetAlloter() { return _alloter; }
+
+private:
+    bool Recv(uint32_t len);
+    bool Send();
 
 protected:
     void*    _context;
     uint32_t _timer_id;
     uint16_t _listen_port;
     std::atomic_bool _shutdown;
+    Event*           _event;
+
+    std::shared_ptr<BufferQueue>     _write_buffer;
+    std::shared_ptr<BufferQueue>     _read_buffer;
+
     std::shared_ptr<AlloterWrap>     _alloter;
     std::shared_ptr<BlockMemoryPool> _block_pool;
 };

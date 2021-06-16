@@ -6,8 +6,11 @@
 #ifndef NET_EVENT_LINUX_EPOLL_ACTION
 #define NET_EVENT_LINUX_EPOLL_ACTION
 
-#include <mutex>
+#ifdef __win__
+#include "wepoll/wepoll.h"
+#else
 #include <sys/epoll.h>
+#endif
 #include "cppnet/event/action_interface.h"
 
 namespace cppnet {
@@ -39,11 +42,16 @@ private:
     void OnEvent(std::vector<epoll_event>& event_vec, int16_t num);
     bool AddEvent(epoll_event* ev, int32_t event_flag, uint64_t sock, bool in_actions);
     bool MakeEpollEvent(Event* event, epoll_event* &ep_event);
-
-protected:
-    std::mutex  _mutex;
+    
+private:
+#ifdef __win__
+    bool Pipe(SOCKET fd[2]);
+    HANDLE      _epoll_handler;
+    SOCKET      _pipe[2];
+#else
     int32_t     _epoll_handler;
     uint32_t    _pipe[2];
+#endif
     epoll_event _pipe_content;
     std::vector<epoll_event> _active_list;
 

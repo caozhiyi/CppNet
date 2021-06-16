@@ -140,16 +140,16 @@ bool KqueueEventActions::AddConnection(Event* event, Address& address) {
 
         auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
         if (ret._return_value == 0) {
-            rw_sock->OnConnect(event, CEC_SUCCESS);
+            rw_sock->OnConnect(CEC_SUCCESS);
             return true;
     
         } else if (ret._errno == EINPROGRESS) {
             if (CheckConnect(rw_sock->GetSocket())) {
-                rw_sock->OnConnect(event, CEC_SUCCESS);
+                rw_sock->OnConnect(CEC_SUCCESS);
                 return true;
             }
         }
-        rw_sock->OnConnect(event, CEC_CONNECT_REFUSE);
+        rw_sock->OnConnect(CEC_CONNECT_REFUSE);
         LOG_ERROR("connect to peer failed! errno:%d, info:%s", ret._errno, ErrnoInfo(ret._errno));
         return false;
         
@@ -172,7 +172,7 @@ bool KqueueEventActions::AddDisconnection(Event* event) {
     
     std::shared_ptr<RWSocket> socket = std::dynamic_pointer_cast<RWSocket>(sock);
     OsHandle::Close(socket->GetSocket());
-    socket->OnDisConnect(event, CEC_SUCCESS);
+    socket->OnDisConnect(CEC_SUCCESS);
     return true;
 }
 
@@ -246,18 +246,18 @@ void KqueueEventActions::OnEvent(std::vector<struct kevent>& event_vec, int16_t 
         // accept event
         if (event->GetType() & ET_ACCEPT) {
             std::shared_ptr<ConnectSocket> connect_sock = std::dynamic_pointer_cast<ConnectSocket>(sock);
-            connect_sock->OnAccept(event);
+            connect_sock->OnAccept();
 
         } else {
             // write event
             if (event_vec[i].flags & EV_CLEAR) {
                 std::shared_ptr<RWSocket> rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
                 event->RemoveType(ET_WRITE);
-                rw_sock->OnWrite(event, event_vec[i].data);
+                rw_sock->OnWrite(event_vec[i].data);
             // read event
             } else {
                 std::shared_ptr<RWSocket> rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
-                rw_sock->OnRead(event, event_vec[i].data);
+                rw_sock->OnRead(event_vec[i].data);
             }
         }   
     }
