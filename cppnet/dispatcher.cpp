@@ -16,11 +16,6 @@
 #include "common/timer/timer.h"
 #include "common/alloter/pool_alloter.h"
 
-#ifdef __win__
-#include "cppnet/socket/win/win_rw_socket.h"
-#else
-#endif
-
 namespace cppnet {
 
 thread_local std::unordered_map<uint64_t, std::shared_ptr<TimerEvent>> Dispatcher::__all_timer_event_map;

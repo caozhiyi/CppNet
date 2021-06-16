@@ -33,6 +33,7 @@ RWSocket::RWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter):
     _context(nullptr),
     _timer_id(0),
     _listen_port(0),
+    _event(nullptr),
     _shutdown(false),
     _alloter(alloter) {
 

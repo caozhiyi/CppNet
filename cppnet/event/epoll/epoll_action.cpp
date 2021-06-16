@@ -5,12 +5,17 @@
 
 #include <thread>
 #include <cstring>
+#ifdef __win__
+#include <winsock2.h>
+#pragma comment(lib,"ws2_32.lib")
+#else
 #include <unistd.h>
 #include <signal.h>
 #include <sys/poll.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <linux/version.h>
+#endif
 
 #include "epoll_action.h"
 #include "include/cppnet_type.h"
@@ -33,7 +38,11 @@ std::shared_ptr<EventActions> MakeEventActions() {
 }
 
 EpollEventActions::EpollEventActions():
+#ifdef __win__
+    _epoll_handler(nullptr) {
+#else
     _epoll_handler(-1) {
+#endif
     _active_list.resize(1024);
     memset(_pipe, 0, sizeof(_pipe));
     memset(&_pipe_content, 0, sizeof(_pipe_content));
@@ -41,19 +50,27 @@ EpollEventActions::EpollEventActions():
 
 EpollEventActions::~EpollEventActions() {
     if (_epoll_handler > 0) {
+#ifdef __win__
+        epoll_close(_epoll_handler);
+#else
         close(_epoll_handler);
+#endif
     }
 }
 
 bool EpollEventActions::Init(uint32_t thread_num) {
-    //get epoll handle. the param is invalid since linux 2.6.8
+    // get EPOLL handle. the param is invalid since LINUX 2.6.8
     _epoll_handler = epoll_create(1500);
+#ifdef __win__
+    if (_epoll_handler == nullptr) {
+#else
     if (_epoll_handler == -1) {
-        LOG_FATAL("epoll init failed! error : %d", errno);
+#endif
+        LOG_FATAL("EPOLL init failed! error : %d", errno);
         return false;
     }
 #ifdef __win__
-    if (!Pipe((_pipe)) {
+    if (!Pipe(_pipe)) {
 #else
     if (pipe((int*)_pipe) == -1) {
 #endif
@@ -68,7 +85,7 @@ bool EpollEventActions::Init(uint32_t thread_num) {
     _pipe_content.data.fd = _pipe[0];
     int32_t ret = epoll_ctl(_epoll_handler, EPOLL_CTL_ADD, _pipe[0], &_pipe_content);
     if (ret < 0) {
-        LOG_FATAL("add pipe handle to epoll faild! error :%d", errno);
+        LOG_FATAL("add pipe handle to EPOLL failed! error :%d", errno);
         return false;
     }
     return true;
@@ -92,14 +109,14 @@ bool EpollEventActions::AddSendEvent(Event* event) {
         }
     }
 
-    // already in epoll
+    // already in EPOLL
     if (ep_event->events & EPOLLOUT) {
         return true;
     }
 
     auto sock = event->GetSocket();
     if (!sock) {
-        LOG_WARN("socket is already distroyed! event %s", "AddSendEvent");
+        LOG_WARN("socket is already destroyed! event %s", "AddSendEvent");
         return false;
     }
 
@@ -125,14 +142,14 @@ bool EpollEventActions::AddRecvEvent(Event* event) {
         }
     }
 
-    // already in epoll
+    // already in EPOLL
     if (ep_event->events & EPOLLIN) {
         return true;
     }
 
     auto sock = event->GetSocket();
     if (!sock) {
-        LOG_WARN("socket is already distroyed! event %s", "AddSendEvent");
+        LOG_WARN("socket is already destroyed! event %s", "AddSendEvent");
         return false;
     }
 
@@ -161,14 +178,14 @@ bool EpollEventActions::AddAcceptEvent(Event* event) {
         ep_event->data.ptr = (void*)event;
     }
 
-     // already in epoll
+     // already in EPOLL
     if (ep_event->events & EPOLLIN) {
         return true;
     }
 
     auto sock = event->GetSocket();
     if (!sock) {
-        LOG_WARN("socket is already distroyed! event %s", "AddSendEvent");
+        LOG_WARN("socket is already destroyed! event %s", "AddSendEvent");
         return false;
     }
 
@@ -188,12 +205,12 @@ bool EpollEventActions::AddConnection(Event* event, Address& addr) {
 
     auto sock = event->GetSocket();
     if (sock) {
-        //the socket must not in epoll
+        // the socket must not in EPOLL
         if (event->GetType() & ET_INACTIONS) {
             return false;
         }
 
-        //block here in linux
+        // block here in LINUX
         SocketNoblocking(sock->GetSocket());
 
         auto ret = OsHandle::Connect(sock->GetSocket(), addr);
@@ -245,12 +262,12 @@ bool EpollEventActions::DelEvent(Event* event) {
     epoll_event* ev = (epoll_event*)event->GetData();
     int32_t ret = epoll_ctl(_epoll_handler, EPOLL_CTL_DEL, sock->GetSocket(), ev);
     if (ret < 0) {
-        LOG_ERROR("remove event from epoll faild! error :%d, socket : %d", errno, sock->GetSocket());
+        LOG_ERROR("remove event from EPOLL failed! error :%d, socket : %d", errno, sock->GetSocket());
         return false;
     }
 
     event->ClearType();
-    LOG_DEBUG("del a socket from epoll, %d", sock->GetSocket());
+    LOG_DEBUG("remove a socket from EPOLL, %d", sock->GetSocket());
     return true;
 }
 
@@ -260,19 +277,23 @@ void EpollEventActions::ProcessEvent(int32_t wait_ms) {
         if (errno == EINTR) {
             return;
         }
-        LOG_ERROR("epoll wait faild! error:%d, info:%s", errno, ErrnoInfo(errno));
+        LOG_ERROR("EPOLL wait failed! error:%d, info:%s", errno, ErrnoInfo(errno));
 
     } else {
-        LOG_DEBUG("epoll get events! num:%d, TheadId: %lld", ret, std::this_thread::get_id());
+        LOG_DEBUG("EPOLL get events! num:%d, TheadId: %ld", ret, std::this_thread::get_id());
 
         OnEvent(_active_list, ret);
     }
 }
 
 void EpollEventActions::Wakeup() {
-   if(write(_pipe[1], "1", 1) <= 0) {
-       LOG_ERROR_S << "write to pipe failed when weak up.";
-   }
+#ifdef __win__
+    if (send(_pipe[1], "1", 1, 0) <= 0) {
+#else
+    if (write(_pipe[1], "1", 1) <= 0) {
+#endif
+        LOG_ERROR_S << "write to pipe failed when weak up.";
+    }
 }
 
 void EpollEventActions::OnEvent(std::vector<epoll_event>& event_vec, int16_t num) {
@@ -281,9 +302,13 @@ void EpollEventActions::OnEvent(std::vector<epoll_event>& event_vec, int16_t num
 
     for (int i = 0; i < num; i++) {
         if ((uint32_t)event_vec[i].data.fd == _pipe[0]) {
-            LOG_WARN("weak up the io thread, index : %d", i);
+            LOG_WARN("weak up the IO thread, index : %d", i);
             char buf[4];
-            if(read(_pipe[0], buf, 1) <= 0) {
+#ifdef __win__
+            if (recv(_pipe[0], buf, 1, 0) <= 0) {
+#else
+            if (read(_pipe[0], buf, 1) <= 0) {
+#endif
                 LOG_ERROR_S << "read from pipe failed when weak up.";
             }
             continue;
@@ -292,7 +317,7 @@ void EpollEventActions::OnEvent(std::vector<epoll_event>& event_vec, int16_t num
         event = (Event*)event_vec[i].data.ptr;
         sock = event->GetSocket();
         if (!sock) {
-            LOG_WARN("epoll weak up but socket already destroy, index : %d", i);
+            LOG_WARN("EPOLL weak up but socket already destroy, index : %d", i);
             continue;
         }
 
@@ -319,10 +344,10 @@ void EpollEventActions::OnEvent(std::vector<epoll_event>& event_vec, int16_t num
 }
 
 bool EpollEventActions::AddEvent(epoll_event* ev, int32_t event_flag, uint64_t sock, bool in_actions) {
-    //if not add to epoll
+    //if not add to EPOLL
     if (!(ev->events & event_flag)) {
 #ifdef __win__
-        ev->events |= event_flag
+        ev->events |= event_flag;
 #else
         if (__epoll_use_et) {
             ev->events |= event_flag | EPOLLET;
@@ -330,12 +355,11 @@ bool EpollEventActions::AddEvent(epoll_event* ev, int32_t event_flag, uint64_t s
         } else {
              ev->events |= event_flag;
         }
-#endif
-
-#if !defined(__win__) && LINUX_VERSION_CODE >= KERNEL_VERSION(4,5,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,5,0)
         if (__epoll_exclusive) {
             ev->events |= EPOLLEXCLUSIVE;
         }
+#endif
 #endif
 
         int32_t ret = 0;
@@ -349,7 +373,7 @@ bool EpollEventActions::AddEvent(epoll_event* ev, int32_t event_flag, uint64_t s
         if (ret == 0) {
             return true;
         }
-        LOG_ERROR("modify event to epoll faild! error :%d, sock: %d", errno, sock);
+        LOG_ERROR("modify event to EPOLL failed! error :%d, sock: %d", errno, sock);
     }
     return false;
 }
@@ -357,7 +381,7 @@ bool EpollEventActions::AddEvent(epoll_event* ev, int32_t event_flag, uint64_t s
 bool EpollEventActions::MakeEpollEvent(Event* event, epoll_event* &ep_event) {
     auto sock = event->GetSocket();
     if (!sock) {
-        LOG_WARN("socket is already distroyed! event %s", "AddSendEvent");
+        LOG_WARN("socket is already destroyed! event %s", "AddSendEvent");
         return false;
     }
 

@@ -88,6 +88,16 @@ void CppNetBase::RemoveTimer(uint64_t timer_id) {
 }
 
 bool CppNetBase::ListenAndAccept(const std::string& ip, uint16_t port) {
+#ifdef __win__
+    auto ret = OsHandle::TcpSocket();
+    if (ret._return_value < 0) {
+        LOG_ERROR("create socket failed. err:%d", ret._errno);
+        return false;
+    }
+    for (size_t i = 0; i < _dispatchers.size(); i++) {
+        _dispatchers[i]->Listen(ret._return_value, ip, port);
+    }
+#else
     if (__reuse_port) {
         for (size_t i = 0; i < _dispatchers.size(); i++) {
             auto ret = OsHandle::TcpSocket();
@@ -99,7 +109,8 @@ bool CppNetBase::ListenAndAccept(const std::string& ip, uint16_t port) {
             _dispatchers[i]->Listen(ret._return_value, ip, port);
         }
 
-    } else {
+    }
+    else {
         auto ret = OsHandle::TcpSocket();
         if (ret._return_value < 0) {
             LOG_ERROR("create socket failed. err:%d", ret._errno);
@@ -109,6 +120,7 @@ bool CppNetBase::ListenAndAccept(const std::string& ip, uint16_t port) {
             _dispatchers[i]->Listen(ret._return_value, ip, port);
         }
     }
+#endif
     return true;
 }
 

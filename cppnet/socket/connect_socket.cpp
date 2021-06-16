@@ -22,7 +22,8 @@
 
 namespace cppnet {
 
-ConnectSocket::ConnectSocket() {
+ConnectSocket::ConnectSocket():
+    _accept_event(nullptr) {
 
 }
 

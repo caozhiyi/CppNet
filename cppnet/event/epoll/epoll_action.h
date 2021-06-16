@@ -6,6 +6,7 @@
 #ifndef NET_EVENT_LINUX_EPOLL_ACTION
 #define NET_EVENT_LINUX_EPOLL_ACTION
 
+#include <vector>
 #ifdef __win__
 #include "wepoll/wepoll.h"
 #else

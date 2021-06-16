@@ -46,17 +46,14 @@
     <Filter Include="cppnet\event">
       <UniqueIdentifier>{ea04e906-9556-4346-9ed2-40ae19f6ede3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="cppnet\event\win">
-      <UniqueIdentifier>{d20855db-db9f-4ef5-8779-2ec195a43da8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="cppnet\socket\win">
-      <UniqueIdentifier>{bacb660a-99ea-4b26-81a4-cee347e2beeb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="common\network\win">
       <UniqueIdentifier>{75988d4c-ae9d-4a95-8f7a-87fa3268a3be}</UniqueIdentifier>
     </Filter>
-    <Filter Include="cppnet\event\win\wepoll">
-      <UniqueIdentifier>{edd8021a-c10e-4e26-9908-17f3d83c7b07}</UniqueIdentifier>
+    <Filter Include="cppnet\event\epoll">
+      <UniqueIdentifier>{80edc4cc-d262-4ae6-9ef1-917471b6d26d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cppnet\event\epoll\wepoll">
+      <UniqueIdentifier>{01f24cd1-baff-401e-a739-9d41d1035612}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -207,17 +204,11 @@
     <ClInclude Include="include\cppnet_buffer.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="cppnet\event\win\wepoll_action.h">
-      <Filter>cppnet\event\win</Filter>
+    <ClInclude Include="cppnet\event\epoll\wepoll\wepoll.h">
+      <Filter>cppnet\event\epoll\wepoll</Filter>
     </ClInclude>
-    <ClInclude Include="cppnet\socket\win\win_connect_socket.h">
-      <Filter>cppnet\socket\win</Filter>
-    </ClInclude>
-    <ClInclude Include="cppnet\socket\win\win_rw_socket.h">
-      <Filter>cppnet\socket\win</Filter>
-    </ClInclude>
-    <ClInclude Include="cppnet\event\win\wepoll\wepoll.h">
-      <Filter>cppnet\event\win\wepoll</Filter>
+    <ClInclude Include="cppnet\event\epoll\epoll_action.h">
+      <Filter>cppnet\event\epoll</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -314,17 +305,11 @@
     <ClCompile Include="common\log\log_stream.cpp">
       <Filter>common\log</Filter>
     </ClCompile>
-    <ClCompile Include="cppnet\event\win\wepoll_action.cpp">
-      <Filter>cppnet\event\win</Filter>
+    <ClCompile Include="cppnet\event\epoll\wepoll\wepoll.c">
+      <Filter>cppnet\event\epoll\wepoll</Filter>
     </ClCompile>
-    <ClCompile Include="cppnet\socket\win\win_connect_socket.cpp">
-      <Filter>cppnet\socket\win</Filter>
-    </ClCompile>
-    <ClCompile Include="cppnet\socket\win\win_rw_socket.cpp">
-      <Filter>cppnet\socket\win</Filter>
-    </ClCompile>
-    <ClCompile Include="cppnet\event\win\wepoll\wepoll.c">
-      <Filter>cppnet\event\win\wepoll</Filter>
+    <ClCompile Include="cppnet\event\epoll\epoll_action.cpp">
+      <Filter>cppnet\event\epoll</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
