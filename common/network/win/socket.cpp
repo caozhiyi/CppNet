@@ -10,7 +10,8 @@
 namespace cppnet {
 
 int32_t SocketNoblocking(uint64_t sock) {
-    return 0;
+    unsigned long ul = 1;
+    return ioctlsocket(sock, FIONBIO, (unsigned long *)&ul);
 }
 
 int32_t ReusePort(uint64_t sock) {

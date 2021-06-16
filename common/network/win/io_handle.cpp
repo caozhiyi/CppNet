@@ -15,16 +15,17 @@ SysCallInt64Result OsHandle::TcpSocket(bool ipv4) {
     if (ipv4) {
         af = AF_INET;
     }
-    int64_t sock = WSASocket(af, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
+    int64_t sock = socket(af, SOCK_STREAM, 0);
     if (sock == INVALID_SOCKET) {
-        return {sock, WSAGetLastError()};
+        return {sock, (int32_t)GetLastError()};
     }
 
     // both ipv6 and ipv4
     int32_t opt = 0;
     if (setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&opt, sizeof(opt)) != 0) {
-        return { sock, WSAGetLastError() };
+        return { sock, (int32_t)GetLastError() };
     }
+
     return {sock, 0};
 }
 
@@ -79,23 +80,74 @@ SysCallInt32Result OsHandle::Close(int64_t sockfd) {
 }
 
 SysCallInt64Result OsHandle::Accept(int64_t sockfd, Address& address) {
-    return {0, 0};
+    struct sockaddr_storage client_addr;
+    socklen_t addr_size = sizeof(client_addr);
+    int64_t ret = accept(sockfd, (sockaddr*)&client_addr, &addr_size);
+    if (ret < 0) {
+        return { ret, (int32_t)GetLastError() };
+    }
+
+    struct sockaddr* addr_pt = (struct sockaddr*)&client_addr;
+
+    void *addr = nullptr;
+    switch (addr_pt->sa_family) {
+    case AF_INET:
+        addr = &((struct sockaddr_in *)addr_pt)->sin_addr;
+        address.SetAddrPort(ntohs(((struct sockaddr_in *)addr_pt)->sin_port));
+        address.SetType(AT_IPV4);
+        break;
+    case AF_INET6:
+        addr = &((struct sockaddr_in6 *)addr_pt)->sin6_addr;
+        address.SetAddrPort((((struct sockaddr_in6 *)addr_pt)->sin6_port));
+        address.SetType(AT_IPV6);
+        break;
+    default:
+        return { -1, (int32_t)GetLastError() };
+    }
+
+    char str_addr[INET6_ADDRSTRLEN] = { 0 };
+    inet_ntop(AF_INET6, addr, str_addr, sizeof(str_addr));
+    address.SetIp(str_addr);
+
+    return { ret, 0 };
 }
 
 SysCallInt32Result OsHandle::Write(int64_t sockfd, const char *data, uint32_t len) {
-    return {0, 0};
+    int32_t ret = send(sockfd, data, len, 0);
+    if (ret < 0) {
+        return { ret, (int32_t)GetLastError() };
+    }
+    return { ret, 0 };
 }
 
 SysCallInt32Result OsHandle::Writev(int64_t sockfd, Iovec *vec, uint32_t vec_len) {
-    return {0, 0};
+    DWORD flags = 0;
+    DWORD send_bytes = 0;
+    int32_t ret = WSASend((SOCKET)sockfd, (LPWSABUF)vec, (DWORD)vec_len, &send_bytes, flags, nullptr, nullptr);
+
+    if (ret == SOCKET_ERROR) {
+        
+        return { (int32_t)send_bytes, WSAGetLastError() };
+    }
+    return { (int32_t)send_bytes, 0 };
 }
 
 SysCallInt32Result OsHandle::Recv(int64_t sockfd, char *data, uint32_t len, uint16_t flag) {
-    return {0, 0};
+    int32_t ret = recv(sockfd, data, len, 0);
+    if (ret < 0) {
+        return { ret, (int32_t)GetLastError() };
+    }
+    return { ret, 0 };
 }
 
 SysCallInt32Result OsHandle::Readv(int64_t sockfd, Iovec *vec, uint32_t vec_len) {
-    return {0, 0};
+    DWORD flags = 0;
+    DWORD send_bytes = 0;
+    int32_t ret = WSARecv((SOCKET)sockfd, (LPWSABUF)vec, (DWORD)vec_len, &send_bytes, &flags, nullptr, nullptr);
+    if (ret == SOCKET_ERROR) {
+        return { (int32_t)send_bytes, WSAGetLastError() };
+    }
+    return { (int32_t)send_bytes, 0 };
 }
 
 }

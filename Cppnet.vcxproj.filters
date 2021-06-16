@@ -55,6 +55,9 @@
     <Filter Include="common\network\win">
       <UniqueIdentifier>{75988d4c-ae9d-4a95-8f7a-87fa3268a3be}</UniqueIdentifier>
     </Filter>
+    <Filter Include="cppnet\event\win\wepoll">
+      <UniqueIdentifier>{edd8021a-c10e-4e26-9908-17f3d83c7b07}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\cppnet.h">
@@ -198,10 +201,13 @@
     <ClInclude Include="cppnet\event\timer_event.h">
       <Filter>cppnet\event</Filter>
     </ClInclude>
-    <ClInclude Include="cppnet\event\win\iocp_action.h">
-      <Filter>cppnet\event\win</Filter>
+    <ClInclude Include="common\log\log_stream.h">
+      <Filter>common\log</Filter>
     </ClInclude>
-    <ClInclude Include="cppnet\event\win\expend_func.h">
+    <ClInclude Include="include\cppnet_buffer.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="cppnet\event\win\wepoll_action.h">
       <Filter>cppnet\event\win</Filter>
     </ClInclude>
     <ClInclude Include="cppnet\socket\win\win_connect_socket.h">
@@ -210,14 +216,8 @@
     <ClInclude Include="cppnet\socket\win\win_rw_socket.h">
       <Filter>cppnet\socket\win</Filter>
     </ClInclude>
-    <ClInclude Include="cppnet\event\win\accept_event.h">
-      <Filter>cppnet\event\win</Filter>
-    </ClInclude>
-    <ClInclude Include="common\log\log_stream.h">
-      <Filter>common\log</Filter>
-    </ClInclude>
-    <ClInclude Include="include\cppnet_buffer.h">
-      <Filter>include</Filter>
+    <ClInclude Include="cppnet\event\win\wepoll\wepoll.h">
+      <Filter>cppnet\event\win\wepoll</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -302,18 +302,6 @@
     <ClCompile Include="cppnet\event\timer_event.cpp">
       <Filter>cppnet\event</Filter>
     </ClCompile>
-    <ClCompile Include="cppnet\event\win\iocp_action.cpp">
-      <Filter>cppnet\event\win</Filter>
-    </ClCompile>
-    <ClCompile Include="cppnet\event\win\expend_func.cpp">
-      <Filter>cppnet\event\win</Filter>
-    </ClCompile>
-    <ClCompile Include="cppnet\socket\win\win_connect_socket.cpp">
-      <Filter>cppnet\socket\win</Filter>
-    </ClCompile>
-    <ClCompile Include="cppnet\socket\win\win_rw_socket.cpp">
-      <Filter>cppnet\socket\win</Filter>
-    </ClCompile>
     <ClCompile Include="common\network\win\io_handle.cpp">
       <Filter>common\network\win</Filter>
     </ClCompile>
@@ -325,6 +313,18 @@
     </ClCompile>
     <ClCompile Include="common\log\log_stream.cpp">
       <Filter>common\log</Filter>
+    </ClCompile>
+    <ClCompile Include="cppnet\event\win\wepoll_action.cpp">
+      <Filter>cppnet\event\win</Filter>
+    </ClCompile>
+    <ClCompile Include="cppnet\socket\win\win_connect_socket.cpp">
+      <Filter>cppnet\socket\win</Filter>
+    </ClCompile>
+    <ClCompile Include="cppnet\socket\win\win_rw_socket.cpp">
+      <Filter>cppnet\socket\win</Filter>
+    </ClCompile>
+    <ClCompile Include="cppnet\event\win\wepoll\wepoll.c">
+      <Filter>cppnet\event\win\wepoll</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -7,10 +7,6 @@
 
 namespace cppnet {
 
-#ifdef __win__
-ThreadSafeUnorderedMap<uint64_t, std::shared_ptr<Socket>> Socket::__all_socket_map;
-#else
 thread_local std::unordered_map<uint64_t, std::shared_ptr<Socket>> Socket::__all_socket_map;
-#endif
 
 }

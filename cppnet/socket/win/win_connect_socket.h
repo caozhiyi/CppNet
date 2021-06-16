@@ -6,28 +6,21 @@
 #ifndef CPPNET_SOCKET_POSIX_CONNECT_SOCKET
 #define CPPNET_SOCKET_POSIX_CONNECT_SOCKET
 
-#include <vector>
 #include "cppnet/socket/connect_socket.h"
 
 namespace cppnet {
 
 class Event;
-class WinConnectSocket:
+class PosixConnectSocket:
     public ConnectSocket { 
-
 public:
-    WinConnectSocket();
-    ~WinConnectSocket();
+    PosixConnectSocket();
+    ~PosixConnectSocket();
 
-    virtual bool Bind(const std::string& ip, uint16_t port);
     virtual void Accept();
-    virtual void Accept(uint16_t index);
-    virtual void Close();
-
     virtual void OnAccept(Event* event);
-
 private:
-    std::vector<Event*>  _accept_event_vec;
+    Event*  _accept_event;
 };
 
 }

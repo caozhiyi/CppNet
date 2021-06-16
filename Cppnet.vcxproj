@@ -21,15 +21,15 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{E98183C7-10C3-4B1A-B8FB-D60BB6217962}</ProjectGuid>
     <RootNamespace>CppNet</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <ProjectName>Cppnet</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -41,13 +41,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -184,9 +184,8 @@
     <ClInclude Include="cppnet\event\action_interface.h" />
     <ClInclude Include="cppnet\event\event_interface.h" />
     <ClInclude Include="cppnet\event\timer_event.h" />
-    <ClInclude Include="cppnet\event\win\accept_event.h" />
-    <ClInclude Include="cppnet\event\win\expend_func.h" />
-    <ClInclude Include="cppnet\event\win\iocp_action.h" />
+    <ClInclude Include="cppnet\event\win\wepoll\wepoll.h" />
+    <ClInclude Include="cppnet\event\win\wepoll_action.h" />
     <ClInclude Include="cppnet\socket\connect_socket.h" />
     <ClInclude Include="cppnet\socket\rw_socket.h" />
     <ClInclude Include="cppnet\socket\socket_interface.h" />
@@ -226,8 +225,8 @@
     <ClCompile Include="cppnet\dispatcher.cpp" />
     <ClCompile Include="cppnet\event\event_interface.cpp" />
     <ClCompile Include="cppnet\event\timer_event.cpp" />
-    <ClCompile Include="cppnet\event\win\expend_func.cpp" />
-    <ClCompile Include="cppnet\event\win\iocp_action.cpp" />
+    <ClCompile Include="cppnet\event\win\wepoll\wepoll.c" />
+    <ClCompile Include="cppnet\event\win\wepoll_action.cpp" />
     <ClCompile Include="cppnet\socket\connect_socket.cpp" />
     <ClCompile Include="cppnet\socket\rw_socket.cpp" />
     <ClCompile Include="cppnet\socket\socket_interface.cpp" />

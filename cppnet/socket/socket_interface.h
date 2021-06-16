@@ -8,13 +8,9 @@
 
 #include <memory>
 #include <cstdint>
+#include <unordered_map>
 
 #include "common/network/address.h"
-#ifdef __win__
-#include "common/structure/thread_safe_unordered_map.h"
-#else
-#include <unordered_map>
-#endif
 
 namespace cppnet {
 
@@ -51,11 +47,7 @@ protected:
     std::weak_ptr<EventActions> _event_actions;
     std::weak_ptr<Dispatcher>   _dispatcher;
 
-#ifdef __win__
-    static ThreadSafeUnorderedMap<uint64_t, std::shared_ptr<Socket>> __all_socket_map;
-#else
     static thread_local std::unordered_map<uint64_t, std::shared_ptr<Socket>> __all_socket_map;
-#endif
 };
 
 }

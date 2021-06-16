@@ -3,25 +3,22 @@
 
 // Author: caozhiyi (caozhiyi5@gmail.com)
 
-#ifndef CPPNET_SOCKET_WIN_READ_WRITE_SOCKET
-#define CPPNET_SOCKET_WIN_READ_WRITE_SOCKET
+#ifndef CPPNET_SOCKET_WINDOWS_READ_WRITE_SOCKET
+#define CPPNET_SOCKET_WINDOWS_READ_WRITE_SOCKET
 
-#include <mutex>
-#include <unordered_set>
 #include "cppnet/socket/rw_socket.h"
 
 namespace cppnet {
 
 class Event;
-class AlloterWrap;
-class WinRWSocket:
+class PosixRWSocket:
     public RWSocket { 
 
 public:
-    WinRWSocket();
-    WinRWSocket(std::shared_ptr<AlloterWrap> alloter);
-    WinRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter);
-    virtual ~WinRWSocket();
+    PosixRWSocket();
+    PosixRWSocket(std::shared_ptr<AlloterWrap> alloter);
+    PosixRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter);
+    virtual ~PosixRWSocket();
 
     virtual void Read();
     virtual bool Write(const char* src, uint32_t len);
@@ -32,22 +29,14 @@ public:
     virtual void OnWrite(Event* event, uint32_t len = 0);
     virtual void OnDisConnect(Event* event, uint16_t err);
 
-    virtual std::shared_ptr<BufferQueue> GetReadBuffer();
+private:
+    bool Recv(uint32_t len);
+    bool Send();
 
 private:
-    void AddEvent(Event* event);
-    void RemvoeEvent(Event* event);
-    bool EventEmpty();
-
-private:
-    std::atomic_bool _is_reading;
-
-    // only need read cache. data to send is saved to event buffer.
+    Event* _event;
+    std::shared_ptr<BufferQueue> _write_buffer;
     std::shared_ptr<BufferQueue> _read_buffer;
-
-    // all event
-    std::mutex _event_mutex;
-    std::unordered_set<Event*> _event_set;
 };
 
 }

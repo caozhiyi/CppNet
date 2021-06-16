@@ -46,28 +46,18 @@ void CppNetBase::Init(uint32_t thread_num) {
     }
     _random = std::make_shared<RangeRandom>(0, thread_num - 1);
 
-#ifdef __win__
-    static uint32_t __cppnet_base_id = 0;
-    __cppnet_base_id++;
-    for (uint32_t i = 0; i < thread_num; i++) {
-        auto dispatcher = std::make_shared<Dispatcher>(shared_from_this(), thread_num, __cppnet_base_id);
-        _dispatchers.push_back(dispatcher);
-    }
-
-#else
+#ifndef __win__
     //Disable  SIGPIPE signal
     sigset_t set;
     sigprocmask(SIG_SETMASK, NULL, &set);
     sigaddset(&set, SIGPIPE);
     sigprocmask(SIG_SETMASK, &set, NULL);
+#endif
 
     for (uint32_t i = 0; i < thread_num; i++) {
         auto dispatcher = std::make_shared<Dispatcher>(shared_from_this());
         _dispatchers.push_back(dispatcher);
     }
-
-#endif
-
 }
 
 void CppNetBase::Dealloc() {

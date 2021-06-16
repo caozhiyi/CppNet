@@ -5,7 +5,9 @@
 
 #include <thread>
 #include <cstring>
-#include <unistd.h>
+#include <WinSock2.h>
+#include <Windows.h>
+#pragma comment(lib,"ws2_32.lib")
 
 #include "wepoll_action.h"
 #include "include/cppnet_type.h"
@@ -47,7 +49,7 @@ bool WepollEventActions::Init(uint32_t thread_num) {
         LOG_FATAL("epoll init failed! error : %d", errno);
         return false;
     }
-    if (pipe((int*)_pipe) == -1) {
+    if (Pipe(_pipe) == -1) {
         LOG_FATAL("pipe init failed! error : %d", errno);
         return false;
     }
@@ -94,7 +96,7 @@ bool WepollEventActions::AddSendEvent(Event* event) {
         return false;
     }
 
-    if (AddEvent(ep_event, EPOLLOUT, sock->GetSocket(), event->GetType() & ET_INACTIONS)) {
+    if (AddEvent(ep_event, EPOLLOUT | EPOLLRDHUP, sock->GetSocket(), event->GetType() & ET_INACTIONS)) {
         event->AddType(ET_INACTIONS);
         return true;
     }
@@ -127,7 +129,7 @@ bool WepollEventActions::AddRecvEvent(Event* event) {
         return false;
     }
 
-    if (AddEvent(ep_event, EPOLLIN, sock->GetSocket(), event->GetType() & ET_INACTIONS)) {
+    if (AddEvent(ep_event, EPOLLIN | EPOLLRDHUP, sock->GetSocket(), event->GetType() & ET_INACTIONS)) {
         event->AddType(ET_INACTIONS);
         return true;
     }
@@ -261,7 +263,7 @@ void WepollEventActions::ProcessEvent(int32_t wait_ms) {
 }
 
 void WepollEventActions::Wakeup() {
-   if(write(_pipe[1], "1", 1) <= 0) {
+   if(send(_pipe[1], "1", 1, 0) <= 0) {
        LOG_ERROR_S << "write to pipe failed when weak up.";
    }
 }
@@ -274,7 +276,7 @@ void WepollEventActions::OnEvent(std::vector<epoll_event>& event_vec, int16_t nu
         if ((uint32_t)event_vec[i].data.fd == _pipe[0]) {
             LOG_WARN("weak up the io thread, index : %d", i);
             char buf[4];
-            if(read(_pipe[0], buf, 1) <= 0) {
+            if(recv(_pipe[0], buf, 1, 0) <= 0) {
                 LOG_ERROR_S << "read from pipe failed when weak up.";
             }
             continue;
@@ -345,5 +347,68 @@ bool WepollEventActions::MakeEpollEvent(Event* event, epoll_event* &ep_event) {
 
     return true;
 }
+
+bool WepollEventActions::Pipe(SOCKET fd[2]) {
+    SOCKET listener = socket(AF_INET, SOCK_STREAM, 0);
+    if (listener < 0)
+        return false;
+
+    struct sockaddr_in listen_addr;
+    memset(&listen_addr, 0, sizeof(listen_addr));
+    listen_addr.sin_family = AF_INET;
+    listen_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    listen_addr.sin_port = 0;	/* kernel chooses port.	 */
+    if (bind(listener, (struct sockaddr *) &listen_addr, sizeof(listen_addr)) == -1) {
+        return false;
+    }
+    if (listen(listener, 1) == -1) {
+        return false;
+    }
+    SOCKET connector = socket(AF_INET, SOCK_STREAM, 0);
+    if (connector < 0) {
+        return false;
+    }
+
+    /* We want to find out the port number to connect to.  */
+    struct sockaddr_in connect_addr;
+    int size = sizeof(connect_addr);
+    if (getsockname(listener, (struct sockaddr *) &connect_addr, &size) == -1) {
+        return false;
+    }
+        
+    if (size != sizeof(connect_addr)) {
+        return false;
+    }
+
+    if (connect(connector, (struct sockaddr *) &connect_addr, sizeof(connect_addr)) == -1) {
+        return false;
+    }
+
+    size = sizeof(listen_addr);
+    SOCKET acceptor = accept(listener, (struct sockaddr *) &listen_addr, &size);
+    if (acceptor < 0) {
+        return false;
+    }
+    if (size != sizeof(listen_addr)) {
+        return false;
+    }
+
+    // check options
+    if (getsockname(connector, (struct sockaddr *) &connect_addr, &size) == -1) {
+        return false;
+    }
+    if (size != sizeof(connect_addr)
+        || listen_addr.sin_family != connect_addr.sin_family
+        || listen_addr.sin_addr.s_addr != connect_addr.sin_addr.s_addr
+        || listen_addr.sin_port != connect_addr.sin_port) {
+        return false;
+    }
+    closesocket(listener);
+
+    fd[0] = connector;
+    fd[1] = acceptor;
+    return true;
+}
+
 
 }

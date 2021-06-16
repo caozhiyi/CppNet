@@ -39,11 +39,12 @@ private:
     void OnEvent(std::vector<epoll_event>& event_vec, int16_t num);
     bool AddEvent(epoll_event* ev, int32_t event_flag, uint64_t sock, bool in_actions);
     bool MakeEpollEvent(Event* event, epoll_event* &ep_event);
+    bool Pipe(SOCKET fd[2]);
 
 protected:
     std::mutex  _mutex;
     HANDLE      _epoll_handler;
-    uint32_t    _pipe[2];
+    SOCKET      _pipe[2];
     epoll_event _pipe_content;
     std::vector<epoll_event> _active_list;
 };
