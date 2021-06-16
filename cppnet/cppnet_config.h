@@ -16,7 +16,7 @@ namespace cppnet {
 // 2. only use one socket but set EPOLLEXCLUSIVE flag when add to EPOLL.(require Linux Kernal > 4.5)
 
 // use reuse port TCP flag. must set true on windows and macOS.
-static const bool __reuse_port             = false;
+static const bool __reuse_port             = true;
 // use EPOLLEXCLUSIVE flag. must set false on windows and macOS.
 static const bool __epoll_exclusive        = !__reuse_port;
 
