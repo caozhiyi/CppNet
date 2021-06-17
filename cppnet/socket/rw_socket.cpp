@@ -202,14 +202,24 @@ void RWSocket::OnConnect(uint16_t err) {
 }
 
 void RWSocket::OnDisConnect(uint16_t err) {
-    if (!_event) {
-        _event = _alloter->PoolNew<Event>();
-        _event->SetSocket(shared_from_this());
-    }
+    auto sock = shared_from_this();
+    __all_socket_map.erase(_sock);
 
-    auto actions = GetEventActions();
-    if (actions) {
-        actions->AddDisconnection(_event);
+    if (!IsShutdown()) {
+        auto cppnet_base = _cppnet_base.lock();
+        if (cppnet_base) {
+            cppnet_base->OnDisConnect(sock, err);
+        }
+    }
+    SetShutdown();
+
+    // peer disconnect or connection break.
+    if (_event && err != CEC_SUCCESS) {
+        auto actions = GetEventActions();
+        if (actions) {
+            actions->DelEvent(_event);
+        }
+        OsHandle::Close(_sock);
     }
 }
 

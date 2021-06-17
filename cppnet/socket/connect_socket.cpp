@@ -20,6 +20,8 @@
 #include "cppnet/event/action_interface.h"
 #include "cppnet/event/event_interface.h"
 
+#define WSAEWOULDBLOCK 10035 // windows error
+
 namespace cppnet {
 
 ConnectSocket::ConnectSocket():
@@ -46,22 +48,26 @@ bool ConnectSocket::Bind(const std::string& ip, uint16_t port) {
 
     auto ret = OsHandle::Bind(_sock, _addr);
 
+#ifndef __win__ // WEPOLL don't support reuse_port
     if (ret._return_value < 0 && __reuse_port) {
         LOG_FATAL("bind socket filed! error:%d, info:%s", ret._errno, ErrnoInfo(ret._errno));
         OsHandle::Close(_sock);
         return false;
     }
+#endif
 
     return true;
 }
 
 bool ConnectSocket::Listen() {
     auto ret = OsHandle::Listen(_sock);
+#ifndef __win__ // WEPOLL don't support reuse_port
     if (ret._return_value < 0 && __reuse_port) {
         LOG_FATAL("listen socket filed! error:%d, info:%s", ret._errno, ErrnoInfo(ret._errno));
         OsHandle::Close(_sock);
         return false;
     }
+#endif
 
     //set the socket noblocking
     SocketNoblocking(_sock);
@@ -94,7 +100,7 @@ void ConnectSocket::OnAccept() {
         //may get more than one connections
         auto ret = OsHandle::Accept(_sock, address);
         if (ret._return_value < 0) {
-            if (errno == EAGAIN) {
+            if (ret._errno == EAGAIN || ret._errno == WSAEWOULDBLOCK) {
                 break;
             }
             LOG_ERROR("accept socket filed! errno:%d, info:%s", ret._errno, ErrnoInfo(ret._errno));
