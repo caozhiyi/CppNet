@@ -10,12 +10,12 @@
 
 namespace cppnet {
 
-TimerContainer::TimerContainer(std::shared_ptr<Timer> t, TIMER_CAPACITY accuracy, TIMER_CAPACITY capacity) :
-    _sub_timer(t),
+TimerContainer::TimerContainer(std::unique_ptr<Timer> t, TIMER_CAPACITY accuracy, TIMER_CAPACITY capacity) :
+    _sub_timer(std::move(t)),
     _cur_index(0),
     _accuracy(accuracy),
     _capacity(capacity) {
-    assert(t);
+
     _max_size = capacity/accuracy;
     _timer_wheel.resize(_max_size);
     _bitmap.Init(_max_size);

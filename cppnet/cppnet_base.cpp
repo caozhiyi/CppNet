@@ -44,7 +44,7 @@ void CppNetBase::Init(uint32_t thread_num) {
     if (thread_num == 0 || thread_num >= cpus * 2) {
         thread_num = cpus;
     }
-    _random = std::make_shared<RangeRandom>(0, thread_num - 1);
+    _random = std::unique_ptr<RangeRandom>(new RangeRandom(0, thread_num - 1));
 
 #ifndef __win__
     //Disable  SIGPIPE signal

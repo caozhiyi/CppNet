@@ -3,8 +3,8 @@
 
 // Author: caozhiyi (caozhiyi5@gmail.com)
 
-#ifndef NET_EVENT_LINUX_EPOLL_ACTION
-#define NET_EVENT_LINUX_EPOLL_ACTION
+#ifndef NET_EVENT_EPOLL_EPOLL_ACTION
+#define NET_EVENT_EPOLL_EPOLL_ACTION
 
 #include <vector>
 #ifdef __win__

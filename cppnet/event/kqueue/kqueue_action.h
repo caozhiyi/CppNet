@@ -3,8 +3,8 @@
 
 // Author: caozhiyi (caozhiyi5@gmail.com)
 
-#ifndef NET_EVENT_MAC_KQUEUE_ACTION
-#define NET_EVENT_MAC_KQUEUE_ACTION
+#ifndef NET_EVENT_KQUEUE_KQUEUE_ACTION
+#define NET_EVENT_KQUEUE_KQUEUE_ACTION
 
 #include <mutex>
 #include <vector>

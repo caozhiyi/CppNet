@@ -204,6 +204,7 @@ void RWSocket::OnConnect(uint16_t err) {
 void RWSocket::OnDisConnect(uint16_t err) {
     auto sock = shared_from_this();
     __all_socket_map.erase(_sock);
+    LOG_ERROR("socket left num: %d, TheadId: %ld", __all_socket_map.size(), std::this_thread::get_id());
 
     if (!IsShutdown()) {
         auto cppnet_base = _cppnet_base.lock();

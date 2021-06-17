@@ -22,7 +22,7 @@ public:
     virtual void Start() {
         _stop = false;
         if (!_thread) {
-            _thread = std::make_shared<std::thread>(std::bind(&Thread::Run, this));
+            _thread = std::unique_ptr<std::thread>(new std::thread(std::bind(&Thread::Run, this)));
         }
     }
 
@@ -48,7 +48,7 @@ protected:
 
 protected:
     std::atomic_bool _stop;
-    std::shared_ptr<std::thread> _thread;
+    std::unique_ptr<std::thread> _thread;
 };
 
 }

@@ -64,7 +64,7 @@ private:
     connect_call_back  _disconnect_cb;
     connect_call_back  _accept_cb;
 
-    std::shared_ptr<RangeRandom> _random;
+    std::unique_ptr<RangeRandom> _random;
     std::vector<std::shared_ptr<Dispatcher>> _dispatchers;
 };
 

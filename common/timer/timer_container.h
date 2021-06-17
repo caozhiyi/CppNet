@@ -19,7 +19,7 @@ class TimerContainer:
     public Timer {
 
 public:
-    TimerContainer(std::shared_ptr<Timer> t, TIMER_CAPACITY accuracy, TIMER_CAPACITY capacity);
+    TimerContainer(std::unique_ptr<Timer> t, TIMER_CAPACITY accuracy, TIMER_CAPACITY capacity);
     ~TimerContainer();
 
     bool AddTimer(std::weak_ptr<TimerSolt> t, uint32_t time, bool always = false);
@@ -44,7 +44,7 @@ private:
     
 private:
     std::vector<std::list<std::weak_ptr<TimerSolt>>> _timer_wheel;
-    std::shared_ptr<Timer> _sub_timer;
+    std::unique_ptr<Timer> _sub_timer;
     uint32_t _cur_index;
     Bitmap _bitmap;
 

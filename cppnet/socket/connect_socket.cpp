@@ -90,7 +90,7 @@ void ConnectSocket::Accept() {
 }
 
 void ConnectSocket::Close() {
-
+    // TODO
 }
 
 void ConnectSocket::OnAccept() {

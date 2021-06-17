@@ -10,23 +10,23 @@
 
 namespace cppnet {
 
-std::shared_ptr<Timer> MakeTimer50Ms() {
-    return std::make_shared<Timer1ms>();
+std::unique_ptr<Timer> MakeTimer50Ms() {
+    return std::unique_ptr<Timer>(new Timer1ms());
 }
 
-std::shared_ptr<Timer> MakeTimer1Sec() {
+std::unique_ptr<Timer> MakeTimer1Sec() {
     auto sub = MakeTimer50Ms();
-    return std::make_shared<TimerContainer>(sub, TC_50MS, TC_1SEC);
+    return std::unique_ptr<Timer>(new TimerContainer(std::move(sub), TC_50MS, TC_1SEC));
 }
 
-std::shared_ptr<Timer> MakeTimer1Min() {
+std::unique_ptr<Timer> MakeTimer1Min() {
     auto sub = MakeTimer1Sec();
-    return std::make_shared<TimerContainer>(sub, TC_1SEC, TC_1MIN);
+    return std::unique_ptr<Timer>(new TimerContainer(std::move(sub), TC_1SEC, TC_1MIN));
 }
 
-std::shared_ptr<Timer> MakeTimer1Hour() {
+std::unique_ptr<Timer> MakeTimer1Hour() {
     auto sub = MakeTimer1Min();
-    return std::make_shared<TimerContainer>(sub, TC_1MIN, TC_1HOUR);
+    return std::unique_ptr<Timer>(new TimerContainer(std::move(sub), TC_1MIN, TC_1HOUR));
 }
 
 }
