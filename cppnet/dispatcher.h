@@ -44,7 +44,7 @@ public:
     void PostTask(const Task& task);
 
     uint32_t AddTimer(const user_timer_call_back& cb, void* param, uint32_t interval, bool always = false);
-    uint32_t AddTimer(std::shared_ptr<RWSocket> sock, uint32_t interval, bool always = false);
+    uint32_t AddTimer(RWSocket* sock, uint32_t interval, bool always = false);
     void StopTimer(uint32_t timer_id);
 
     std::thread::id GetThreadID() { return _local_thread_id; }

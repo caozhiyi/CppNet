@@ -76,9 +76,9 @@ protected:
     std::shared_ptr<BlockMemoryPool> _block_pool;
 };
 
-std::shared_ptr<RWSocket> MakeRWSocket();
-std::shared_ptr<RWSocket> MakeRWSocket(std::shared_ptr<AlloterWrap> alloter);
-std::shared_ptr<RWSocket> MakeRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter);
+RWSocket* MakeRWSocket();
+RWSocket* MakeRWSocket(std::shared_ptr<AlloterWrap> alloter);
+RWSocket* MakeRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter);
 
 }
 

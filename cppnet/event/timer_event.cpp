@@ -20,7 +20,7 @@ void TimerEvent::OnTimer() {
 
     } else if (GetType() & ET_TIMER) {
         auto sock = GetSocket();
-        auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
+        auto rw_sock = dynamic_cast<RWSocket*>(sock);
         rw_sock->OnTimer();
 
     } else {

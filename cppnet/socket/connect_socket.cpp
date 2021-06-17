@@ -80,9 +80,9 @@ bool ConnectSocket::Listen() {
 void ConnectSocket::Accept() {
     if (!_accept_event) {
         _accept_event = new Event();
-        _accept_event->SetSocket(shared_from_this());
+        _accept_event->SetSocket(this);
     }
-    __all_socket_map[_sock] = shared_from_this();
+    __all_socket_map[_sock] = this;
     auto actions = GetEventActions();
     if (actions) {
         actions->AddAcceptEvent(_accept_event);
@@ -134,8 +134,8 @@ void ConnectSocket::OnAccept() {
     }
 }
 
-std::shared_ptr<ConnectSocket> MakeConnectSocket() {
-    return std::make_shared<ConnectSocket>();
+ConnectSocket* MakeConnectSocket() {
+    return new ConnectSocket();
 }
 
 

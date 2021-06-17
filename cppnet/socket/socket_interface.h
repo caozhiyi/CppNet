@@ -47,7 +47,7 @@ protected:
     std::weak_ptr<EventActions> _event_actions;
     std::weak_ptr<Dispatcher>   _dispatcher;
 
-    static thread_local std::unordered_map<uint64_t, std::shared_ptr<Socket>> __all_socket_map;
+    static thread_local std::unordered_map<uint64_t, Socket*> __all_socket_map;
 };
 
 }

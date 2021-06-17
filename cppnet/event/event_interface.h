@@ -41,8 +41,8 @@ public:
     void ClearType() { _event_type = 0; }
     void ForceSetType(EventType type) { _event_type = type; }
 
-    void SetSocket(std::shared_ptr<Socket> socket) { _socket = socket; }
-    std::shared_ptr<Socket> GetSocket() { return _socket.lock(); }
+    void SetSocket(Socket* socket) { _socket = socket; }
+    Socket* GetSocket() { return _socket; }
 
 #ifdef __win__
     void SetBuffer(std::shared_ptr<BufferQueue>& buffer) { _buffer = buffer; }
@@ -54,9 +54,7 @@ private:
 protected:
     void*    _data;
     uint16_t _event_type;
-    std::weak_ptr<Socket> _socket;
-
-
+    Socket* _socket;
 };
 
 }

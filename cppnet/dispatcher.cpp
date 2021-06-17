@@ -149,7 +149,7 @@ uint32_t Dispatcher::AddTimer(const user_timer_call_back& cb, void* param, uint3
     return timer_id;
 }
 
-uint32_t Dispatcher::AddTimer(std::shared_ptr<RWSocket> sock, uint32_t interval, bool always) {
+uint32_t Dispatcher::AddTimer(RWSocket* sock, uint32_t interval, bool always) {
     std::shared_ptr<TimerEvent> event = std::make_shared<TimerEvent>();
     event->AddType(ET_TIMER);
     event->SetSocket(sock);

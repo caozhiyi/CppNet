@@ -215,7 +215,7 @@ bool EpollEventActions::AddConnection(Event* event, Address& addr) {
 
         auto ret = OsHandle::Connect(sock->GetSocket(), addr);
 
-        auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
+        auto rw_sock = dynamic_cast<RWSocket*>(sock);
         if (ret._return_value == 0) {
             rw_sock->OnConnect(CEC_SUCCESS);
             return true;
@@ -245,7 +245,7 @@ bool EpollEventActions::AddDisconnection(Event* event) {
         return false;
     }
     
-    std::shared_ptr<RWSocket> socket = std::dynamic_pointer_cast<RWSocket>(sock);
+    auto socket = dynamic_cast<RWSocket*>(sock);
     if (!DelEvent(event)) {
         return false;
     }
@@ -297,7 +297,7 @@ void EpollEventActions::Wakeup() {
 }
 
 void EpollEventActions::OnEvent(std::vector<epoll_event>& event_vec, int16_t num) {
-    std::shared_ptr<Socket> sock;
+    Socket* sock = nullptr;
     Event* event = nullptr;
 
     for (int i = 0; i < num; i++) {
@@ -323,11 +323,11 @@ void EpollEventActions::OnEvent(std::vector<epoll_event>& event_vec, int16_t num
 
         // accept event
         if (event->GetType() & ET_ACCEPT) {
-            std::shared_ptr<ConnectSocket> connect_sock = std::dynamic_pointer_cast<ConnectSocket>(sock);
+            auto connect_sock = dynamic_cast<ConnectSocket*>(sock);
             connect_sock->OnAccept();
 
         } else {
-            std::shared_ptr<RWSocket> rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
+            auto rw_sock = dynamic_cast<RWSocket*>(sock);
             if (event_vec[i].events & EPOLLIN) {
                 // close
                 if (event_vec[i].events & EPOLLRDHUP) {
@@ -385,7 +385,7 @@ bool EpollEventActions::MakeEpollEvent(Event* event, epoll_event* &ep_event) {
         return false;
     }
 
-    auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
+    auto rw_sock = dynamic_cast<RWSocket*>(sock);
     ep_event = rw_sock->GetAlloter()->PoolNew<epoll_event>();
     memset(ep_event, 0, sizeof(epoll_event));
     event->SetData(ep_event);

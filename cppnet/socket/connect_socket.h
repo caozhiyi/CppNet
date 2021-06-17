@@ -30,7 +30,7 @@ private:
     Event*  _accept_event;
 };
 
-std::shared_ptr<ConnectSocket> MakeConnectSocket();
+ConnectSocket* MakeConnectSocket();
 
 }
 

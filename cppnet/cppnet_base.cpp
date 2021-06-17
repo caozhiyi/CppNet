@@ -129,37 +129,37 @@ bool CppNetBase::Connection(const std::string& ip, uint16_t port) {
     return true;
 }
 
-void CppNetBase::OnTimer(std::shared_ptr<RWSocket> sock) {
+void CppNetBase::OnTimer(RWSocket* sock) {
     if (_timer_cb) {
         _timer_cb(sock);
     }
 }
 
-void CppNetBase::OnAccept(std::shared_ptr<RWSocket> sock) {
+void CppNetBase::OnAccept(RWSocket* sock) {
     if (_accept_cb) {
         _accept_cb(sock, CEC_SUCCESS);
     }
 }
 
-void CppNetBase::OnRead(std::shared_ptr<RWSocket> sock, std::shared_ptr<InnerBuffer> buffer, uint32_t len) {
+void CppNetBase::OnRead(RWSocket* sock, std::shared_ptr<InnerBuffer> buffer, uint32_t len) {
     if (_read_cb) {
         _read_cb(sock, buffer, len);
     }
 }
 
-void CppNetBase::OnWrite(std::shared_ptr<RWSocket> sock, uint32_t len) {
+void CppNetBase::OnWrite(RWSocket* sock, uint32_t len) {
     if (_write_cb) {
         _write_cb(sock, len);
     }
 }
 
-void CppNetBase::OnConnect(std::shared_ptr<RWSocket> sock, uint16_t err) {
+void CppNetBase::OnConnect(RWSocket* sock, uint16_t err) {
     if (_connect_cb) {
         _connect_cb(sock, err);
     }
 }
 
-void CppNetBase::OnDisConnect(std::shared_ptr<RWSocket> sock, uint16_t err) {
+void CppNetBase::OnDisConnect(RWSocket* sock, uint16_t err) {
     if (_disconnect_cb) {
         _disconnect_cb(sock, err);
     }

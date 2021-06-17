@@ -75,7 +75,7 @@ void RWSocket::Close() {
 void RWSocket::Read() {
     if (!_event) {
         _event = _alloter->PoolNew<Event>();
-        _event->SetSocket(shared_from_this());
+        _event->SetSocket(this);
     }
 
     auto actions = GetEventActions();
@@ -87,7 +87,7 @@ void RWSocket::Read() {
 bool RWSocket::Write(const char* src, uint32_t len) {
     if (!_event) {
         _event = _alloter->PoolNew<Event>();
-        _event->SetSocket(shared_from_this());
+        _event->SetSocket(this);
     }
 
     //can't send now
@@ -112,7 +112,7 @@ bool RWSocket::Write(const char* src, uint32_t len) {
 void RWSocket::Connect(const std::string& ip, uint16_t port) {
     if (!_event) {
         _event = _alloter->PoolNew<Event>();
-        _event->SetSocket(shared_from_this());
+        _event->SetSocket(this);
     }
 
     if (_sock == 0) {
@@ -137,7 +137,7 @@ void RWSocket::Connect(const std::string& ip, uint16_t port) {
 void RWSocket::Disconnect() {
     if (!_event) {
         _event = _alloter->PoolNew<Event>();
-        _event->SetSocket(shared_from_this());
+        _event->SetSocket(this);
     }
 
     auto actions = GetEventActions();
@@ -153,7 +153,7 @@ void RWSocket::AddTimer(uint32_t interval, bool always) {
     
     auto dispatcher = GetDispatcher();
     if (dispatcher) {
-        _timer_id = dispatcher->AddTimer(shared_from_this(), interval, always);
+        _timer_id = dispatcher->AddTimer(this, interval, always);
     }
 }
 
@@ -174,7 +174,7 @@ void RWSocket::OnTimer() {
     if (!cppnet_base) {
         return;
     }
-    cppnet_base->OnTimer(shared_from_this());
+    cppnet_base->OnTimer(this);
 }
 
 void RWSocket::OnRead(uint32_t len) {
@@ -186,14 +186,13 @@ void RWSocket::OnWrite(uint32_t len) {
 }
 
 void RWSocket::OnConnect(uint16_t err) {
-    auto sock = shared_from_this();
     if (err == CEC_SUCCESS) {
-        __all_socket_map[_sock] = sock;
+        __all_socket_map[_sock] = this;
     }
     
     auto cppnet_base = _cppnet_base.lock();
     if (cppnet_base) {
-        cppnet_base->OnConnect(sock, err);
+        cppnet_base->OnConnect(this, err);
     }
 
     if (err == CEC_SUCCESS) {
@@ -202,14 +201,10 @@ void RWSocket::OnConnect(uint16_t err) {
 }
 
 void RWSocket::OnDisConnect(uint16_t err) {
-    auto sock = shared_from_this();
-    __all_socket_map.erase(_sock);
-    LOG_ERROR("socket left num: %d, TheadId: %ld", __all_socket_map.size(), std::this_thread::get_id());
-
     if (!IsShutdown()) {
         auto cppnet_base = _cppnet_base.lock();
         if (cppnet_base) {
-            cppnet_base->OnDisConnect(sock, err);
+            cppnet_base->OnDisConnect(this, err);
         }
     }
     SetShutdown();
@@ -222,6 +217,14 @@ void RWSocket::OnDisConnect(uint16_t err) {
         }
         OsHandle::Close(_sock);
     }
+
+    auto sock_ptr = __all_socket_map.find(_sock);
+    if (sock_ptr != __all_socket_map.end()) {
+        delete sock_ptr->second;
+        __all_socket_map.erase(sock_ptr);
+    }
+
+    LOG_ERROR("socket left num: %d, TheadId: %ld", __all_socket_map.size(), std::this_thread::get_id());
 }
 
 bool RWSocket::Recv(uint32_t len) {
@@ -274,7 +277,7 @@ bool RWSocket::Recv(uint32_t len) {
             need_expend = true;
         }
     }
-    cppnet_base->OnRead(shared_from_this(), _read_buffer, off_set);
+    cppnet_base->OnRead(this, _read_buffer, off_set);
     return true;
 }
 
@@ -312,20 +315,20 @@ bool RWSocket::Send() {
             }
         }
     }
-    cppnet_base->OnWrite(shared_from_this(), off_set);
+    cppnet_base->OnWrite(this, off_set);
     return true;
 }
 
-std::shared_ptr<RWSocket> MakeRWSocket() {
-    return std::make_shared<RWSocket>();
+RWSocket* MakeRWSocket() {
+    return new RWSocket();
 }
 
-std::shared_ptr<RWSocket> MakeRWSocket(std::shared_ptr<AlloterWrap> alloter) {
-    return std::make_shared<RWSocket>(alloter);
+RWSocket* MakeRWSocket(std::shared_ptr<AlloterWrap> alloter) {
+    return new RWSocket(alloter);
 }
 
-std::shared_ptr<RWSocket> MakeRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter) {
-    return std::make_shared<RWSocket>(sock, alloter);
+RWSocket* MakeRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter) {
+    return new RWSocket(sock, alloter);
 }
 
 

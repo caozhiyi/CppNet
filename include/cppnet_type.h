@@ -15,7 +15,7 @@ namespace cppnet {
 // socket
 class Buffer;
 class CNSocket;
-typedef std::shared_ptr<CNSocket> Handle;
+typedef CNSocket* Handle;
 typedef std::shared_ptr<Buffer>   BufferPtr;
 
 // call back define
