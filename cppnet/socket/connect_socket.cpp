@@ -35,14 +35,14 @@ ConnectSocket::~ConnectSocket() {
 
 bool ConnectSocket::Bind(const std::string& ip, uint16_t port) {
     if (_sock == 0) {
-        auto ret = OsHandle::TcpSocket();
+        auto ret = OsHandle::TcpSocket(Address::IsIpv4(ip));
         if (ret._return_value < 0) {
             LOG_ERROR("create socket failed. errno:%d, info:%s", ret._errno, ErrnoInfo(ret._errno));
             return false;
         }
         _sock = ret._return_value;
     }
-
+    _addr.SetType(Address::IsIpv4(ip) ? AT_IPV4 : AT_IPV6);
     _addr.SetIp(ip);
     _addr.SetAddrPort(port);
 

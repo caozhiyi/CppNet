@@ -13,6 +13,7 @@
 #include "cppnet/event/action_interface.h"
 
 #include "common/log/log.h"
+#include "common/network/socket.h"
 #include "common/alloter/pool_block.h"
 #include "common/buffer/buffer_queue.h"
 #include "common/alloter/pool_alloter.h"
@@ -34,6 +35,7 @@ RWSocket::RWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter):
     _timer_id(0),
     _listen_port(0),
     _shutdown(false),
+    _connecting(false),
     _event(nullptr),
     _alloter(alloter) {
 
@@ -115,8 +117,12 @@ void RWSocket::Connect(const std::string& ip, uint16_t port) {
         _event->SetSocket(shared_from_this());
     }
 
+    bool use_ipv4 = false;
+    if (Address::IsIpv4(ip)) {
+        use_ipv4 = true;
+    }
     if (_sock == 0) {
-        auto ret = OsHandle::TcpSocket();
+        auto ret = OsHandle::TcpSocket(use_ipv4);
         if (ret._return_value < 0) {
             LOG_ERROR("create socket failed. error:%d", ret._errno);
             return;
@@ -124,12 +130,13 @@ void RWSocket::Connect(const std::string& ip, uint16_t port) {
         _sock = ret._return_value;
     }
 
-
+    _addr.SetType(use_ipv4 ? AT_IPV4 : AT_IPV6);
     _addr.SetIp(ip);
     _addr.SetAddrPort(port);
 
     auto actions = GetEventActions();
     if (actions) {
+        _connecting = true;
         actions->AddConnection(_event, _addr);
     }
 }
@@ -170,6 +177,14 @@ void RWSocket::StopTimer() {
 }
 
 void RWSocket::OnTimer() {
+    if (_connecting) {
+        if (CheckConnect(GetSocket())) {
+            OnConnect(CEC_SUCCESS);
+        } else {
+            OnConnect(CEC_CONNECT_REFUSE);
+        }
+        return;
+    }
     auto cppnet_base = _cppnet_base.lock();
     if (!cppnet_base) {
         return;
@@ -186,6 +201,7 @@ void RWSocket::OnWrite(uint32_t len) {
 }
 
 void RWSocket::OnConnect(uint16_t err) {
+    _connecting = false;
     auto sock = shared_from_this();
     if (err == CEC_SUCCESS) {
         __all_socket_map[_sock] = sock;
@@ -204,7 +220,6 @@ void RWSocket::OnConnect(uint16_t err) {
 void RWSocket::OnDisConnect(uint16_t err) {
     auto sock = shared_from_this();
     __all_socket_map.erase(_sock);
-    LOG_ERROR("socket left num: %d, TheadId: %ld", __all_socket_map.size(), std::this_thread::get_id());
 
     if (!IsShutdown()) {
         auto cppnet_base = _cppnet_base.lock();

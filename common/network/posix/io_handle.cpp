@@ -66,7 +66,7 @@ SysCallInt32Result OsHandle::Listen(int64_t sockfd, uint32_t len) {
 }
 
 SysCallInt32Result OsHandle::Connect(int64_t sockfd, Address& address) {
-   int32_t ret = -1;
+    int32_t ret = -1;
     if (address.GetType() == AT_IPV4) {
         struct sockaddr_in addr;
         addr.sin_family = AF_INET;

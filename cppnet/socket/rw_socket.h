@@ -67,6 +67,7 @@ protected:
     uint32_t _timer_id;
     uint16_t _listen_port;
     std::atomic_bool _shutdown;
+    std::atomic_bool _connecting;
     Event*           _event;
 
     std::shared_ptr<BufferQueue>     _write_buffer;

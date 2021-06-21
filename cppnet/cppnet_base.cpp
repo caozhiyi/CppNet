@@ -89,7 +89,7 @@ void CppNetBase::RemoveTimer(uint64_t timer_id) {
 
 bool CppNetBase::ListenAndAccept(const std::string& ip, uint16_t port) {
 #ifdef __win__ // WEPOLL don't support reuse_port
-    auto ret = OsHandle::TcpSocket();
+    auto ret = OsHandle::TcpSocket(Address::IsIpv4(ip));
     if (ret._return_value < 0) {
         LOG_ERROR("create socket failed. err:%d", ret._errno);
         return false;
