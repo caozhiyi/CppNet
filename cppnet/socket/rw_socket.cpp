@@ -177,14 +177,14 @@ void RWSocket::StopTimer() {
 }
 
 void RWSocket::OnTimer() {
-    if (_connecting) {
+    /*if (_connecting) {
         if (CheckConnect(GetSocket())) {
             OnConnect(CEC_SUCCESS);
         } else {
             OnConnect(CEC_CONNECT_REFUSE);
         }
         return;
-    }
+    }*/
     auto cppnet_base = _cppnet_base.lock();
     if (!cppnet_base) {
         return;
