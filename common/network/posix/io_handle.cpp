@@ -4,6 +4,7 @@
 // Author: caozhiyi (caozhiyi5@gmail.com)
 
 #include <errno.h>
+#include <cstring>
 #include <unistd.h>
 #include <sys/uio.h>
 #include <arpa/inet.h>
@@ -32,19 +33,21 @@ SysCallInt32Result OsHandle::Bind(int64_t sockfd, Address& address) {
     int32_t ret = -1;
     if (address.GetType() == AT_IPV4) {
         struct sockaddr_in addr;
+        memset(&addr, 0, sizeof(addr));
+
         addr.sin_family = AF_INET;
         addr.sin_port = htons(address.GetAddrPort());
-        addr.sin_addr.s_addr = inet_addr(address.GetIp().c_str());
+        inet_pton(AF_INET, address.GetIp().c_str(), &addr.sin_addr);
         ret = bind(sockfd, (sockaddr *)&addr, sizeof(sockaddr_in));
 
     } else {
         struct sockaddr_in6 addr;
-        addr.sin6_flowinfo = 0;
-        addr.sin6_scope_id = 0;
+        memset(&addr, 0, sizeof(addr));
+
         addr.sin6_family = AF_INET6;
         addr.sin6_port = htons(address.GetAddrPort());
         inet_pton(AF_INET6, address.GetIp().c_str(), &addr.sin6_addr);
-        ret = bind(sockfd, (sockaddr *)&addr, sizeof(sockaddr_in6));
+        ret = bind(sockfd, (sockaddr*)&addr, sizeof(sockaddr_in6));
     }
 
     if (ret < 0) {

@@ -100,7 +100,7 @@ bool CppNetBase::ListenAndAccept(const std::string& ip, uint16_t port) {
 #else
     if (__reuse_port) {
         for (size_t i = 0; i < _dispatchers.size(); i++) {
-            auto ret = OsHandle::TcpSocket();
+            auto ret = OsHandle::TcpSocket(Address::IsIpv4(ip));
             if (ret._return_value < 0) {
                 LOG_ERROR("create socket failed. err:%d", ret._errno);
                 return false;
@@ -110,7 +110,7 @@ bool CppNetBase::ListenAndAccept(const std::string& ip, uint16_t port) {
         }
 
     } else {
-        auto ret = OsHandle::TcpSocket();
+        auto ret = OsHandle::TcpSocket(Address::IsIpv4(ip));
         if (ret._return_value < 0) {
             LOG_ERROR("create socket failed. err:%d", ret._errno);
             return false;
