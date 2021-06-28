@@ -20,6 +20,8 @@
 
 namespace cppnet {
 
+thread_local std::unordered_map<uint64_t, std::shared_ptr<Socket>> RWSocket::__connecting_socket_map;
+
 RWSocket::RWSocket():
     RWSocket(0, std::make_shared<AlloterWrap>(MakePoolAlloterPtr())) {
 }
@@ -138,6 +140,7 @@ void RWSocket::Connect(const std::string& ip, uint16_t port) {
     if (actions) {
         _connecting = true;
         actions->AddConnection(_event, _addr);
+        __connecting_socket_map[_sock] = shared_from_this();
     }
 }
 
@@ -177,14 +180,15 @@ void RWSocket::StopTimer() {
 }
 
 void RWSocket::OnTimer() {
-    /*if (_connecting) {
+    if (_connecting) {
+        __connecting_socket_map.erase(_sock);
         if (CheckConnect(GetSocket())) {
             OnConnect(CEC_SUCCESS);
         } else {
             OnConnect(CEC_CONNECT_REFUSE);
         }
         return;
-    }*/
+    }
     auto cppnet_base = _cppnet_base.lock();
     if (!cppnet_base) {
         return;
@@ -201,6 +205,7 @@ void RWSocket::OnWrite(uint32_t len) {
 }
 
 void RWSocket::OnConnect(uint16_t err) {
+    __connecting_socket_map.erase(_sock);
     _connecting = false;
     auto sock = shared_from_this();
     if (err == CEC_SUCCESS) {

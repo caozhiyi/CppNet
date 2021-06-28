@@ -6,7 +6,13 @@
 #ifndef COMMON_TIMER_TIMER_CONTAINER
 #define COMMON_TIMER_TIMER_CONTAINER
 
-#include "timer_1ms.h"
+#include <map>
+#include <list>
+#include <memory>
+#include <unordered_map>
+
+#include "../util/bitmap.h"
+#include "timer_interface.h"
 
 namespace cppnet {
 
@@ -19,7 +25,7 @@ class TimerContainer:
     public Timer {
 
 public:
-    TimerContainer(std::unique_ptr<Timer> t, TIMER_CAPACITY accuracy, TIMER_CAPACITY capacity);
+    TimerContainer(std::shared_ptr<TimerContainer> sub_timer, TIME_UNIT unit, TIME_UNIT max);
     ~TimerContainer();
 
     bool AddTimer(std::weak_ptr<TimerSolt> t, uint32_t time, bool always = false);
@@ -35,22 +41,35 @@ public:
     // timer wheel run time 
     // return carry
     uint32_t TimerRun(uint32_t step);
-    
-private:
-    // add timer by index. only set current time wheel
-    void AddTimerByIndex(std::weak_ptr<TimerSolt> t, uint8_t index);
+
+    bool Empty();
+    void Clear();
+
     // get current timer wheel timeout time
     int32_t LocalMinTime();
-    
-private:
-    std::vector<std::list<std::weak_ptr<TimerSolt>>> _timer_wheel;
-    std::unique_ptr<Timer> _sub_timer;
-    uint32_t _cur_index;
-    Bitmap _bitmap;
+    bool InnerAddTimer(std::shared_ptr<TimerSolt> ptr, uint32_t time);
 
-    TIMER_CAPACITY _accuracy;
-    TIMER_CAPACITY _capacity;
-    uint32_t _max_size;
+    void SetRootTimer(std::shared_ptr<TimerContainer> timer) { _root_timer = timer; }
+
+protected:
+    uint16_t TimeUnit2TimeType(TIME_UNIT tu);
+    uint32_t GetIndexLeftInterval(uint16_t index);
+    void GetIndexTimer(std::vector<std::weak_ptr<TimerSolt>>& run_timer_solts, 
+        std::vector<std::weak_ptr<TimerSolt>>& sub_timer_solts, uint32_t index, uint32_t time_pass);
+    void DoTimer(std::vector<std::weak_ptr<TimerSolt>>& run_timer_solts,
+        std::vector<std::weak_ptr<TimerSolt>>& sub_timer_solts);
+
+protected:
+    TIME_UNIT _time_unit;
+    uint32_t  _size;
+    uint32_t  _timer_max;
+
+    uint32_t _cur_time;
+    Bitmap   _bitmap;
+    std::weak_ptr<TimerContainer>   _root_timer;
+    std::shared_ptr<TimerContainer> _sub_timer;
+    std::unordered_map<uint32_t, std::map<uint32_t, std::list<std::weak_ptr<TimerSolt>>>> _timer_wheel;
+    //std::unordered_map<uint32_t, std::list<std::weak_ptr<TimerSolt>>> _timer_wheel;
 };
 
 }

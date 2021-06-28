@@ -210,12 +210,11 @@ bool EpollEventActions::AddConnection(Event* event, Address& addr) {
         if (event->GetType() & ET_INACTIONS) {
             return false;
         }
-        
-        auto ret = OsHandle::Connect(sock->GetSocket(), addr);
-        // block here in LINUX. TODO set no noblocking before connect.
+   
+        // set no unblocking before connect.
         SocketNoblocking(sock->GetSocket());
 
-        //auto ret = OsHandle::Connect(sock->GetSocket(), addr);
+        auto ret = OsHandle::Connect(sock->GetSocket(), addr);
 
         auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
         if (ret._return_value == 0) {
@@ -227,9 +226,8 @@ bool EpollEventActions::AddConnection(Event* event, Address& addr) {
                 rw_sock->OnConnect(CEC_SUCCESS);
                 return true;
             } else {
-                // TODO
-                //auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
-                //rw_sock->AddTimer(__connect_time_out);
+                auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
+                rw_sock->AddTimer(200);
                 return false;
             }
         }

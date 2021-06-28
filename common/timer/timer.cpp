@@ -5,28 +5,29 @@
 // Author: caozhiyi (caozhiyi5@gmail.com)
 
 #include "timer.h"
-#include "timer_1ms.h"
 #include "timer_container.h"
 
 namespace cppnet {
 
-std::unique_ptr<Timer> MakeTimer50Ms() {
-    return std::unique_ptr<Timer>(new Timer1ms());
+std::shared_ptr<Timer> MakeTimer1Sec() {
+    return std::make_shared<TimerContainer>(nullptr, TU_MILLISECOND, TU_SECOND);
 }
 
-std::unique_ptr<Timer> MakeTimer1Sec() {
-    auto sub = MakeTimer50Ms();
-    return std::unique_ptr<Timer>(new TimerContainer(std::move(sub), TC_50MS, TC_1SEC));
+std::shared_ptr<Timer> MakeTimer1Min() {
+    auto sec_sub = std::make_shared<TimerContainer>(nullptr, TU_MILLISECOND, TU_SECOND);
+    auto timer = std::make_shared<TimerContainer>(sec_sub, TU_SECOND, TU_MINUTE);
+    sec_sub->SetRootTimer(timer);
+    return timer;
 }
 
-std::unique_ptr<Timer> MakeTimer1Min() {
-    auto sub = MakeTimer1Sec();
-    return std::unique_ptr<Timer>(new TimerContainer(std::move(sub), TC_1SEC, TC_1MIN));
-}
+std::shared_ptr<Timer> MakeTimer1Hour() {
+    auto sec_sub = std::make_shared<TimerContainer>(nullptr, TU_MILLISECOND, TU_SECOND);
+    auto min_sub = std::make_shared<TimerContainer>(sec_sub, TU_SECOND, TU_MINUTE);
+    auto timer = std::make_shared<TimerContainer>(min_sub, TU_MINUTE, TU_HOUR);
+    sec_sub->SetRootTimer(timer);
+    min_sub->SetRootTimer(timer);
 
-std::unique_ptr<Timer> MakeTimer1Hour() {
-    auto sub = MakeTimer1Min();
-    return std::unique_ptr<Timer>(new TimerContainer(std::move(sub), TC_1MIN, TC_1HOUR));
+    return timer;
 }
 
 }

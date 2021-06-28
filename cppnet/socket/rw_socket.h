@@ -75,6 +75,8 @@ protected:
 
     std::shared_ptr<AlloterWrap>     _alloter;
     std::shared_ptr<BlockMemoryPool> _block_pool;
+
+    static thread_local std::unordered_map<uint64_t, std::shared_ptr<Socket>> __connecting_socket_map;
 };
 
 std::shared_ptr<RWSocket> MakeRWSocket();

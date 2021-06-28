@@ -12,22 +12,15 @@
 namespace cppnet {
 
 // time unit
-enum TIME_UNIT {
-    MILLISECOND = 1,
-    SECOND      = 1000,
-    MINUTE      = 60 * 1000,
+enum TIME_UNIT: uint32_t {
+    TU_MILLISECOND = 1,
+    TU_SECOND      = TU_MILLISECOND * 1000,
+    TU_MINUTE      = TU_SECOND * 60,
+    TU_HOUR        = TU_MINUTE * 60,
 };
 
 enum TIMER_CODE {
     NO_TIMER = -1 // don't have timer
-};
-
-enum TIMER_CAPACITY {
-    TC_1MS   = 1 * MILLISECOND,
-    TC_50MS  = 50 * MILLISECOND,
-    TC_1SEC  = 1 * SECOND,
-    TC_1MIN  = 1 * MINUTE,
-    TC_1HOUR = 60 * MINUTE
 };
 
 class TimerSolt;
@@ -54,9 +47,7 @@ public:
     // return carry
     virtual uint32_t TimerRun(uint32_t time) = 0;
 
-    // only internal used by timer
-    // add timer by index. only set current time wheel
-    virtual void AddTimerByIndex(std::weak_ptr<TimerSolt> t, uint8_t index) = 0;
+    virtual bool Empty() = 0;
 };
 
 }
