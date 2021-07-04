@@ -63,7 +63,7 @@ private:
     std::vector<Task> _task_list;
 
     std::thread::id _local_thread_id;
-    std::unique_ptr<Timer> _timer;
+    std::shared_ptr<Timer> _timer;
     std::shared_ptr<EventActions> _event_actions;
 
     std::weak_ptr<CppNetBase> _cppnet_base;

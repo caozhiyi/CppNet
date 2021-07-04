@@ -15,6 +15,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <linux/version.h>
+#define WSAEWOULDBLOCK 10035
 #endif
 
 #include "epoll_action.h"
@@ -209,8 +210,8 @@ bool EpollEventActions::AddConnection(Event* event, Address& addr) {
         if (event->GetType() & ET_INACTIONS) {
             return false;
         }
-
-        // block here in LINUX
+   
+        // set no unblocking before connect.
         SocketNoblocking(sock->GetSocket());
 
         auto ret = OsHandle::Connect(sock->GetSocket(), addr);
@@ -220,10 +221,14 @@ bool EpollEventActions::AddConnection(Event* event, Address& addr) {
             rw_sock->OnConnect(CEC_SUCCESS);
             return true;
 
-        } else if (ret._errno == EINPROGRESS) {
+        } else if (ret._errno == EINPROGRESS || ret._errno == WSAEWOULDBLOCK) {
             if (CheckConnect(rw_sock->GetSocket())) {
                 rw_sock->OnConnect(CEC_SUCCESS);
                 return true;
+            } else {
+                auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
+                rw_sock->AddTimer(200);
+                return false;
             }
         }
         rw_sock->OnConnect(CEC_CONNECT_REFUSE);

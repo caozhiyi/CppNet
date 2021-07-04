@@ -11,13 +11,11 @@
 
 namespace cppnet {
 
-std::unique_ptr<Timer> MakeTimer50Ms();
+std::shared_ptr<Timer> MakeTimer1Sec();
 
-std::unique_ptr<Timer> MakeTimer1Sec();
+std::shared_ptr<Timer> MakeTimer1Min();
 
-std::unique_ptr<Timer> MakeTimer1Min();
-
-std::unique_ptr<Timer> MakeTimer1Hour();
+std::shared_ptr<Timer> MakeTimer1Hour();
 
 }
 

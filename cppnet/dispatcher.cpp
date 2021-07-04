@@ -106,6 +106,7 @@ void Dispatcher::Listen(uint64_t sock, const std::string& ip, uint16_t port) {
 void Dispatcher::Connect(const std::string& ip, uint16_t port) {
     auto task = [ip, port, this]() {
         auto sock = MakeRWSocket();
+        sock->SetDispatcher(shared_from_this());
         sock->SetEventActions(_event_actions);
         sock->SetCppNetBase(_cppnet_base.lock());
         sock->Connect(ip, port);

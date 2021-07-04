@@ -7,55 +7,60 @@
 #define COMMON_TIMER_TIMER_SOLT
 
 #include <cstdint>
-#include <unordered_map>
 #include "timer_interface.h"
 
 namespace cppnet {
+
+enum TIME_INDEX_TYPE: uint16_t {
+    TIT_MILLISECOND = 0x01 << 10,
+    TIT_SECOND      = 0x02 << 10,
+    TIT_MINUTE      = 0x04 << 10,
+    TIT_MUSK        = 0x07 << 10,
+};
 
 // Inherit this class to add to timer.
 // don't call any function in this class, 
 // they internal used by timer.
 class TimerSolt {
 public:
+    TimerSolt();
+    ~TimerSolt() {}
 
-    enum TIMER_SOLT_FLAG {
-        TSF_INDEX_MASK = 3 << 6,
-        TSF_ALWAYS     = 1 << 7,
-        TSF_INTIMER    = 1 << 6,
+//private:
+public:
+    enum TIMER_SOLT_FLAG: uint32_t {
+        TSF_IN_TIMER = (uint32_t)1 << 30,
+        TSF_ALWAYS   = (uint32_t)1 << 31,
     };
 
-    TimerSolt();
-    ~TimerSolt();
     // timer out call back
     virtual void OnTimer() = 0;
 
-    uint8_t GetIndex(TIMER_CAPACITY tc);
-    uint8_t SetIndex(uint32_t index);
-    void SetIndex(uint8_t index, TIMER_CAPACITY tc);
+    void SetInterval(uint32_t interval);
+    uint32_t GetTotalInterval();
+    uint32_t GetLeftInterval();
 
-    void SetAlways(TIMER_CAPACITY tc);
-    void CancelAlways(TIMER_CAPACITY tc);
-    bool IsAlways(TIMER_CAPACITY tc);
+    void ResetTime();
+    uint32_t TimePass(uint32_t time);
 
-    void Clear();
-
-    void SetTimer();
-    void RmTimer();
+    void SetInTimer();
     bool IsInTimer();
+    void RmInTimer();
 
-    uint32_t GetInterval();
-    void SetInterval(uint32_t time);
+    void SetAlways();
+    bool IsAlways();
+    void RmAlways();
+
+    void SetCurIndex(uint16_t index, uint16_t type);
+    void GetCurIndex(uint16_t& index, uint16_t& type);
 
 private:
-    void SetIndex(uint32_t pos, uint8_t index);
+    friend class TimerContainer;
 
-private:
-    static std::unordered_map<uint32_t, uint8_t> _index_map;
-    union {
-        uint8_t  _index_arr[4];
-        uint32_t _index;
-    } _index;
-    uint32_t _interval;
+    uint32_t _total_interval;
+    uint32_t _left_interval;
+
+    uint16_t _cur_index;
 };
 
 }

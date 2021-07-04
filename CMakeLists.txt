@@ -7,20 +7,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CXX_FLAGS
  -O2
- -D_FILE_OFFSET_BITS=64
- -Wall
- -Wextra
- -Werror
- -Wconversion
- -Wno-unused-parameter
- -Wold-style-cast
- -Woverloaded-virtual
- -Wpointer-arith
- -Wshadow
- -Wwrite-strings
- -march=native
  -std=c++11
  -rdynamic
+ -lpthread
+ -fPIC
+ -lstdc++
+ -pipe
  )
 
 if(CMAKE_BUILD_BITS EQUAL 32)
