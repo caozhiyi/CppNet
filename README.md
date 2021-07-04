@@ -17,7 +17,7 @@ Cppnet is a proactor mode and multithreaded network with C++11 on tcp. Support W
     + Support both IPv4 and IPv6
 
  - `Fast`: 
-    + Use epoll, IOCP and kqueue
+    + Use epoll, [wepoll](https://github.com/piscisaureus/wepoll) and kqueue
     + Multithreaded threads are handled by the kernel
     + Each socket has a single memory pool object. All memory requested from the memory pool is managed by an intelligent pointer 
     + Using time wheel to realize timer   

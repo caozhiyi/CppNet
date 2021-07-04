@@ -17,7 +17,7 @@ Cppnet是一个封装在TCP协议上的proactor模式multi-thread C++11网络库
     + 支持IPv6和IPv4
 
 - `快速`：    
-    + 分别采用epoll，IOCP，kqueue做底层事件驱动
+    + 分别采用epoll，[wepoll](https://github.com/piscisaureus/wepoll)，kqueue做底层事件驱动
     + 多线程惊群交由内核处理
     + 参照SGI STL和Nginx实现了内存池，每个连接都独享一个内存池对象，所有从内存池中申请的内存都由智能指针管理
     + 用时间轮实现定时器
@@ -58,6 +58,10 @@ Cppnet是一个封装在TCP协议上的proactor模式multi-thread C++11网络库
 ## 编译
 
 请看[编译](/doc/build/build_cn.md)
+
+## Q&A 
+1. 为什么在windows上不使用IOCP?    
+请看文章[cppnet网络库](/doc/introduction/cppnet.md)最后一节。
 
 ## 协议
 
