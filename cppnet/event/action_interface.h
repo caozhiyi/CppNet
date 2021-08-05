@@ -14,11 +14,12 @@
 #include <functional>
 #include <unordered_set>
 
+#include "foundation/network/address.h"
+
 namespace cppnet {
 
 class Timer;
 class Event;
-class Address;
 class TimeSolt;
 
 // net IO event interface
@@ -34,7 +35,7 @@ class EventActions {
   virtual bool AddSendEvent(Event* event) = 0;
   virtual bool AddRecvEvent(Event* event) = 0;
   virtual bool AddAcceptEvent(Event* event) = 0;
-  virtual bool AddConnection(Event* event, const Address& addr) = 0;
+  virtual bool AddConnection(Event* event, const fdan::Address& addr) = 0;
   virtual bool AddDisconnection(Event* event) = 0;
 
   virtual bool DelEvent(Event* event) = 0;

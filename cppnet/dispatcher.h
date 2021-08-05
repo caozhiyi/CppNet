@@ -12,7 +12,7 @@
 #include <functional>
 #include <unordered_map>
 #include "include/cppnet_type.h"
-#include "common/thread/thread_with_queue.h"
+#include "foundation/thread/thread_with_queue.h"
 
 namespace cppnet {
 

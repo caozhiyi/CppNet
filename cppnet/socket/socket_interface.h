@@ -2,9 +2,10 @@
 // that can be found in the LICENSE file.
 
 // Author: caozhiyi (caozhiyi5@gmail.com)
+// Copyright <caozhiyi5@gmail.com>
 
-#ifndef CPPNET_SOCKET_SOCKET_INTERFACE
-#define CPPNET_SOCKET_SOCKET_INTERFACE
+#ifndef CPPNET_SOCKET_SOCKET_INTERFACE_H_
+#define CPPNET_SOCKET_SOCKET_INTERFACE_H_
 
 #include <memory>
 #include <cstdint>
@@ -17,38 +18,43 @@ namespace cppnet {
 class CppNetBase;
 class Dispatcher;
 class EventActions;
-class Socket { 
-public:
-    Socket(): _sock(0) {}
-    Socket(uint64_t sock): _sock(sock) {}
-    virtual ~Socket() {}
+class Socket {
+ public:
+  Socket(): sock_(0) {}
+  explicit Socket(uint64_t sock): sock_(sock) {}
+  virtual ~Socket() {}
 
-    void SetSocket(const uint64_t& sock) { _sock = sock; }
-    uint64_t GetSocket() { return _sock; }
+  void SetSocket(const uint64_t& sock) { sock_ = sock; }
+  uint64_t GetSocket() { return sock_; }
 
-    void SetAddress(const fdan::Address& addr) { _addr = addr; }
-    const fdan::Address& GetAddress() const { return _addr; }
+  void SetAddress(const fdan::Address& addr) { addr_ = addr; }
+  const fdan::Address& GetAddress() const { return addr_; }
 
-    void SetCppNetBase(std::shared_ptr<CppNetBase> base) { _cppnet_base = base; }
-    const std::shared_ptr<CppNetBase> GetCppNetBase() const { return _cppnet_base.lock(); }
+  void SetCppNetBase(std::shared_ptr<CppNetBase> base)
+    { cppnet_base_ = base; }
+  const std::shared_ptr<CppNetBase> GetCppNetBase() const
+    { return cppnet_base_.lock(); }
 
-    void SetEventActions(std::weak_ptr<EventActions> actions) { _event_actions = actions; }
-    const std::shared_ptr<EventActions> GetEventActions() const { return _event_actions.lock(); }
+  void SetEventActions(std::weak_ptr<EventActions> actions)
+    { event_actions_ = actions; }
+  const std::shared_ptr<EventActions> GetEventActions() const
+    { return event_actions_.lock(); }
 
-    void SetDispatcher(std::shared_ptr<Dispatcher> dis) { _dispatcher = dis; }
-    std::shared_ptr<Dispatcher> GetDispatcher() { return _dispatcher.lock(); }
+  void SetDispatcher(std::shared_ptr<Dispatcher> dis) { dispatcher_ = dis; }
+  std::shared_ptr<Dispatcher> GetDispatcher() { return dispatcher_.lock(); }
 
-protected:
-    uint64_t      _sock;
-    fdan::Address _addr;
+ protected:
+  uint64_t      sock_;
+  fdan::Address addr_;
 
-    std::weak_ptr<CppNetBase>   _cppnet_base;
-    std::weak_ptr<EventActions> _event_actions;
-    std::weak_ptr<Dispatcher>   _dispatcher;
+  std::weak_ptr<CppNetBase>   cppnet_base_;
+  std::weak_ptr<EventActions> event_actions_;
+  std::weak_ptr<Dispatcher>   dispatcher_;
 
-    static thread_local std::unordered_map<uint64_t, std::shared_ptr<Socket>> __all_socket_map;
+  static thread_local std::unordered_map<uint64_t,  \
+    std::shared_ptr<Socket>> __all_socket_map;
 };
 
-}
+}  // namespace cppnet
 
-#endif
+#endif  // CPPNET_SOCKET_SOCKET_INTERFACE_H_
