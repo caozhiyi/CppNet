@@ -14,7 +14,6 @@
 
 namespace cppnet {
 
-class Address;
 class CppNetBase;
 class Dispatcher;
 class EventActions;
@@ -27,8 +26,8 @@ public:
     void SetSocket(const uint64_t& sock) { _sock = sock; }
     uint64_t GetSocket() { return _sock; }
 
-    void SetAddress(const Address& addr) { _addr = addr; }
-    const Address& GetAddress() const { return _addr; }
+    void SetAddress(const fdan::Address& addr) { _addr = addr; }
+    const fdan::Address& GetAddress() const { return _addr; }
 
     void SetCppNetBase(std::shared_ptr<CppNetBase> base) { _cppnet_base = base; }
     const std::shared_ptr<CppNetBase> GetCppNetBase() const { return _cppnet_base.lock(); }
@@ -40,8 +39,8 @@ public:
     std::shared_ptr<Dispatcher> GetDispatcher() { return _dispatcher.lock(); }
 
 protected:
-    uint64_t _sock;
-    Address  _addr;
+    uint64_t      _sock;
+    fdan::Address _addr;
 
     std::weak_ptr<CppNetBase>   _cppnet_base;
     std::weak_ptr<EventActions> _event_actions;

@@ -17,7 +17,7 @@ namespace cppnet {
 
 class TimerEvent:
   public Event,
-  public TimerSolt {
+  public fdan::TimerSolt {
  public:
   TimerEvent(): timer_id_(0) {}
   ~TimerEvent() {}
