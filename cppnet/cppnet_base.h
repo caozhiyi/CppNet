@@ -12,12 +12,12 @@
 #include <string>
 #include "include/cppnet_type.h"
 #include "foundation/util/random.h"
+#include "foundation/buffer/buffer_interface.h"
 
 namespace cppnet {
 
 class RWSocket;
 class Dispatcher;
-class InnerBuffer;
 
 class CppNetBase:
   public std::enable_shared_from_this<CppNetBase> {
@@ -58,7 +58,7 @@ class CppNetBase:
   void OnTimer(std::shared_ptr<RWSocket> sock);
   void OnAccept(std::shared_ptr<RWSocket> sock);
   void OnRead(std::shared_ptr<RWSocket> sock,
-    std::shared_ptr<InnerBuffer> buffer, uint32_t len);
+    std::shared_ptr<fdan::Buffer> buffer, uint32_t len);
   void OnWrite(std::shared_ptr<RWSocket> sock, uint32_t len);
   void OnConnect(std::shared_ptr<RWSocket> sock, uint16_t err);
   void OnDisConnect(std::shared_ptr<RWSocket> sock, uint16_t err);

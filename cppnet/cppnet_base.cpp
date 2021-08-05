@@ -12,6 +12,7 @@
 #include "cppnet/cppnet_base.h"
 #include "include/cppnet_type.h"
 #include "cppnet/cppnet_config.h"
+#include "include/cppnet_buffer.h"
 #include "cppnet/socket/rw_socket.h"
 
 #include "foundation/log/log.h"
@@ -142,9 +143,10 @@ void CppNetBase::OnAccept(std::shared_ptr<RWSocket> sock) {
 }
 
 void CppNetBase::OnRead(std::shared_ptr<RWSocket> sock,
-  std::shared_ptr<InnerBuffer> buffer, uint32_t len) {
+  std::shared_ptr<fdan::Buffer> buffer, uint32_t len) {
   if (read_cb_) {
-    read_cb_(sock, buffer, len);
+    BufferPtr buff = std::make_shared<Buffer>(buffer);
+    read_cb_(sock, buff, len);
   }
 }
 
