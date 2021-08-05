@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <unordered_map>
 
-#include "common/network/address.h"
+#include "foundation/network/address.h"
 
 namespace cppnet {
 

@@ -9,24 +9,22 @@
 #include <atomic>
 #include "socket_interface.h"
 #include "include/cppnet_socket.h"
+#include "foundation/buffer/buffer_queue.h"
+#include "foundation/alloter/alloter_interface.h"
 
 namespace cppnet {
 
 class Event;
-class BufferQueue;
-class AlloterWrap;
 class BlockMemoryPool;
 
 class RWSocket:
     public Socket, 
     public CNSocket,
     public std::enable_shared_from_this<RWSocket> { 
-
 public:
-
     RWSocket();
-    RWSocket(std::shared_ptr<AlloterWrap> alloter);
-    RWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter);
+    RWSocket(std::shared_ptr<fdan::AlloterWrap> alloter);
+    RWSocket(uint64_t sock, std::shared_ptr<fdan::AlloterWrap> alloter);
     virtual ~RWSocket();
 
     virtual uint64_t GetSocket() { return _sock; }
@@ -56,7 +54,7 @@ public:
     virtual void SetShutdown() { _shutdown = true; }
     virtual bool IsShutdown() { return _shutdown; }
 
-    std::shared_ptr<AlloterWrap> GetAlloter() { return _alloter; }
+    std::shared_ptr<fdan::AlloterWrap> GetAlloter() { return _alloter; }
 
 private:
     bool Recv(uint32_t len);
@@ -73,15 +71,15 @@ protected:
     std::shared_ptr<BufferQueue>     _write_buffer;
     std::shared_ptr<BufferQueue>     _read_buffer;
 
-    std::shared_ptr<AlloterWrap>     _alloter;
+    std::shared_ptr<fdan::AlloterWrap>     _alloter;
     std::shared_ptr<BlockMemoryPool> _block_pool;
 
     static thread_local std::unordered_map<uint64_t, std::shared_ptr<Socket>> __connecting_socket_map;
 };
 
 std::shared_ptr<RWSocket> MakeRWSocket();
-std::shared_ptr<RWSocket> MakeRWSocket(std::shared_ptr<AlloterWrap> alloter);
-std::shared_ptr<RWSocket> MakeRWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter);
+std::shared_ptr<RWSocket> MakeRWSocket(std::shared_ptr<fdan::AlloterWrap> alloter);
+std::shared_ptr<RWSocket> MakeRWSocket(uint64_t sock, std::shared_ptr<fdan::AlloterWrap> alloter);
 
 }
 

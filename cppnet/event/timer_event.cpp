@@ -2,30 +2,33 @@
 // that can be found in the LICENSE file.
 
 // Author: caozhiyi (caozhiyi5@gmail.com)
+// Copyright <caozhiyi5@gmail.com>
 
-#include "timer_event.h"
-#include "common/log/log.h"
+
 #include "cppnet/socket/rw_socket.h"
+#include "cppnet/event/timer_event.h"
+
+#include "foundation/log/log.h"
 
 namespace cppnet {
 
 void TimerEvent::SetTimerCallBack(const user_timer_call_back& cb, void* param) {
-    _timer_cb = cb;
-    SetData(param);
+  timer_cb_ = cb;
+  SetData(param);
 }
 
 void TimerEvent::OnTimer() {
-    if (GetType() & ET_USER_TIMER) {
-        _timer_cb(GetData());
+  if (GetType() & ET_USER_TIMER) {
+    timer_cb_(GetData());
 
-    } else if (GetType() & ET_TIMER) {
-        auto sock = GetSocket();
-        auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
-        rw_sock->OnTimer();
+  } else if (GetType() & ET_TIMER) {
+    auto sock = GetSocket();
+    auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
+    rw_sock->OnTimer();
 
-    } else {
-        LOG_ERROR("invalid timer type. type:%d", GetType());
-    }
+  } else {
+    fdan::LOG_ERROR("invalid timer type. type:%d", GetType());
+  }
 }
 
-}
+}  // namespace cppnet

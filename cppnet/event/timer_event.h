@@ -2,35 +2,34 @@
 // that can be found in the LICENSE file.
 
 // Author: caozhiyi (caozhiyi5@gmail.com)
+// Copyright <caozhiyi5@gmail.com>
 
-#ifndef CPPNET_EVENT_TIMER_EVENT
-#define CPPNET_EVENT_TIMER_EVENT
+#ifndef CPPNET_EVENT_TIMER_EVENT_H_
+#define CPPNET_EVENT_TIMER_EVENT_H_
 
 #include <memory>
 #include <atomic>
-#include "event_interface.h"
 #include "include/cppnet_type.h"
-#include "common/timer/timer_solt.h"
+#include "foundation/timer/timer_solt.h"
+#include "cppnet/event/event_interface.h"
 
 namespace cppnet {
 
-class TimerEvent: 
-    public Event,
-    public TimerSolt {
+class TimerEvent:
+  public Event,
+  public TimerSolt {
+ public:
+  TimerEvent(): timer_id_(0) {}
+  ~TimerEvent() {}
 
-public:
-    TimerEvent(): _timer_id(0) {}
-    ~TimerEvent() {}
-    
-    void SetTimerCallBack(const user_timer_call_back& cb, void* param);
+  void SetTimerCallBack(const user_timer_call_back& cb, void* param);
 
-    void OnTimer();
-private:
-    uint64_t _timer_id;
-    user_timer_call_back _timer_cb;
-
+  void OnTimer();
+ private:
+  uint64_t timer_id_;
+  user_timer_call_back timer_cb_;
 };
 
-}
+}  // namespace cppnet
 
-#endif
+#endif  // CPPNET_EVENT_TIMER_EVENT_H_
