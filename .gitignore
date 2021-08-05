@@ -1,6 +1,5 @@
 # Ignore all files without extension.
 # If you need to git-add a file without extension, add -f
-*
 !*.*
 !*/
 build/
@@ -17,3 +16,4 @@ build/
 *.pro
 *.user
 *bug
+foundation
