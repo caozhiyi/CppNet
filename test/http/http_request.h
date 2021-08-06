@@ -1,72 +1,77 @@
-#ifndef TEST_HTTP_HTTP_REQUEST_HEADER
-#define TEST_HTTP_HTTP_REQUEST_HEADER
+// Use of this source code is governed by a BSD 3-Clause License
+// that can be found in the LICENSE file.
+
+// Author: caozhiyi (caozhiyi5@gmail.com)
+// Copyright <caozhiyi5@gmail.com>
+
+#ifndef TEST_HTTP_HTTP_REQUEST_H_
+#define TEST_HTTP_HTTP_REQUEST_H_
 
 #include <ctype.h>
 #include <string>
-#include <stdio.h>
-#include <assert.h>
+#include <cstdio>
+#include <utility>
+#include <cassert>
 #include <unordered_map>
 
-
 enum Method {
-    Invalid, 
-    Get, 
-    Post, 
-    Head, 
-    Put, 
-    Delete
+  Invalid,
+  Get,
+  Post,
+  Head,
+  Put,
+  Delete
 };
 
 enum Version {
-    Unknown, 
-    Http10, 
-    Http11
+  Unknown,
+  Http10,
+  Http11
 };
 
 class HttpRequest {
-  public:
-  HttpRequest() : _method(Invalid), _version(Unknown) {}
+ public:
+  HttpRequest(): method_(Invalid), version_(Unknown) {}
 
   void SetVersion(Version v) {
-    _version = v;
+    version_ = v;
   }
 
-  Version GetVersion() const { 
-    return _version;
+  Version GetVersion() const {
+    return version_;
   }
 
   bool SetMethod(const char* start, const char* end) {
-    assert(_method == Invalid);
+    assert(method_ == Invalid);
     std::string temp_method(start, end);
     if (temp_method == "GET") {
-      _method = Get;
+      method_ = Get;
 
     } else if (temp_method == "POST") {
-      _method = Post;
+      method_ = Post;
 
     } else if (temp_method == "HEAD") {
-      _method = Head;
+      method_ = Head;
 
     } else if (temp_method == "PUT") {
-      _method = Put;
+      method_ = Put;
 
     } else if (temp_method == "DELETE") {
-      _method = Delete;
+      method_ = Delete;
 
     } else {
-      _method = Invalid;
+      method_ = Invalid;
     }
-    return _method != Invalid;
+    return method_ != Invalid;
   }
 
-  Method GetMethod() const { 
-    return _method;
+  Method GetMethod() const {
+    return method_;
   }
 
   const char* GetMethodString() const {
     const char* result = "UNKNOWN";
-    switch(_method)
-    {
+    switch (method_) {
       case Get:
         result = "GET";
         break;
@@ -89,27 +94,27 @@ class HttpRequest {
   }
 
   void SetPath(const char* start, const char* end) {
-    _path.assign(start, end);
+    path_.assign(start, end);
   }
 
-  const std::string& GetPath() const { 
-    return _path;
+  const std::string& GetPath() const {
+    return path_;
   }
 
   void SetQuery(const char* start, const char* end) {
-    _query.assign(start, end);
+    query_.assign(start, end);
   }
 
   const std::string& GetQuery() const {
-    return _query;
+    return query_;
   }
 
-  void SetReceiveTime(uint64_t t) { 
-    _receive_time = t;
+  void SetReceiveTime(uint64_t t) {
+    receive_time_ = t;
   }
 
-  uint64_t GetReceiveTime() const { 
-    return _receive_time;
+  uint64_t GetReceiveTime() const {
+    return receive_time_;
   }
 
   void AddHeader(const char* start, const char* colon, const char* end) {
@@ -122,46 +127,46 @@ class HttpRequest {
     while (!value.empty() && isspace(value[value.size()-1])) {
       value.resize(value.size()-1);
     }
-    _headers_map[field] = value;
+    headers_map_[field] = value;
   }
 
   std::string GetHeader(const std::string& field) const {
     std::string result;
-    auto it = _headers_map.find(field);
-    if (it != _headers_map.end()) {
+    auto it = headers_map_.find(field);
+    if (it != headers_map_.end()) {
       result = it->second;
     }
     return result;
   }
 
-  const std::unordered_map<std::string, std::string>& GetHeaders() const { 
-    return _headers_map;
+  const std::unordered_map<std::string, std::string>& GetHeaders() const {
+    return headers_map_;
   }
 
   void Clear() {
-    _method = Invalid;
-    _version = Unknown;
-    _headers_map.clear();
-    _path.clear();
-    _query.clear();
+    method_ = Invalid;
+    version_ = Unknown;
+    headers_map_.clear();
+    path_.clear();
+    query_.clear();
   }
 
   void Swap(HttpRequest& that) {
-    std::swap(_method, that._method);
-    std::swap(_version, that._version);
-    std::swap(_receive_time, that._receive_time);
-    _path.swap(that._path);
-    _query.swap(that._query);
-    _headers_map.swap(that._headers_map);
+    std::swap(method_, that.method_);
+    std::swap(version_, that.version_);
+    std::swap(receive_time_, that.receive_time_);
+    path_.swap(that.path_);
+    query_.swap(that.query_);
+    headers_map_.swap(that.headers_map_);
   }
 
-  private:
-    Method _method;
-    Version _version;
-    std::string _path;
-    std::string _query;
-    uint64_t _receive_time;
-    std::unordered_map<std::string, std::string> _headers_map;
+ private:
+  Method method_;
+  Version version_;
+  std::string path_;
+  std::string query_;
+  uint64_t receive_time_;
+  std::unordered_map<std::string, std::string> headers_map_;
 };
 
-#endif 
+#endif  // TEST_HTTP_HTTP_REQUEST_H_

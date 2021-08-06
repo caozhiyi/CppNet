@@ -1,41 +1,47 @@
+// Use of this source code is governed by a BSD 3-Clause License
+// that can be found in the LICENSE file.
+
+// Author: caozhiyi (caozhiyi5@gmail.com)
+// Copyright <caozhiyi5@gmail.com>
+
 #include <string>
 #include <thread>
-#include <string>
+#include <memory>
 #include <iostream>
 
 #include "include/cppnet.h"
 #include "foundation/util/time.h"
 
-using namespace cppnet;
+void ReadFunc(cppnet::Handle handle, std::shared_ptr<cppnet::Buffer> data,
+  uint32_t len) {
+  char msg_buf[128] = {0};
+  // get recv data to send back.
+  uint32_t size = data->Read(msg_buf, 128);
 
-void ReadFunc(Handle handle, std::shared_ptr<Buffer> data, uint32_t len) {
-    char msg_buf[128] = {0};
-    // get recv data to send back.
-    uint32_t size = data->Read(msg_buf, 128);
-    
-    std::cout << "get message: " << msg_buf << " listen port is: " << handle->GetListenPort() << std::endl;
+  std::cout << "get message: " << msg_buf <<
+    " listen port is: " << handle->GetListenPort() << std::endl;
 }
 
-void ConnectFunc(Handle handle, uint32_t err) {
-    if (err == CEC_SUCCESS) {
-        std::cout << handle->GetListenPort() << " port get connect socket: " << handle->GetSocket() << std::endl;
+void ConnectFunc(cppnet::Handle handle, uint32_t err) {
+  if (err == cppnet::CEC_SUCCESS) {
+    std::cout << handle->GetListenPort() << " port get connect socket: "
+      << handle->GetSocket() << std::endl;
 
-    } else {
-        std::cout << "[ConnectFunc] some thing error : " << err << std::endl;
-    }
+  } else {
+    std::cout << "[ConnectFunc] some thing error : " << err << std::endl;
+  }
 }
 
 
 int main() {
+  cppnet::CppNet net;
+  net.Init(1);
 
-    cppnet::CppNet net;
-    net.Init(1);
+  net.SetAcceptCallback(ConnectFunc);
+  net.SetReadCallback(ReadFunc);
 
-    net.SetAcceptCallback(ConnectFunc);
-    net.SetReadCallback(ReadFunc);
+  net.ListenAndAccept("0.0.0.0", 8921);
+  net.ListenAndAccept("0.0.0.0", 8922);
 
-    net.ListenAndAccept("0.0.0.0", 8921);
-    net.ListenAndAccept("0.0.0.0", 8922);
-
-    net.Join();
+  net.Join();
 }

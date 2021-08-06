@@ -1,6 +1,13 @@
+// Use of this source code is governed by a BSD 3-Clause License
+// that can be found in the LICENSE file.
+
+// Author: caozhiyi (caozhiyi5@gmail.com)
+// Copyright <caozhiyi5@gmail.com>
+
+#include <memory>
 #include <string>
 #include <fstream>
-#include <string.h> // for memset
+#include <cstring>  // for memset
 #include <iostream>
 #include <functional>
 
@@ -9,136 +16,132 @@
 #include "include/cppnet.h"
 #include "foundation/util/time.h"
 
-using namespace cppnet;
-
 class SendFile {
-public:
-    SendFile(const std::string& file, cppnet::CppNet* net):
-        _block(false),
-        _status(hello),
-        _file_name(file), 
-        _net(net) {
+ public:
+  SendFile(const std::string& file, cppnet::CppNet* net):
+    block_(false),
+    status_(hello),
+    file_name_(file),
+    net_(net) {
+  }
+
+  ~SendFile() {
+    file_.close();
+  }
+
+  void OnWrite(cppnet::Handle handle, uint32_t len) {
+    if (block_) {
+      block_ = false;
+      Send(handle);
+    }
+  }
+
+  void OnRecv(cppnet::Handle handle, std::shared_ptr<cppnet::Buffer> data,
+    uint32_t len) {
+    char ret_char[4] = {0};
+    if (data->GetCanReadLength() >= 2) {
+      data->Read(ret_char, 4);
+
+    } else {
+      std::cout << "3" << std::endl;
+      return;
+    }
+    std::cout << "4" << std::endl;
+    std::string ret(ret_char);
+    std::cout << "recv from server : " << ret << std::endl;
+
+    if (status_ == hello) {
+      if (ret == "OK") {
+        std::cout << "start to send file ..." << std::endl;
+        status_ = sending;
+        Send(handle);
+
+      } else {
+        std::cout << "server refuse recv the file!" << std::endl;
+      }
+
+    } else if (status_ == sending) {
+      if (ret == "OK") {
+        std::cout << "send file success!" << std::endl;
+
+      } else {
+        std::cout << "something error while sending!" << std::endl;
+      }
+
+      net_->Destory();
+    }
+  }
+
+  void OnConnect(cppnet::Handle handle, uint32_t err) {
+    if (err == cppnet::CEC_SUCCESS) {
+      std::cout << "start to header ..." << std::endl;
+      GetFileHeader();
+      std::cout << "get file name   : " << header_._name << std::endl;
+      std::cout << "get file length : " << header_._length << std::endl;
+      std::cout << "get file md5  : " << header_._md5 << std::endl;
+      handle->Write((char*)&header_, sizeof(header_));
+
+    } else {
+      std::cout << "connect to server failed." << std::endl;
+    }
+  }
+
+ private:
+  bool GetFileHeader() {
+    file_.open(file_name_, std::ios::binary | std::ios::in);
+    if (!file_.good()) {
+      return false;
     }
 
-    ~SendFile() {
-        _file.close();
+    sprintf(header_._name, "%s", file_name_.c_str());
+    file_.seekg(0, file_.end);
+    header_._length = (int)file_.tellg();
+    file_.seekg(0, file_.beg);
+
+    Compute_file_md5(file_name_.c_str(), header_._md5);
+    return true;
+  }
+
+  void Send(const cppnet::Handle& handle) {
+    char buf[__read_len];
+    while (!file_.eof()) {
+      file_.read(buf, __read_len);
+      int len =  (int)file_.gcount();
+      if (!handle->Write(buf, len)) {
+        block_ = true;
+        return;
+      }
     }
+  }
 
-    void OnWrite(Handle handle, uint32_t len) {
-        if (_block) {
-            _block = false;
-            Send(handle);
-        }
-    }
-
-    void OnRecv(Handle handle, std::shared_ptr<cppnet::Buffer> data, uint32_t len) {
-        char ret_char[4] = {0};
-        if (data->GetCanReadLength() >= 2) {
-            data->Read(ret_char, 4);
-
-        } else {
-            std::cout << "3" << std::endl;
-            return;
-        }
-        std::cout << "4" << std::endl;
-        std::string ret(ret_char);
-        std::cout << "recv from server : " << ret << std::endl;
-
-        if (_status == hello) {
-            if (ret == "OK") {
-                std::cout << "start to send file ..." << std::endl;
-                _status = sending;
-                Send(handle);
-
-            } else {
-                std::cout << "server refuse recv the file!" << std::endl;
-            }
-
-        } else if (_status == sending) {
-            if (ret == "OK") {
-                std::cout << "send file success!" << std::endl;
-
-            } else {
-                std::cout << "something error while sending!" << std::endl;
-            }
-
-            _net->Destory();
-        }
-    }
-
-    void OnConnect(Handle handle, uint32_t err) {
-        if (err == CEC_SUCCESS) {
-            std::cout << "start to header ..." << std::endl;
-            GetFileHeader();
-            std::cout << "get file name   : " << _header._name << std::endl;
-            std::cout << "get file length : " << _header._length << std::endl;
-            std::cout << "get file md5    : " << _header._md5 << std::endl;
-            handle->Write((char*)&_header, sizeof(_header));
-
-        } else {
-            std::cout << "connect to server failed." << std::endl;
-        }
-    }
-
-private:
-    bool GetFileHeader() {
-        _file.open(_file_name, std::ios::binary | std::ios::in);
-        if (!_file.good()) {
-            return false;
-        }
-
-        sprintf(_header._name, "%s", _file_name.c_str());
-        _file.seekg(0, _file.end);
-        _header._length = (int)_file.tellg();
-        _file.seekg(0, _file.beg);
-
-        Compute_file_md5(_file_name.c_str(), _header._md5);
-        return true;
-    }
-    
-    void Send(const Handle& handle) {
-        char buf[__read_len];
-        while (!_file.eof()) {
-            _file.read(buf, __read_len);
-            int len =  (int)_file.gcount();
-            if (!handle->Write(buf, len)) {
-                _block = true;
-                return;
-            }
-        }
-    }
-
-private:
-    std::fstream _file;
-    FileHeader   _header;
-    STATUS       _status;
-    std::string  _file_name;
-    bool         _block;
-    cppnet::CppNet* _net;
+ private:
+  std::fstream    file_;
+  FileHeader      header_;
+  STATUS          status_;
+  std::string     file_name_;
+  bool            block_;
+  cppnet::CppNet* net_;
 };
 
 int main(int argc, char *argv[]) {
+  if (argc < 2) {
+    std::cout << "must input a file." << std::endl;
+    return 1;
+  }
 
-    if (argc < 2) {
-        std::cout << "must input a file." << std::endl;
-        return 1;
-    }
+  std::string file_name = argv[1];
+  cppnet::CppNet* net(new cppnet::CppNet());
+  SendFile file(file_name, net);
 
-    std::string file_name = argv[1];
-   
-    cppnet::CppNet* net(new cppnet::CppNet());
+  net->Init(1);
+  net->SetConnectionCallback(std::bind(&SendFile::OnConnect, &file,
+    std::placeholders::_1, std::placeholders::_2));
+  net->SetReadCallback(std::bind(&SendFile::OnRecv, &file,
+    std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+  net->SetWriteCallback(std::bind(&SendFile::OnWrite, &file,
+    std::placeholders::_1, std::placeholders::_2));
 
-    SendFile file(file_name, net);
-
-    net->Init(1);
-    net->SetConnectionCallback(std::bind(&SendFile::OnConnect, &file, std::placeholders::_1, std::placeholders::_2));
-    net->SetReadCallback(std::bind(&SendFile::OnRecv, &file, std::placeholders::_1, std::placeholders::_2,
-                                      std::placeholders::_3));
-    net->SetWriteCallback(std::bind(&SendFile::OnWrite, &file, std::placeholders::_1, std::placeholders::_2));
-
-    net->Connection("127.0.0.1", 8921);
-    
-    net->Join();
-
-    return 0;
+  net->Connection("127.0.0.1", 8921);
+  net->Join();
+  return 0;
 }
