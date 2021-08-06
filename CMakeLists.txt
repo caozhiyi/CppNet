@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.10)
 
 project(cppnet CXX)
 
+set(FOUNDATION_DIR ${CMAKE_SOURCE_DIR}/foundation/cmake)
+
+message(${FOUNDATION_DIR})
+
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -33,9 +37,17 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 # include
 include_directories(${CMAKE_SOURCE_DIR})
 
-add_subdirectory(common)
-add_subdirectory(cppnet)
+find_package(FOUNDATION REQUIRED)
 
-add_library(${PROJECT_NAME} STATIC ${common_source} ${cppnet_source})
+if(FOUNDATION_FOUND)
+    add_subdirectory(foundation)
+    include_directories(${FOUNDATION_INCLUDE_DIR})
+else()
+    message("not found foundation")
+endif(FOUNDATION_FOUND)
+
+add_subdirectory(cppnet)
+add_library(${PROJECT_NAME} STATIC ${cppnet_source})
+target_link_libraries(${PROJECT_NAME} foundation)
 
 add_subdirectory(test)

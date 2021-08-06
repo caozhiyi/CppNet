@@ -7,7 +7,7 @@
 #include "http_request.h"
 #include "http_response.h"
 
-#include "common/util/time.h"
+#include "foundation/util/time.h"
 
 std::string image;
 bool benchmark = true;
@@ -27,7 +27,7 @@ void OnRequest(const HttpRequest& req, HttpResponse& resp) {
         resp.SetStatusMessage("OK");
         resp.SetContentType("text/html");
         resp.AddHeader("Server", "CppNet");
-        std::string now = cppnet::GetFormatTime();
+        std::string now = fdan::GetFormatTime();
         resp.SetBody("<html><head><title>This is title</title></head>"
             "<body><h1>Hello</h1>Now is " + now +
             "</body></html>");

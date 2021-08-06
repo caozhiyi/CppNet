@@ -3,7 +3,7 @@
 #include "http_context.h"
 #include "http_response.h"
 
-#include "common/util/time.h"
+#include "foundation/util/time.h"
 
 using namespace cppnet;
 
@@ -32,7 +32,7 @@ void HttpServer::OnMessage(cppnet::Handle handle, cppnet::BufferPtr data,
     
     auto context = (HttpContext*)handle->GetContext();
 
-    if (!context->ParseRequest(data, cppnet::UTCTimeMsec())) {
+    if (!context->ParseRequest(data, fdan::UTCTimeMsec())) {
         handle->Write("HTTP/1.1 400 Bad Request\r\n\r\n", sizeof("HTTP/1.1 400 Bad Request\r\n\r\n"));
         handle->Close();
     }

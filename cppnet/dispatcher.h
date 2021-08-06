@@ -16,13 +16,13 @@
 #include <unordered_map>
 
 #include "include/cppnet_type.h"
+#include "foundation/timer/timer.h"
 #include "foundation/thread/thread_with_queue.h"
 
 namespace cppnet {
 
 typedef std::function<void()> Task;
 
-class Timer;
 class RWSocket;
 class TimerEvent;
 class CppNetBase;

@@ -7,7 +7,7 @@
 #include "md5.h"
 #include "common.h"
 #include "include/cppnet.h"
-#include "common/util/time.h"
+#include "foundation/util/time.h"
 
 using namespace cppnet;
 

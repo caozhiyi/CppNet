@@ -14,7 +14,6 @@
 #include "cppnet/event/action_interface.h"
 
 #include "foundation/util/time.h"
-#include "foundation/timer/timer.h"
 #include "foundation/alloter/pool_alloter.h"
 
 namespace cppnet {

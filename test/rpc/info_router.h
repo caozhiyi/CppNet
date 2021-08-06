@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "common_struct.h"
-#include "common/structure/thread_safe_block_queue.h"
+#include "foundation/structure/thread_safe_block_queue.h"
 
 struct FuncCallInfo;
 class FuncThread;
@@ -30,7 +30,7 @@ public:
     void RemoveFunc(const std::string& name);
 
 private:
-    cppnet::ThreadSafeBlockQueue<FuncCallInfo*> _out_task_list;
+    fdan::ThreadSafeBlockQueue<FuncCallInfo*> _out_task_list;
     
     std::atomic_int                                _curent_index;
     std::mutex                                    _mutex;

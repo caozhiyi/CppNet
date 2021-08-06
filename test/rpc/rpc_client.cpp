@@ -3,7 +3,7 @@
 #include "func_thread.h"
 #include "parse_package.h"
 
-#include "common/log/log.h"
+#include "foundation/log/log.h"
 
 RPCClient::RPCClient() : _connected(false){
 }
@@ -42,7 +42,7 @@ void RPCClient::_DoRead(cppnet::Handle handle, cppnet::BufferPtr data,
         if (get_len == 0) {
             break;
         }
-        std::vector<cppnet::Any> vec;
+        std::vector<fdan::Any> vec;
         int type = 0;
         std::string name;
         int code = NO_ERROR;
@@ -86,7 +86,7 @@ void RPCClient::_DoWrite(cppnet::Handle handle, uint32_t len) {
 
 void RPCClient::_DoConnect(cppnet::Handle handle, uint32_t err) {
     if (err != cppnet::CEC_SUCCESS) {
-        cppnet::LOG_ERROR("connect failed! err : %d", err);
+        fdan::LOG_ERROR("connect failed! err : %d", err);
         return;
     }
     _socket = handle;
@@ -98,5 +98,5 @@ void RPCClient::_DoDisConnect(cppnet::Handle handle, uint32_t err) {
     if (err != cppnet::CEC_CLOSED) {
         _net.Connection(_ip, _port);
     }
-    cppnet::LOG_ERROR("disconnect with server!");
+    fdan::LOG_ERROR("disconnect with server!");
 }

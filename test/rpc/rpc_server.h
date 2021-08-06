@@ -8,7 +8,7 @@
 
 #include "common_struct.h"
 #include "include/cppnet.h"
-#include "common/alloter/alloter_interface.h"
+#include "foundation/alloter/alloter_interface.h"
 
 class InfoRouter;
 class ParsePackage;
@@ -38,7 +38,7 @@ private:
     std::shared_ptr<ParsePackage>        _parse_package;
 
     cppnet::CppNet                        _net;
-    cppnet::AlloterWrap                 _pool;
+    fdan::AlloterWrap                 _pool;
     std::atomic_bool                    _need_mutex;
     std::mutex                            _mutex;
     std::map<std::string, std::string>    _func_map;

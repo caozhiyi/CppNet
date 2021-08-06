@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "include/cppnet.h"
-#include "common/util/time.h"
+#include "foundation/util/time.h"
 
 using namespace cppnet;
 
@@ -31,7 +31,7 @@ void ReadFunc(Handle handle, std::shared_ptr<Buffer> data, uint32_t len) {
     std::cout << " Thread ID : " << std::this_thread::get_id() << std::endl;
     std::cout << " Read size : " << len << std::endl << std::endl;
     
-    Sleep(1000);
+    fdan::Sleep(1000);
 
     if (msg_index >= 5) {
         handle->Close();
@@ -71,5 +71,5 @@ int main() {
 
     net.Connection("127.0.0.1", 8999);
 
-    Sleep(8000);
+    fdan::Sleep(8000);
 }

@@ -1,11 +1,11 @@
 #include <iostream>
 #include "rpc_server.h"
-#include "common/util/any.h"
+#include "foundation/util/any.h"
 
-std::vector<cppnet::Any> Add1(std::vector<cppnet::Any> param) {
-    int res = cppnet::any_cast<int>(param[0])  + cppnet::any_cast<int>(param[1]);
-    std::vector<cppnet::Any> ret;
-    ret.push_back(cppnet::Any(res));
+std::vector<fdan::Any> Add1(std::vector<fdan::Any> param) {
+    int res = fdan::any_cast<int>(param[0])  + fdan::any_cast<int>(param[1]);
+    std::vector<fdan::Any> ret;
+    ret.push_back(fdan::Any(res));
     return ret;
 }
 

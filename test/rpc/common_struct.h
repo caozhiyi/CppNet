@@ -5,7 +5,7 @@
 #include <string>
 #include <thread>
 
-#include "common/util/any.h"
+#include "foundation/util/any.h"
 #include "include/cppnet_type.h"
 #include "include/cppnet_socket.h"
 
@@ -25,11 +25,11 @@ enum ERROR_CODE {
 
 struct FuncCallInfo {
     std::string                    _func_name;
-    std::vector<cppnet::Any>    _func_param_ret;
+    std::vector<fdan::Any>    _func_param_ret;
 
     cppnet::Handle              _socket;
 };
 
 
-typedef std::function<std::vector<cppnet::Any>(std::vector<cppnet::Any>)> CommonFunc;
+typedef std::function<std::vector<fdan::Any>(std::vector<fdan::Any>)> CommonFunc;
 #endif

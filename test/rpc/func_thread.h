@@ -3,12 +3,12 @@
 
 #include <map>
 #include "common_struct.h"
-#include "common/util/any.h"
-#include "common/thread/thread_with_queue.h"
+#include "foundation/util/any.h"
+#include "foundation/thread/thread_with_queue.h"
 
 class FuncManager;
 class InfoRouter;
-class FuncThread : public cppnet::ThreadWithQueue<FuncCallInfo*> {
+class FuncThread : public fdan::ThreadWithQueue<FuncCallInfo*> {
 public:
     FuncThread(std::shared_ptr<InfoRouter>& router);
     ~FuncThread();
@@ -24,7 +24,7 @@ public:
     //find function by name
     CommonFunc FindFunc(const std::string& name);
     //call function by name. Thread unsafety. param_ret use in/out
-    bool CallFunc(const std::string& name, std::vector<cppnet::Any>& param_ret);
+    bool CallFunc(const std::string& name, std::vector<fdan::Any>& param_ret);
 
 private:
 

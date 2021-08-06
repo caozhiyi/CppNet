@@ -5,7 +5,7 @@
 #include <algorithm> // for std::find
 
 #include "include/cppnet.h"
-#include "common/util/time.h"
+#include "foundation/util/time.h"
 
 using namespace cppnet;
 
@@ -52,13 +52,13 @@ int main() {
         net.Connection("127.0.0.1", 8921);
     }
     // wait all connect success.
-    cppnet::Sleep(2000);
+    fdan::Sleep(2000);
 
     std::cout << "200 clients all connected" << std::endl;
 
     // sleep 1s;
     for (auto iter = handle_vec.begin(); iter != handle_vec.end() && !__stop; ++iter) {
-        cppnet::Sleep(1000);
+        fdan::Sleep(1000);
         std::string msg = GetMsg();
         (*iter)->Write(msg.c_str(), (uint32_t)msg.length());
     }

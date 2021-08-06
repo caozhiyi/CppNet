@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "include/cppnet.h"
-#include "common/util/time.h"
+#include "foundation/util/time.h"
 
 using namespace cppnet;
 
@@ -28,5 +28,5 @@ int main() {
     net.Connection("127.0.0.1", 8921);
     net.Connection("127.0.0.1", 8922);
 
-    Sleep(2000);
+    fdan::Sleep(2000);
 }

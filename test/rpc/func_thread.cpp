@@ -55,7 +55,7 @@ CommonFunc FuncThread::FindFunc(const std::string& name) {
     return nullptr;
 }
 
-bool FuncThread::CallFunc(const std::string& name, std::vector<cppnet::Any>& param_ret) {
+bool FuncThread::CallFunc(const std::string& name, std::vector<fdan::Any>& param_ret) {
     auto iter = _func_map.find(name);
     if (iter == _func_map.end()) {
         return false;

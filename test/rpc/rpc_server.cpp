@@ -3,13 +3,13 @@
 #include "func_thread.h"
 #include "common_struct.h"
 #include "parse_package.h"
-#include "common/log/log.h"
-#include "common/alloter/pool_alloter.h"
+#include "foundation/log/log.h"
+#include "foundation/alloter/pool_alloter.h"
 
 RPCServer::RPCServer():
     _info_router(new InfoRouter), 
     _parse_package(new ParsePackage), 
-    _pool(cppnet::MakePoolAlloterPtr()), 
+    _pool(fdan::MakePoolAlloterPtr()), 
     _need_mutex(false){
 
 }
@@ -83,7 +83,7 @@ void RPCServer::_DoRead(cppnet::Handle handle, cppnet::BufferPtr data,
                     info->_socket = handle;
                     _info_router->PushTask(info);
                 } else {
-                    cppnet::LOG_ERROR("parse function call request failed!");
+                    fdan::LOG_ERROR("parse function call request failed!");
                 }
 
             } else {
@@ -91,7 +91,7 @@ void RPCServer::_DoRead(cppnet::Handle handle, cppnet::BufferPtr data,
                     info->_socket = handle;
                     _info_router->PushTask(info);
                 } else {
-                    cppnet::LOG_ERROR("parse function call request failed!");
+                    fdan::LOG_ERROR("parse function call request failed!");
                 }
             }
 
@@ -111,7 +111,7 @@ void RPCServer::_DoAccept(cppnet::Handle handle, uint32_t) {
 
     std::unique_lock<std::mutex> lock(_mutex);
     if (!_parse_package->PackageFuncList(buf, len, _func_map)) {
-        cppnet::LOG_ERROR("package functnion info failed!");
+        fdan::LOG_ERROR("package functnion info failed!");
         abort();
     }
     handle->Write(buf, len);
@@ -119,7 +119,7 @@ void RPCServer::_DoAccept(cppnet::Handle handle, uint32_t) {
 
 void RPCServer::_PackageAndSend(cppnet::Handle handle, FuncCallInfo* info, int code) {
     if (!info) {
-        cppnet::LOG_ERROR("function info is null!");
+        fdan::LOG_ERROR("function info is null!");
         return;
     }
     bool send = true;
@@ -128,7 +128,7 @@ void RPCServer::_PackageAndSend(cppnet::Handle handle, FuncCallInfo* info, int c
     char send_buf[65535] = { 0 };
     need_len = get_len;
     if (!_parse_package->PackageFuncRet(send_buf, need_len, code, info->_func_name, _func_map, info->_func_param_ret)) {
-        cppnet::LOG_ERROR("package function response failed!");
+        fdan::LOG_ERROR("package function response failed!");
         send = false;
     }
     if (send) {
