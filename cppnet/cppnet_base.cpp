@@ -90,13 +90,13 @@ void CppNetBase::RemoveTimer(uint64_t timer_id) {
 
 bool CppNetBase::ListenAndAccept(const std::string& ip, uint16_t port) {
 #ifdef __win__   // WEPOLL don't support reuse_port
-  auto ret = fdan::net::TcpSocket(Address::IsIpv4(ip));
+  auto ret = fdan::net::TcpSocket(fdan::Address::IsIpv4(ip));
   if (ret.return_value < 0) {
     fdan::LOG_ERROR("create socket failed. err:%d", ret.err);
     return false;
   }
   for (size_t i = 0; i < dispatchers_.size(); i++) {
-    dispatchers_[i]->Listen(ret._return_value, ip, port);
+    dispatchers_[i]->Listen(ret.return_value, ip, port);
   }
 #else  // __win__
   if (__reuse_port) {
