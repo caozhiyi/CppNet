@@ -3,26 +3,15 @@ cmake_minimum_required(VERSION 3.10)
 project(cppnet CXX)
 
 set(FOUNDATION_DIR ${CMAKE_SOURCE_DIR}/foundation/cmake)
-
-message(${FOUNDATION_DIR})
+# message(${FOUNDATION_DIR})
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CXX_FLAGS
- -O2
- -std=c++11
- -rdynamic
- -lpthread
- -fPIC
- -lstdc++
- -pipe
- )
-
 if(CMAKE_BUILD_BITS EQUAL 32)
-  list(APPEND CXX_FLAGS "-m32")
+  set(CMAKE_CXX_FLAGS "-lpthread -fPIC -m64 -O2 -std=c++11 -lstdc++ -pipe -m32")
 else()
-  list(APPEND CXX_FLAGS "-m64")
+  set(CMAKE_CXX_FLAGS "-lpthread -fPIC -m64 -O2 -std=c++11 -lstdc++ -pipe -m64")
 endif()
 
 if (WIN32)
@@ -45,6 +34,9 @@ if(FOUNDATION_FOUND)
 else()
     message("not found foundation")
 endif(FOUNDATION_FOUND)
+
+message (STATUS "compiler CXX = ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_FLAGS}")
+message (STATUS "LINKER_FLAGS = ${FULL_EXE_LINKER_FLAGS}")
 
 add_subdirectory(cppnet)
 add_library(${PROJECT_NAME} STATIC ${cppnet_source})
