@@ -1,3 +1,4 @@
+#include <mutex>
 #include <string>
 #include <thread>
 #include <string.h> // for strlen
@@ -20,10 +21,15 @@ void ReadFunc(Handle handle, cppnet::BufferPtr data, uint32_t len) {
 }
 
 void ConnectFunc(Handle handle, uint32_t error) {
-    if (error != CEC_SUCCESS) {
+    static std::mutex mutex;
+    std::lock_guard<std::mutex> lock(mutex);
+    if (error == CEC_CLOSED) {
+        std::cout << "remote closed connect : " << handle->GetSocket() << std::endl;
+    } else if (error != CEC_SUCCESS) {
         std::cout << "something err while connect : " << error << std::endl;
     }
 }
+
 
 int main() {
 

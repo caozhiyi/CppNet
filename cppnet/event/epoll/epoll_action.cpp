@@ -337,12 +337,18 @@ void EpollEventActions::OnEvent(std::vector<epoll_event>& event_vec, int16_t num
                 // close
                 if (event_vec[i].events & EPOLLRDHUP) {
                     rw_sock->OnDisConnect(CEC_CLOSED);
+                    
+                } else {
+                    rw_sock->OnRead();
                 }
-                rw_sock->OnRead();
             }
 
             if (event_vec[i].events & EPOLLOUT) {
                 rw_sock->OnWrite();
+            }
+
+            if (event_vec[i].events & EPOLLHUP) {
+                rw_sock->OnDisConnect(CEC_CLOSED);
             }
         }
     }
