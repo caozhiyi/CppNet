@@ -50,6 +50,9 @@ RWSocket::RWSocket(uint64_t sock, std::shared_ptr<AlloterWrap> alloter):
 RWSocket::~RWSocket() {
     _write_buffer.reset();
     _read_buffer.reset();
+    if (_alloter && _event) {
+        _alloter->PoolDelete(_event);
+    }
     if (_timer_id > 0) {
         auto dispatcher = GetDispatcher();
         if (dispatcher) {
