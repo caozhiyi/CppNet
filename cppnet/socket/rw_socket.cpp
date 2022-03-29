@@ -272,7 +272,7 @@ bool RWSocket::Recv(uint32_t len) {
         std::vector<Iovec> io_vec;
         uint32_t buff_len = _read_buffer->GetFreeMemoryBlock(io_vec, expand);
         auto ret = OsHandle::Readv(_sock, &*io_vec.begin(), io_vec.size());
-        if (ret._return_value < 0) {
+        if (ret._return_value < 0 || ret._errno > 0) {
             if (errno == EWOULDBLOCK || errno == EAGAIN || errno == EINTR) {
                 _read_buffer->MoveWritePt(ret._return_value);
                 off_set += ret._return_value;
@@ -312,7 +312,7 @@ bool RWSocket::Send() {
         std::vector<Iovec> io_vec;
         _write_buffer->GetUseMemoryBlock(io_vec, __linux_write_buff_get);
         auto ret = OsHandle::Writev(_sock, &*io_vec.begin(), io_vec.size());
-        if (ret._return_value > 0) {
+        if (ret._return_value >= 0 && ret._errno == 0) {
             _write_buffer->MoveReadPt(ret._return_value);
             off_set += ret._return_value;
 
