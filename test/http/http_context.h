@@ -37,6 +37,11 @@ class HttpContext {
             return _request;
         }
 
+        bool IsKeepAlive() {
+            const std::string& connection = _request.GetHeader("Connection");
+            return !(connection != "close" || (_request.GetVersion() == Http10 && connection != "Keep-Alive"));
+        }
+
     private:
         bool processRequestLine(const char* begin, const char* end);
     private:

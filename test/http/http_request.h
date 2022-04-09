@@ -24,7 +24,7 @@ enum Version {
 
 class HttpRequest {
   public:
-  HttpRequest() : _method(Invalid), _version(Unknown), _path(""), _query(""), _receive_time(0), _headers_map() { }
+  HttpRequest() : _method(Invalid), _version(Unknown), _path(), _query(), _receive_time(0), _headers_map() { }
   ~HttpRequest() {
     _headers_map.clear();
   }
@@ -146,15 +146,6 @@ class HttpRequest {
     _headers_map.clear();
     _path.clear();
     _query.clear();
-  }
-
-  void Swap(HttpRequest& that) {
-    std::swap(_method, that._method);
-    std::swap(_version, that._version);
-    std::swap(_receive_time, that._receive_time);
-    _path.swap(that._path);
-    _query.swap(that._query);
-    _headers_map.swap(that._headers_map);
   }
 
   private:

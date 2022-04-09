@@ -38,8 +38,12 @@ void HttpServer::OnMessage(cppnet::Handle handle, cppnet::BufferPtr data,
     }
 
     if (context->IsGotAll()) {
-        OnRequest(handle, context->GetRequest());
-        context->Reset();
+        bool is_keep_alive = context->IsKeepAlive();
+        OnRequest(handle, !is_keep_alive, context->GetRequest());
+
+        if (is_keep_alive) {
+            context->Reset();
+        }
     }
 }
 
@@ -47,11 +51,7 @@ void HttpServer::OnMessageSend(cppnet::Handle , uint32_t) {
     // do nothing.
 }
 
-void HttpServer::OnRequest(cppnet::Handle handle, const HttpRequest& req) {
-    const std::string& connection = req.GetHeader("Connection");
-    bool close = connection == "close" ||
-      (req.GetVersion() == Http10 && connection != "Keep-Alive");
-
+void HttpServer::OnRequest(cppnet::Handle handle, bool close, const HttpRequest& req) {
     HttpResponse response(close);
     _http_call_back(req, response);
 

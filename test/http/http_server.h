@@ -32,7 +32,7 @@ class HttpServer {
         void OnMessageSend(cppnet::Handle handle, uint32_t len);
       
     private:
-        void OnRequest(cppnet::Handle handle, const HttpRequest&);
+        void OnRequest(cppnet::Handle handle, bool close, const HttpRequest&);
 
     private:
         HttpCallback _http_call_back;
