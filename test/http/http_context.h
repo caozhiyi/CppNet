@@ -13,7 +13,8 @@ enum HttpRequestParseState{
 
 class HttpContext {
     public:
-        HttpContext() : _state(ExpectRequestLine) { }
+        HttpContext() : _state(ExpectRequestLine), _request() { }
+        ~HttpContext() {}
 
         // default copy-ctor, dtor and assignment are fine
         // return false if any error

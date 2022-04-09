@@ -7,7 +7,6 @@
 #include <assert.h>
 #include <unordered_map>
 
-
 enum Method {
     Invalid, 
     Get, 
@@ -25,7 +24,10 @@ enum Version {
 
 class HttpRequest {
   public:
-  HttpRequest() : _method(Invalid), _version(Unknown) {}
+  HttpRequest() : _method(Invalid), _version(Unknown), _path(""), _query(""), _receive_time(0), _headers_map() { }
+  ~HttpRequest() {
+    _headers_map.clear();
+  }
 
   void SetVersion(Version v) {
     _version = v;
