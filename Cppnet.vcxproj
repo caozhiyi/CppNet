@@ -167,7 +167,6 @@
     <ClInclude Include="common\thread\thread.h" />
     <ClInclude Include="common\thread\thread_with_queue.h" />
     <ClInclude Include="common\timer\timer.h" />
-    <ClInclude Include="common\timer\timer_1ms.h" />
     <ClInclude Include="common\timer\timer_container.h" />
     <ClInclude Include="common\timer\timer_interface.h" />
     <ClInclude Include="common\timer\timer_solt.h" />
@@ -211,7 +210,6 @@
     <ClCompile Include="common\os\os_info.cpp" />
     <ClCompile Include="common\os\win\convert.cpp" />
     <ClCompile Include="common\timer\timer.cpp" />
-    <ClCompile Include="common\timer\timer_1ms.cpp" />
     <ClCompile Include="common\timer\timer_container.cpp" />
     <ClCompile Include="common\timer\timer_solt.cpp" />
     <ClCompile Include="common\util\bitmap.cpp" />

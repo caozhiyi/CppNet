@@ -135,21 +135,6 @@
     <ClInclude Include="common\thread\thread_with_queue.h">
       <Filter>common\thread</Filter>
     </ClInclude>
-    <ClInclude Include="common\timer\timer.h">
-      <Filter>common\timer</Filter>
-    </ClInclude>
-    <ClInclude Include="common\timer\timer_1ms.h">
-      <Filter>common\timer</Filter>
-    </ClInclude>
-    <ClInclude Include="common\timer\timer_container.h">
-      <Filter>common\timer</Filter>
-    </ClInclude>
-    <ClInclude Include="common\timer\timer_interface.h">
-      <Filter>common\timer</Filter>
-    </ClInclude>
-    <ClInclude Include="common\timer\timer_solt.h">
-      <Filter>common\timer</Filter>
-    </ClInclude>
     <ClInclude Include="common\util\any.h">
       <Filter>common\util</Filter>
     </ClInclude>
@@ -210,6 +195,18 @@
     <ClInclude Include="cppnet\event\epoll\epoll_action.h">
       <Filter>cppnet\event\epoll</Filter>
     </ClInclude>
+    <ClInclude Include="common\timer\timer.h">
+      <Filter>common\timer</Filter>
+    </ClInclude>
+    <ClInclude Include="common\timer\timer_container.h">
+      <Filter>common\timer</Filter>
+    </ClInclude>
+    <ClInclude Include="common\timer\timer_interface.h">
+      <Filter>common\timer</Filter>
+    </ClInclude>
+    <ClInclude Include="common\timer\timer_solt.h">
+      <Filter>common\timer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\alloter\normal_alloter.cpp">
@@ -247,18 +244,6 @@
     </ClCompile>
     <ClCompile Include="common\os\win\convert.cpp">
       <Filter>common\os\win</Filter>
-    </ClCompile>
-    <ClCompile Include="common\timer\timer.cpp">
-      <Filter>common\timer</Filter>
-    </ClCompile>
-    <ClCompile Include="common\timer\timer_1ms.cpp">
-      <Filter>common\timer</Filter>
-    </ClCompile>
-    <ClCompile Include="common\timer\timer_container.cpp">
-      <Filter>common\timer</Filter>
-    </ClCompile>
-    <ClCompile Include="common\timer\timer_solt.cpp">
-      <Filter>common\timer</Filter>
     </ClCompile>
     <ClCompile Include="common\util\bitmap.cpp">
       <Filter>common\util</Filter>
@@ -310,6 +295,15 @@
     </ClCompile>
     <ClCompile Include="cppnet\event\epoll\epoll_action.cpp">
       <Filter>cppnet\event\epoll</Filter>
+    </ClCompile>
+    <ClCompile Include="common\timer\timer.cpp">
+      <Filter>common\timer</Filter>
+    </ClCompile>
+    <ClCompile Include="common\timer\timer_container.cpp">
+      <Filter>common\timer</Filter>
+    </ClCompile>
+    <ClCompile Include="common\timer\timer_solt.cpp">
+      <Filter>common\timer</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
