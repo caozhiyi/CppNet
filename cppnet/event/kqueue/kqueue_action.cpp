@@ -8,6 +8,7 @@
 
 #include "kqueue_action.h"
 #include "include/cppnet_type.h"
+#include "cppnet/cppnet_config.h"
 #include "cppnet/socket/rw_socket.h"
 #include "cppnet/socket/connect_socket.h"
 #include "cppnet/event/event_interface.h"
@@ -144,10 +145,9 @@ bool KqueueEventActions::AddConnection(Event* event, Address& address) {
             return true;
     
         } else if (ret._errno == EINPROGRESS) {
-            if (CheckConnect(rw_sock->GetSocket())) {
-                rw_sock->OnConnect(CEC_SUCCESS);
-                return true;
-            }
+            auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
+            rw_sock->AddTimer(__connect_recheck_time_ms);
+            return false;
         }
         rw_sock->OnConnect(CEC_CONNECT_REFUSE);
         LOG_ERROR("connect to peer failed! errno:%d, info:%s", ret._errno, ErrnoInfo(ret._errno));

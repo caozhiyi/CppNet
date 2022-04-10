@@ -222,14 +222,9 @@ bool EpollEventActions::AddConnection(Event* event, Address& addr) {
             return true;
 
         } else if (ret._errno == EINPROGRESS || ret._errno == WSAEWOULDBLOCK) {
-            if (CheckConnect(rw_sock->GetSocket())) {
-                rw_sock->OnConnect(CEC_SUCCESS);
-                return true;
-            } else {
-                auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
-                rw_sock->AddTimer(200);
-                return false;
-            }
+            auto rw_sock = std::dynamic_pointer_cast<RWSocket>(sock);
+            rw_sock->AddTimer(__connect_recheck_time_ms);
+            return false;
         }
         rw_sock->OnConnect(CEC_CONNECT_REFUSE);
         LOG_WARN("connect event failed! %d", ret._errno);

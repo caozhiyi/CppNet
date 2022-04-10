@@ -44,6 +44,8 @@ static const uint16_t __linux_read_buff_expand_len = 4096;
 static const uint32_t __linux_read_buff_expand_max = 65536;
 // max size of buffer will get from buffer. Be careful IOV_MAX.
 static const uint16_t __linux_write_buff_get       = 4096;
+// waiting time to re detect the connection status when connecting
+static const uint16_t __connect_recheck_time_ms    = 2000;
 
 // IOCP buffer length.
 static const uint16_t __iocp_buff_size        = 1024*4;

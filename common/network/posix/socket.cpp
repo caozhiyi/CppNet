@@ -28,17 +28,18 @@ int32_t ReusePort(uint64_t sock) {
 }
 
 bool CheckConnect(const uint64_t sock) {
-    struct pollfd fd;
+    /*struct pollfd fd;
     int32_t ret = 0;
     socklen_t len = 0;
     fd.fd = sock;
     fd.events = POLLOUT;
-    if (poll(&fd, 1, -1) == -1) {
+    if (poll(&fd, 1, 20000) == -1) {
         if(errno != EINTR){
             return false;
         }
-    }
-    len = sizeof(ret);
+    }*/
+    int32_t ret = 0;
+    socklen_t len = sizeof(ret);
     if (getsockopt(sock, SOL_SOCKET, SO_ERROR, &ret, &len) == -1) {
         return false;
     }
