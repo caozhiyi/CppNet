@@ -107,7 +107,7 @@ int32_t Bitmap::GetMinAfter(uint32_t index) {
         return -1;
     }
 
-    uint32_t next_vec_index = (uint32_t)std::log2f(float(temp_vec_bitmap & (-temp_vec_bitmap) + 1));
+    uint32_t next_vec_index = (uint32_t)std::log2f(float((temp_vec_bitmap & (-temp_vec_bitmap)) + 1));
     uint32_t target_vec_index = next_vec_index + bitmap_index;
     if (target_vec_index == bitmap_index) {
         return -1;
@@ -115,7 +115,7 @@ int32_t Bitmap::GetMinAfter(uint32_t index) {
 
     int64_t cur_bitmap = _bitmap[target_vec_index];
     ret += (next_vec_index - 1) * __step_size;
-    ret += (uint32_t)std::log2f(float(cur_bitmap & (-cur_bitmap) + 1));
+    ret += (uint32_t)std::log2f(float((cur_bitmap & (-cur_bitmap)) + 1));
 
     return ret;
 }
@@ -126,7 +126,7 @@ bool Bitmap::Empty() {
 
 void Bitmap::Clear() {
     while (_vec_bitmap != 0) {
-        int32_t next_vec_index = (int32_t)std::log2f(float(_vec_bitmap & (-(int32_t)_vec_bitmap) + 1));
+        int32_t next_vec_index = (int32_t)std::log2f(float((_vec_bitmap & (-(int32_t)_vec_bitmap)) + 1));
         _bitmap[next_vec_index] = 0;
         _vec_bitmap = _vec_bitmap & (_vec_bitmap - 1);
     }

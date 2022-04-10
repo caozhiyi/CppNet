@@ -13,8 +13,8 @@ TimerContainer::TimerContainer(std::shared_ptr<TimerContainer> sub_timer, TIME_U
     _time_unit(unit),
     _size(max / unit),
     _timer_max(max),
-    _sub_timer(sub_timer),
-    _cur_time(0) {
+    _cur_time(0),
+    _sub_timer(sub_timer) {
 
     _bitmap.Init(_size);
 }
@@ -128,7 +128,6 @@ int32_t TimerContainer::CurrentTimer() {
 uint32_t TimerContainer::TimerRun(uint32_t time) {
     uint32_t time_pass = time / _time_unit;
     uint32_t left_time = time % _time_unit;
-    uint32_t time_pass_with_unit = time_pass * _time_unit;
     bool do_timer = time_pass > 0;
 
     if (left_time > 0) {
@@ -158,7 +157,7 @@ uint32_t TimerContainer::TimerRun(uint32_t time) {
         if (next_time < 0) {
             break;
         }
-        if (next_time > _cur_time) {
+        if (next_time > (int32_t)_cur_time) {
             break;
         }
         GetIndexTimer(run_timer_solts, sub_timer_solts, next_time, left_time);
@@ -178,7 +177,7 @@ uint32_t TimerContainer::TimerRun(uint32_t time) {
             if (next_time < 0) {
                 break;
             }
-            if (next_time > _cur_time) {
+            if (next_time > (int32_t)_cur_time) {
                 break;
             }
             GetIndexTimer(run_timer_solts, sub_timer_solts, next_time, left_time);
