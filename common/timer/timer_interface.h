@@ -23,7 +23,7 @@ enum TIMER_CODE {
     NO_TIMER = -1 // don't have timer
 };
 
-class TimerSolt;
+class TimerSlot;
 
 // timer interface, timer inherits from this.
 class Timer {
@@ -31,8 +31,8 @@ public:
     Timer() {}
     ~Timer() {}
 
-    virtual bool AddTimer(std::weak_ptr<TimerSolt> t, uint32_t time, bool always = false) = 0;
-    virtual bool RmTimer(std::weak_ptr<TimerSolt> t) = 0;
+    virtual bool AddTimer(std::weak_ptr<TimerSlot> t, uint32_t time, bool always = false) = 0;
+    virtual bool RmTimer(std::weak_ptr<TimerSlot> t) = 0;
 
     // get min next time out time
     // return: 

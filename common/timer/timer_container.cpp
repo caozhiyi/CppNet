@@ -4,7 +4,7 @@
 // Author: caozhiyi (caozhiyi5@gmail.com)
 
 #include <algorithm>
-#include "timer_solt.h"
+#include "timer_slot.h"
 #include "timer_container.h"
 
 namespace cppnet {
@@ -23,7 +23,7 @@ TimerContainer::~TimerContainer() {
 
 }
 
-bool TimerContainer::AddTimer(std::weak_ptr<TimerSolt> t, uint32_t time, bool always) {
+bool TimerContainer::AddTimer(std::weak_ptr<TimerSlot> t, uint32_t time, bool always) {
     if (time >= _timer_max) {
         return false;
     }
@@ -52,7 +52,7 @@ bool TimerContainer::AddTimer(std::weak_ptr<TimerSolt> t, uint32_t time, bool al
     return InnerAddTimer(ptr, time);
 }
 
-bool TimerContainer::RmTimer(std::weak_ptr<TimerSolt> t) {
+bool TimerContainer::RmTimer(std::weak_ptr<TimerSlot> t) {
     auto ptr = t.lock();
     if (!ptr) {
         return false;
@@ -147,8 +147,8 @@ uint32_t TimerContainer::TimerRun(uint32_t time) {
         return run_setp;
     }
 
-    std::vector<std::weak_ptr<TimerSolt>> run_timer_solts;
-    std::vector<std::weak_ptr<TimerSolt>> sub_timer_solts;
+    std::vector<std::weak_ptr<TimerSlot>> run_timer_solts;
+    std::vector<std::weak_ptr<TimerSlot>> sub_timer_solts;
 
     uint32_t prev_time = _cur_time;
     _cur_time += time_pass;
@@ -219,7 +219,7 @@ int32_t TimerContainer::LocalMinTime() {
     return NO_TIMER;
 }
 
-bool TimerContainer::InnerAddTimer(std::shared_ptr<TimerSolt> ptr, uint32_t time) {
+bool TimerContainer::InnerAddTimer(std::shared_ptr<TimerSlot> ptr, uint32_t time) {
     if (time > _timer_max) {
         return false;
     }
@@ -263,8 +263,8 @@ uint32_t TimerContainer::GetIndexLeftInterval(uint16_t index) {
     return left_interval;
 }
 
-void TimerContainer::GetIndexTimer(std::vector<std::weak_ptr<TimerSolt>>& run_timer_solts, 
-    std::vector<std::weak_ptr<TimerSolt>>& sub_timer_solts, uint32_t index, uint32_t time_pass) {
+void TimerContainer::GetIndexTimer(std::vector<std::weak_ptr<TimerSlot>>& run_timer_solts, 
+    std::vector<std::weak_ptr<TimerSlot>>& sub_timer_solts, uint32_t index, uint32_t time_pass) {
     auto bucket_iter = _timer_wheel.find(index);
     if (bucket_iter == _timer_wheel.end()) {
         return;
@@ -292,8 +292,8 @@ void TimerContainer::GetIndexTimer(std::vector<std::weak_ptr<TimerSolt>>& run_ti
     _timer_wheel.erase(bucket_iter);
 }
 
-void TimerContainer::DoTimer(std::vector<std::weak_ptr<TimerSolt>>& run_timer_solts,
-    std::vector<std::weak_ptr<TimerSolt>>& sub_timer_solts) {
+void TimerContainer::DoTimer(std::vector<std::weak_ptr<TimerSlot>>& run_timer_solts,
+    std::vector<std::weak_ptr<TimerSlot>>& sub_timer_solts) {
     // timer call back
     for (auto iter = run_timer_solts.begin(); iter != run_timer_solts.end(); iter++) {
         auto ptr = iter->lock();

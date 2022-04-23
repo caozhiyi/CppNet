@@ -120,7 +120,7 @@
     <ClInclude Include="common\structure\list.h">
       <Filter>common\structure</Filter>
     </ClInclude>
-    <ClInclude Include="common\structure\list_solt.h">
+    <ClInclude Include="common\structure\list_slot.h">
       <Filter>common\structure</Filter>
     </ClInclude>
     <ClInclude Include="common\structure\thread_safe_block_queue.h">
@@ -147,7 +147,7 @@
     <ClInclude Include="common\timer\timer_interface.h">
       <Filter>common\timer</Filter>
     </ClInclude>
-    <ClInclude Include="common\timer\timer_solt.h">
+    <ClInclude Include="common\timer\timer_slot.h">
       <Filter>common\timer</Filter>
     </ClInclude>
     <ClInclude Include="common\util\any.h">
@@ -257,7 +257,7 @@
     <ClCompile Include="common\timer\timer_container.cpp">
       <Filter>common\timer</Filter>
     </ClCompile>
-    <ClCompile Include="common\timer\timer_solt.cpp">
+    <ClCompile Include="common\timer\timer_slot.cpp">
       <Filter>common\timer</Filter>
     </ClCompile>
     <ClCompile Include="common\util\bitmap.cpp">

@@ -161,7 +161,7 @@
     <ClInclude Include="common\os\convert.h" />
     <ClInclude Include="common\os\os_info.h" />
     <ClInclude Include="common\structure\list.h" />
-    <ClInclude Include="common\structure\list_solt.h" />
+    <ClInclude Include="common\structure\list_slot.h" />
     <ClInclude Include="common\structure\thread_safe_block_queue.h" />
     <ClInclude Include="common\structure\thread_safe_queue.h" />
     <ClInclude Include="common\thread\thread.h" />
@@ -170,7 +170,7 @@
     <ClInclude Include="common\timer\timer_1ms.h" />
     <ClInclude Include="common\timer\timer_container.h" />
     <ClInclude Include="common\timer\timer_interface.h" />
-    <ClInclude Include="common\timer\timer_solt.h" />
+    <ClInclude Include="common\timer\timer_slot.h" />
     <ClInclude Include="common\util\any.h" />
     <ClInclude Include="common\util\bitmap.h" />
     <ClInclude Include="common\util\config.h" />
@@ -213,7 +213,7 @@
     <ClCompile Include="common\timer\timer.cpp" />
     <ClCompile Include="common\timer\timer_1ms.cpp" />
     <ClCompile Include="common\timer\timer_container.cpp" />
-    <ClCompile Include="common\timer\timer_solt.cpp" />
+    <ClCompile Include="common\timer\timer_slot.cpp" />
     <ClCompile Include="common\util\bitmap.cpp" />
     <ClCompile Include="common\util\config.cpp" />
     <ClCompile Include="common\util\random.cpp" />

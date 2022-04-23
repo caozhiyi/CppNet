@@ -3,69 +3,69 @@
 
 // Author: caozhiyi (caozhiyi5@gmail.com)
 
-#include "timer_solt.h"
+#include "timer_slot.h"
 
 namespace cppnet {
 
-TimerSolt::TimerSolt():
+TimerSlot::TimerSlot():
     _total_interval(0),
     _left_interval(0) {
 
 }
 
-void TimerSolt::SetInterval(uint32_t interval) {
+void TimerSlot::SetInterval(uint32_t interval) {
     _total_interval = interval;
     _left_interval = interval;
 }
 
-uint32_t TimerSolt::GetTotalInterval() { 
+uint32_t TimerSlot::GetTotalInterval() { 
     _total_interval &= ~(TSF_ALWAYS | TSF_IN_TIMER);
     return _total_interval; 
 }
 
-uint32_t TimerSolt::GetLeftInterval() { 
+uint32_t TimerSlot::GetLeftInterval() { 
     return _left_interval; 
 }
 
-void TimerSolt::ResetTime() {
+void TimerSlot::ResetTime() {
     _left_interval = _total_interval;
     _cur_index = 0;
 }
 
-uint32_t TimerSolt::TimePass(uint32_t time) {
+uint32_t TimerSlot::TimePass(uint32_t time) {
     _left_interval -= time;
     return _left_interval;
 }
 
-void TimerSolt::SetInTimer() {
+void TimerSlot::SetInTimer() {
     _total_interval |= TSF_IN_TIMER;
 }
 
-bool TimerSolt::IsInTimer() {
+bool TimerSlot::IsInTimer() {
     return _total_interval & TSF_IN_TIMER;
 }
 
-void TimerSolt::RmInTimer() {
+void TimerSlot::RmInTimer() {
     _total_interval &= ~TSF_IN_TIMER;
 }
 
-void TimerSolt::SetAlways() {
+void TimerSlot::SetAlways() {
     _total_interval |= TSF_ALWAYS;
 }
 
-bool TimerSolt::IsAlways() {
+bool TimerSlot::IsAlways() {
     return _total_interval & TSF_ALWAYS;
 }
 
-void TimerSolt::RmAlways() {
+void TimerSlot::RmAlways() {
     _total_interval &= ~TSF_ALWAYS;
 }
 
-void TimerSolt::SetCurIndex(uint16_t index, uint16_t type) {
+void TimerSlot::SetCurIndex(uint16_t index, uint16_t type) {
     _cur_index = index | type;
 }
 
-void TimerSolt::GetCurIndex(uint16_t& index, uint16_t& type) {
+void TimerSlot::GetCurIndex(uint16_t& index, uint16_t& type) {
     index = _cur_index & ~TIT_MUSK;
     type = _cur_index & TIT_MUSK;
 }

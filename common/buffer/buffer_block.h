@@ -8,14 +8,14 @@
 
 #include <memory>
 #include "buffer_interface.h"
-#include "common/structure/list_solt.h"
+#include "common/structure/list_slot.h"
 
 namespace cppnet {
 
 class BlockMemoryPool;
 class BufferBlock: 
     public InnerBuffer, 
-    public ListSolt<BufferBlock> {
+    public ListSlot<BufferBlock> {
 
 public:
     BufferBlock(std::shared_ptr<BlockMemoryPool>& alloter);

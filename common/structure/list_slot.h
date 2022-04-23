@@ -3,18 +3,18 @@
 
 // Author: caozhiyi (caozhiyi5@gmail.com)
 
-#ifndef COMMON_STRUCTURE_LIST_SOLT
-#define COMMON_STRUCTURE_LIST_SOLT
+#ifndef COMMON_STRUCTURE_LIST_SLOT
+#define COMMON_STRUCTURE_LIST_SLOT
 
 #include <memory>
 
 namespace cppnet {
 
 template<typename T>
-class ListSolt {
+class ListSlot {
 public:
-    ListSolt() {}
-    virtual ~ListSolt() {}
+    ListSlot() {}
+    virtual ~ListSlot() {}
 
     void SetNext(std::shared_ptr<T> v) { _next = v; }
     std::shared_ptr<T> GetNext() { return _next; }

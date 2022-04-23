@@ -10,13 +10,13 @@
 #include <atomic>
 #include "event_interface.h"
 #include "include/cppnet_type.h"
-#include "common/timer/timer_solt.h"
+#include "common/timer/timer_slot.h"
 
 namespace cppnet {
 
 class TimerEvent: 
     public Event,
-    public TimerSolt {
+    public TimerSlot {
 
 public:
     TimerEvent(): _timer_id(0) {}

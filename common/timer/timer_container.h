@@ -28,8 +28,8 @@ public:
     TimerContainer(std::shared_ptr<TimerContainer> sub_timer, TIME_UNIT unit, TIME_UNIT max);
     ~TimerContainer();
 
-    bool AddTimer(std::weak_ptr<TimerSolt> t, uint32_t time, bool always = false);
-    bool RmTimer(std::weak_ptr<TimerSolt> t);
+    bool AddTimer(std::weak_ptr<TimerSlot> t, uint32_t time, bool always = false);
+    bool RmTimer(std::weak_ptr<TimerSlot> t);
 
     // get min next time out time
     // return
@@ -47,17 +47,17 @@ public:
 
     // get current timer wheel timeout time
     int32_t LocalMinTime();
-    bool InnerAddTimer(std::shared_ptr<TimerSolt> ptr, uint32_t time);
+    bool InnerAddTimer(std::shared_ptr<TimerSlot> ptr, uint32_t time);
 
     void SetRootTimer(std::shared_ptr<TimerContainer> timer) { _root_timer = timer; }
 
 protected:
     uint16_t TimeUnit2TimeType(TIME_UNIT tu);
     uint32_t GetIndexLeftInterval(uint16_t index);
-    void GetIndexTimer(std::vector<std::weak_ptr<TimerSolt>>& run_timer_solts, 
-        std::vector<std::weak_ptr<TimerSolt>>& sub_timer_solts, uint32_t index, uint32_t time_pass);
-    void DoTimer(std::vector<std::weak_ptr<TimerSolt>>& run_timer_solts,
-        std::vector<std::weak_ptr<TimerSolt>>& sub_timer_solts);
+    void GetIndexTimer(std::vector<std::weak_ptr<TimerSlot>>& run_timer_solts, 
+        std::vector<std::weak_ptr<TimerSlot>>& sub_timer_solts, uint32_t index, uint32_t time_pass);
+    void DoTimer(std::vector<std::weak_ptr<TimerSlot>>& run_timer_solts,
+        std::vector<std::weak_ptr<TimerSlot>>& sub_timer_solts);
 
 protected:
     TIME_UNIT _time_unit;
@@ -68,8 +68,8 @@ protected:
     Bitmap   _bitmap;
     std::weak_ptr<TimerContainer>   _root_timer;
     std::shared_ptr<TimerContainer> _sub_timer;
-    std::unordered_map<uint32_t, std::map<uint32_t, std::list<std::weak_ptr<TimerSolt>>>> _timer_wheel;
-    //std::unordered_map<uint32_t, std::list<std::weak_ptr<TimerSolt>>> _timer_wheel;
+    std::unordered_map<uint32_t, std::map<uint32_t, std::list<std::weak_ptr<TimerSlot>>>> _timer_wheel;
+    //std::unordered_map<uint32_t, std::list<std::weak_ptr<TimerSlot>>> _timer_wheel;
 };
 
 }

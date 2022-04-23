@@ -3,8 +3,8 @@
 
 // Author: caozhiyi (caozhiyi5@gmail.com)
 
-#ifndef COMMON_TIMER_TIMER_SOLT
-#define COMMON_TIMER_TIMER_SOLT
+#ifndef COMMON_TIMER_TIMER_SLOT
+#define COMMON_TIMER_TIMER_SLOT
 
 #include <cstdint>
 #include "timer_interface.h"
@@ -21,10 +21,10 @@ enum TIME_INDEX_TYPE: uint16_t {
 // Inherit this class to add to timer.
 // don't call any function in this class, 
 // they internal used by timer.
-class TimerSolt {
+class TimerSlot {
 public:
-    TimerSolt();
-    ~TimerSolt() {}
+    TimerSlot();
+    ~TimerSlot() {}
 
 //private:
 public:
