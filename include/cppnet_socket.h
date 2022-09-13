@@ -16,7 +16,7 @@ class CNSocket {
 public:
     CNSocket() {}
     virtual ~CNSocket() {}
-    // get socket
+    // get os native socket
     virtual uint64_t GetSocket() = 0;
     // get local listen port
     virtual uint16_t GetListenPort() = 0;
@@ -31,9 +31,12 @@ public:
     // add a timer. must set timer call back
     // interval support max 1 minute
     virtual void AddTimer(uint32_t interval, bool always = false) = 0;
+    // stop the timer
     virtual void StopTimer() = 0;
 
+    // set cppnet socket context.
     virtual void SetContext(void* context) = 0;
+    // get context.
     virtual void* GetContext() = 0;
 };
 

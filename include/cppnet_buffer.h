@@ -15,10 +15,11 @@ public:
     Buffer() {}
     virtual ~Buffer() {}
 
-    // read to res buf but don't change the read point
-    // return read size
-    virtual uint32_t ReadNotMovePt(char* res, uint32_t len) = 0;
-
+    // read to data to buf but don't move the read point.
+    // return read size.
+    virtual uint32_t ReadNotMovePt(char* buf, uint32_t buf_len) = 0;
+    // read data to res buf and move the read point.
+    // return read size.
     virtual uint32_t Read(char* res, uint32_t len) = 0;
     
     // clear all data
@@ -37,6 +38,7 @@ public:
     // return 0 and the last param return need length
     virtual uint32_t ReadUntil(char* res, uint32_t len, const char* find, uint32_t find_len, uint32_t& need_len) = 0;
 
+    // return size of data that can be read
     virtual uint32_t GetCanReadLength() = 0;
 
     // return can read bytes
