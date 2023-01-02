@@ -17,7 +17,7 @@ namespace cppnet {
 
 class CppNetBase;
 // cppnet instance
-class CppNet {
+class CPPNET_API CppNet {
 public:
     CppNet();
     ~CppNet();

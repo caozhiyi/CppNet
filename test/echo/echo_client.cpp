@@ -1,6 +1,8 @@
 #include <map>
 #include <string>
 #include <atomic>
+#include <chrono>
+#include <thread>
 #include <iostream>
 #include <algorithm> // for std::find
 
@@ -24,7 +26,7 @@ void ReadFunc(Handle handle, cppnet::BufferPtr data, uint32_t len) {
     char buf[1024] = {0};
     data->Read(buf, 1024);
     std::cout << buf << std::endl;
-    cppnet::Sleep(100);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     handle->Write(buf, len);
 }
 
@@ -58,7 +60,7 @@ int main() {
         net.Connection("127.0.0.1", 8921);
     }
     // wait all connect success.
-    cppnet::Sleep(20000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(20000));
 
     std::cout << "200 clients all connected" << std::endl;
     

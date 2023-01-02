@@ -7,10 +7,11 @@
 #define INCLUDE_CPPNET_BUFFER
 
 #include <cstdint>
+#include "cppnet_type.h"
 
 namespace cppnet {
 
-class Buffer {
+class CPPNET_API Buffer {
 public:
     Buffer() {}
     virtual ~Buffer() {}

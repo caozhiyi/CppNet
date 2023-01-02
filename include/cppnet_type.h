@@ -12,6 +12,13 @@
 
 namespace cppnet {
 
+#define EXPORT
+#ifdef EXPORT
+#define CPPNET_API __declspec(dllexport)  
+#else
+#define CPPNET_API __declspec(dllimport)  
+#endif
+
 // socket
 class Buffer;
 class CNSocket;

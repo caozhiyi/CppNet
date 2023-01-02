@@ -8,11 +8,12 @@
 
 #include <string>
 #include <cstdint>
+#include "cppnet_type.h"
 
 namespace cppnet {
 
 // cppnet socket interface
-class CNSocket {
+class CPPNET_API CNSocket {
 public:
     CNSocket() {}
     virtual ~CNSocket() {}
