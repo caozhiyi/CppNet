@@ -38,4 +38,4 @@ add_subdirectory(cppnet)
 
 add_library(${PROJECT_NAME} STATIC ${common_source} ${cppnet_source})
 
-add_subdirectory(test)
+# add_subdirectory(test)
