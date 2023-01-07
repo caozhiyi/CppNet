@@ -55,6 +55,12 @@
     <Filter Include="cppnet\event\epoll\wepoll">
       <UniqueIdentifier>{01f24cd1-baff-401e-a739-9d41d1035612}</UniqueIdentifier>
     </Filter>
+    <Filter Include="cadapter">
+      <UniqueIdentifier>{47106deb-6a91-4338-b43e-b482cc1961c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cinclude">
+      <UniqueIdentifier>{3152f552-375a-46d1-8941-0e9fa0f0dc19}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\cppnet.h">
@@ -138,9 +144,6 @@
     <ClInclude Include="common\timer\timer.h">
       <Filter>common\timer</Filter>
     </ClInclude>
-    <ClInclude Include="common\timer\timer_1ms.h">
-      <Filter>common\timer</Filter>
-    </ClInclude>
     <ClInclude Include="common\timer\timer_container.h">
       <Filter>common\timer</Filter>
     </ClInclude>
@@ -219,8 +222,8 @@
     <ClInclude Include="common\timer\timer_interface.h">
       <Filter>common\timer</Filter>
     </ClInclude>
-    <ClInclude Include="common\timer\timer_solt.h">
-      <Filter>common\timer</Filter>
+    <ClInclude Include="cinclude\c_cppnet.h">
+      <Filter>cinclude</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -261,9 +264,6 @@
       <Filter>common\os\win</Filter>
     </ClCompile>
     <ClCompile Include="common\timer\timer.cpp">
-      <Filter>common\timer</Filter>
-    </ClCompile>
-    <ClCompile Include="common\timer\timer_1ms.cpp">
       <Filter>common\timer</Filter>
     </ClCompile>
     <ClCompile Include="common\timer\timer_container.cpp">
@@ -329,8 +329,8 @@
     <ClCompile Include="common\timer\timer_container.cpp">
       <Filter>common\timer</Filter>
     </ClCompile>
-    <ClCompile Include="common\timer\timer_solt.cpp">
-      <Filter>common\timer</Filter>
+    <ClCompile Include="cadapter\c_cppnet.cpp">
+      <Filter>cadapter</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
