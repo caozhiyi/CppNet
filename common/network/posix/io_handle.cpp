@@ -115,22 +115,30 @@ SysCallInt64Result OsHandle::Accept(int64_t sockfd, Address& address) {
     void *addr = nullptr;
     switch (addr_pt->sa_family) {
         case AF_INET:
+		{
             addr = &((struct sockaddr_in *)addr_pt)->sin_addr;
             address.SetAddrPort(ntohs(((struct sockaddr_in *)addr_pt)->sin_port));
             address.SetType(AT_IPV4);
+            // get IP
+            char str_addr[INET_ADDRSTRLEN] = {0};
+            inet_ntop(AF_INET, addr, str_addr, sizeof(str_addr));
+            address.SetIp(str_addr);
             break;
+		}
         case AF_INET6:
+		{
             addr = &((struct sockaddr_in6 *)addr_pt)->sin6_addr;
             address.SetAddrPort((((struct sockaddr_in6 *)addr_pt)->sin6_port));
             address.SetType(AT_IPV6);
-        break;
+            // get IP
+            char str_addr[INET6_ADDRSTRLEN] = {0};
+            inet_ntop(AF_INET6, addr, str_addr, sizeof(str_addr));
+            address.SetIp(str_addr);
+            break;
+		}
         default:
             return {-1, errno};
     }
-
-    char str_addr[INET6_ADDRSTRLEN] = {0};
-    inet_ntop(AF_INET6, addr, str_addr, sizeof(str_addr));
-    address.SetIp(str_addr);
     
     return {ret, 0};
 }
