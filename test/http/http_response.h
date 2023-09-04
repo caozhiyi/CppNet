@@ -2,6 +2,7 @@
 #define TEST_HTTP_HTTP_RESPONSE_HEADER
 
 #include <map>
+#include <string>
 
 enum HttpStatusCode {
     kUnknown,

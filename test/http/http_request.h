@@ -1,7 +1,7 @@
 #ifndef TEST_HTTP_HTTP_REQUEST_HEADER
 #define TEST_HTTP_HTTP_REQUEST_HEADER
 
-#include <ctype.h>
+#include <cstdint>
 #include <string>
 #include <stdio.h>
 #include <assert.h>
