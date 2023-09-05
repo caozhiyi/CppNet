@@ -36,6 +36,6 @@ protected:
     std::shared_ptr<Logger> _logger;
 };
 
-}
+} // namespace cppnet
 
 #endif

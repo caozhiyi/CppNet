@@ -8,14 +8,6 @@
 
 namespace cppnet {
 
-StdoutLogger::StdoutLogger() {
-
-}
-
-StdoutLogger::~StdoutLogger() {
-
-}
-
 void StdoutLogger::Debug(std::shared_ptr<Log>& log) {
     {
         std::unique_lock<std::mutex> lock(_mutex);
@@ -56,4 +48,4 @@ void StdoutLogger::Fatal(std::shared_ptr<Log>& log) {
     Logger::Fatal(log);
 }
 
-}
+} // namespace cppnet

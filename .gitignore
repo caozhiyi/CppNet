@@ -17,3 +17,7 @@ build/
 *.pro
 *.user
 *bug
+
+# compdb files
+.cache/
+compile_commands.json
