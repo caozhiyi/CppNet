@@ -128,4 +128,4 @@ LogStream& LogStream::operator<<(char v) {
     return *this;
 }
 
-}
+} // namespace cppnet

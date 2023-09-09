@@ -211,4 +211,4 @@ Log* BaseLogger::NewLog() {
     return item;
 }
 
-}
+} // namespace cppnet

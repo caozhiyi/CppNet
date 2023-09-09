@@ -131,4 +131,4 @@ void FileLogger::CheckExpireFiles() {
     }
 }
 
-}
+} // namespace cppnet

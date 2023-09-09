@@ -14,7 +14,8 @@
 namespace cppnet {
 
 struct Log;
-typedef std::pair<std::shared_ptr<Log>, std::function<void(std::shared_ptr<Log>)>> LogStreamParam;
+using LogStreamParam =
+    std::pair<std::shared_ptr<Log>, std::function<void(std::shared_ptr<Log>)>>;
 
 class LogStream {
 public:
@@ -47,6 +48,6 @@ private:
     std::function<void(std::shared_ptr<Log>)> _call_back;
 };
 
-}
+} // namespace cppnet
 
 #endif

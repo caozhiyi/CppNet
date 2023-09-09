@@ -72,6 +72,6 @@ private:
     std::shared_ptr<BaseLogger> _logger;
 };
 
-}
+} // namespace cppnet
 
 #endif

@@ -15,8 +15,6 @@
 
 namespace cppnet {
 
-static const uint8_t __file_logger_time_buf_size = sizeof("xxxx-xx-xx:xx");
-
 enum FileLoggerSpiltUnit {
     FLSU_DAY  = 1,
     FLSU_HOUR = 2,
@@ -54,6 +52,9 @@ private:
     void CheckExpireFiles();
 
 private:
+    enum : uint8_t {
+        __file_logger_time_buf_size = sizeof("xxxx-xx-xx:xx")
+    };
     std::string   _file_name;
     std::fstream  _stream;
 
@@ -68,6 +69,6 @@ private:
     std::queue<std::string> _history_file_names;
 };
 
-}
+} // namespace cppnet
 
 #endif

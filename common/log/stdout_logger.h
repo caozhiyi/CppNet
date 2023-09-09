@@ -15,8 +15,8 @@ class StdoutLogger:
     public Logger {
 
 public:
-    StdoutLogger();
-    ~StdoutLogger();
+    StdoutLogger() = default;
+    ~StdoutLogger() = default;
 
     void Debug(std::shared_ptr<Log>& log);
     void Info(std::shared_ptr<Log>& log);
@@ -28,6 +28,6 @@ private:
     std::mutex _mutex;
 };
 
-}
+} // namespace cppnet
 
 #endif
