@@ -188,7 +188,9 @@ std::shared_ptr<Log> BaseLogger::GetLog() {
         log = NewLog();
     }
 
-    return std::shared_ptr<Log>(log, [this](Log* &l) { FreeLog(l); });
+    auto deleter = [this](Log *l) { FreeLog(l); };
+
+    return std::shared_ptr<Log>(log, deleter);
 }
 
 void BaseLogger::FreeLog(Log* log) {

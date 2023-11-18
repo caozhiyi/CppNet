@@ -21,3 +21,4 @@ build/
 # compdb files
 .cache/
 compile_commands.json
+.clangd/
