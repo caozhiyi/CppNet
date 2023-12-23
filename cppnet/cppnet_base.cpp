@@ -31,14 +31,6 @@ union TimerId {
 };
 
 
-CppNetBase::CppNetBase() {
-
-}
-
-CppNetBase::~CppNetBase() {
-
-}
-
 void CppNetBase::Init(uint32_t thread_num) {
     uint32_t cpus = GetCpuNum();
     if (thread_num == 0 || thread_num >= cpus * 2) {
@@ -72,7 +64,7 @@ void CppNetBase::Join() {
     }
 }
 
-uint64_t CppNetBase::AddTimer(uint32_t interval, const user_timer_call_back& cb, void* param, bool always) {
+uint64_t CppNetBase::AddTimer(uint32_t interval, user_timer_call_back&& cb, void* param, bool always) {
     uint32_t index = _random->Random();
     uint32_t id = _dispatchers[index]->AddTimer(cb, param, interval, always);
     TimerId tid;

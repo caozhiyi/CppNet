@@ -13,7 +13,7 @@ set(CXX_FLAGS
  -fPIC
  -lstdc++
  -pipe
- )
+)
 
 if(CMAKE_BUILD_BITS EQUAL 32)
   list(APPEND CXX_FLAGS "-m32")

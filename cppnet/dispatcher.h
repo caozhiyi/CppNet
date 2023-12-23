@@ -16,7 +16,7 @@
 
 namespace cppnet {
 
-typedef std::function<void()> Task;
+using Task = std::function<void()>;
 
 class Timer;
 class RWSocket;
@@ -30,12 +30,12 @@ class Dispatcher:
 
 public:
     Dispatcher(std::shared_ptr<CppNetBase> base, uint32_t thread_num, uint32_t base_id);
-    Dispatcher(std::shared_ptr<CppNetBase> base, uint32_t base_id = 0);
-    ~Dispatcher();
+    explicit Dispatcher(std::shared_ptr<CppNetBase> base, uint32_t base_id = 0);
+    ~Dispatcher() override;
 
-    void Run();
+    void Run() override;
 
-    void Stop();
+    void Stop() override;
 
     void Listen(uint64_t sock, const std::string& ip, uint16_t port);
 
@@ -53,7 +53,6 @@ private:
     void DoTask();
     uint32_t MakeTimerID();
 
-private:
     uint64_t _cur_utc_time;
 
     std::mutex _timer_id_mutex;

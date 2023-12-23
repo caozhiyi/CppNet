@@ -8,15 +8,13 @@
 #include "cppnet_base.h"
 #include "cppnet/cppnet_config.h"
 
+#include "common/util/random.h"
 #include "common/log/log.h"
 #include "common/log/file_logger.h"
 #include "common/log/stdout_logger.h"
 
 namespace cppnet {
 
-CppNet::CppNet() {
-
-}
 
 CppNet::~CppNet() {
     if (_cppnet_base) {
@@ -52,44 +50,44 @@ void CppNet::Join() {
     _cppnet_base->Join();
 }
 
-void CppNet::SetReadCallback(const read_call_back& cb) {
-    _cppnet_base->SetReadCallback(cb);
+void CppNet::SetReadCallback(read_call_back&& cb) {
+    _cppnet_base->SetReadCallback(std::move(cb));
 }
 
-void CppNet::SetWriteCallback(const write_call_back& cb) {
-    _cppnet_base->SetWriteCallback(cb);
+void CppNet::SetWriteCallback(write_call_back&& cb) {
+    _cppnet_base->SetWriteCallback(std::move(cb));
 }
 
-void CppNet::SetDisconnectionCallback(const connect_call_back& cb) {
-    _cppnet_base->SetDisconnectionCallback(cb);
+void CppNet::SetDisconnectionCallback(connect_call_back&& cb) {
+    _cppnet_base->SetDisconnectionCallback(std::move(cb));
 }
 
-void CppNet::SetTimerCallback(const timer_call_back& cb) {
-    _cppnet_base->SetTimerCallback(cb);
+void CppNet::SetTimerCallback(timer_call_back&& cb) {
+    _cppnet_base->SetTimerCallback(std::move(cb));
 }
 
-uint64_t CppNet::AddTimer(int32_t interval, const user_timer_call_back& cb, void* param, bool always) {
-    return _cppnet_base->AddTimer(interval, cb, param, always);
+uint64_t CppNet::AddTimer(int32_t interval, user_timer_call_back&& cb, void* param, bool always) {
+    return _cppnet_base->AddTimer(interval, std::move(cb), param, always);
 }
 
 void CppNet::RemoveTimer(uint64_t timer_id) {
     _cppnet_base->RemoveTimer(timer_id);
 }
 
-void CppNet::SetAcceptCallback(const connect_call_back& cb) {
-    _cppnet_base->SetAcceptCallback(cb);
+void CppNet::SetAcceptCallback(connect_call_back&& cb) {
+    _cppnet_base->SetAcceptCallback(std::move(cb));
 }
 
 bool CppNet::ListenAndAccept(const std::string& ip, uint16_t port) {
     return _cppnet_base->ListenAndAccept(ip, port);
 }
 
-void CppNet::SetConnectionCallback(const connect_call_back& cb) {
-    _cppnet_base->SetConnectionCallback(cb);
+void CppNet::SetConnectionCallback(connect_call_back&& cb) {
+    _cppnet_base->SetConnectionCallback(std::move(cb));
 }
 
 bool CppNet::Connection(const std::string& ip, uint16_t port) {
     return _cppnet_base->Connection(ip, port);
 }
 
-}
+} // namespace cppnet
