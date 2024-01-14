@@ -23,29 +23,29 @@ class CppNetBase:
     public std::enable_shared_from_this<CppNetBase> {
 
 public:
-    CppNetBase();
-    ~CppNetBase();
+    CppNetBase() = default;
+    ~CppNetBase() = default;
     // common
     void Init(uint32_t thread_num);
     void Dealloc();
     void Join();
 
     // set call back
-    void SetReadCallback(const read_call_back& cb) { _read_cb = cb; }
-    void SetWriteCallback(const write_call_back& cb) { _write_cb = cb; }
-    void SetDisconnectionCallback(const connect_call_back& cb) { _disconnect_cb = cb; }
-    void SetTimerCallback(const timer_call_back& cb) { _timer_cb = cb; }
+    void SetReadCallback(read_call_back&& cb) { _read_cb = std::move(cb); }
+    void SetWriteCallback(write_call_back&& cb) { _write_cb = std::move(cb); }
+    void SetDisconnectionCallback(connect_call_back&& cb) { _disconnect_cb = std::move(cb); }
+    void SetTimerCallback(timer_call_back&& cb) { _timer_cb = std::move(cb); }
 
     // about timer
-    uint64_t AddTimer(uint32_t interval, const user_timer_call_back& cb, void* param = nullptr, bool always = false);
+    uint64_t AddTimer(uint32_t interval, user_timer_call_back&& cb, void* param = nullptr, bool always = false);
     void RemoveTimer(uint64_t timer_id);
 
     //server
-    void SetAcceptCallback(const connect_call_back& cb) { _accept_cb = cb; }
+    void SetAcceptCallback(connect_call_back&& cb) { _accept_cb = std::move(cb); }
     bool ListenAndAccept(const std::string& ip, uint16_t port);
 
     //client
-    void SetConnectionCallback(const connect_call_back& cb) { _connect_cb = cb; }
+    void SetConnectionCallback(connect_call_back&& cb) { _connect_cb = std::move(cb); }
     bool Connection(const std::string& ip, uint16_t port);
 
     // call back

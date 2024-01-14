@@ -19,7 +19,7 @@ class CppNetBase;
 // cppnet instance
 class CppNet {
 public:
-    CppNet();
+    CppNet() = default;
     ~CppNet();
     // common
     // init cppnet library.
@@ -31,23 +31,23 @@ public:
     void Join();
 
     // must set callback before listen
-    void SetReadCallback(const read_call_back& cb);
-    void SetWriteCallback(const write_call_back& cb);
-    void SetDisconnectionCallback(const connect_call_back& cb);
+    void SetReadCallback(read_call_back&& cb);
+    void SetWriteCallback(write_call_back&& cb);
+    void SetDisconnectionCallback(connect_call_back&& cb);
 
     // if use socket timer, set it
-    void SetTimerCallback(const timer_call_back& cb);
+    void SetTimerCallback(timer_call_back&& cb);
 
     // return timer id
-    uint64_t AddTimer(int32_t interval, const user_timer_call_back& cb, void* param = nullptr, bool always = false);
+    uint64_t AddTimer(int32_t interval, user_timer_call_back&& cb, void* param = nullptr, bool always = false);
     void RemoveTimer(uint64_t timer_id);
 
     //server
-    void SetAcceptCallback(const connect_call_back& cb);
+    void SetAcceptCallback(connect_call_back&& cb);
     bool ListenAndAccept(const std::string& ip, uint16_t port);
 
     //client
-    void SetConnectionCallback(const connect_call_back& cb);
+    void SetConnectionCallback(connect_call_back&& cb);
     bool Connection(const std::string& ip, uint16_t port);
 
 private:
