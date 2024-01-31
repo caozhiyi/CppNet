@@ -4,8 +4,8 @@
 #include <iostream>
 #include <algorithm> // for std::find
 
-#include "include/cppnet.h"
 #include "common/util/time.h"
+#include "include/cppnet.h"
 
 using namespace cppnet;
 

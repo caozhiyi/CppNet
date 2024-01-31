@@ -6,12 +6,12 @@
 #ifndef INCLUDE_CPPNET
 #define INCLUDE_CPPNET
 
-#include <string>
 #include <memory>
+#include <string>
 
-#include "cppnet_type.h"
 #include "cppnet_buffer.h"
 #include "cppnet_socket.h"
+#include "cppnet_type.h"
 
 namespace cppnet {
 
@@ -54,6 +54,6 @@ private:
     std::shared_ptr<CppNetBase> _cppnet_base;
 };
 
-}
+} // namespace cppnet
 
 #endif
