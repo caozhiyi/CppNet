@@ -12,8 +12,8 @@ namespace cppnet {
 
 class Buffer {
 public:
-    Buffer() {}
-    virtual ~Buffer() {}
+    Buffer() = default;
+    virtual ~Buffer() = default;
 
     // read to data to buf but don't move the read point.
     // return read size.
@@ -45,6 +45,6 @@ public:
     virtual uint32_t FindStr(const char* s, uint32_t s_len) = 0;
 };
 
-}
+} // namespace cppnet
 
 #endif

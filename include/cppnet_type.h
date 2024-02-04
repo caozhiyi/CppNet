@@ -6,35 +6,35 @@
 #ifndef INCLUDE_CPPNET_TYPE
 #define INCLUDE_CPPNET_TYPE
 
-#include <memory>
 #include <cstdint>
 #include <functional>
+#include <memory>
 
 namespace cppnet {
 
 // socket
 class Buffer;
 class CNSocket;
-typedef std::shared_ptr<CNSocket> Handle;
-typedef std::shared_ptr<Buffer>   BufferPtr;
+using Handle = std::shared_ptr<CNSocket>;
+using BufferPtr = std::shared_ptr<Buffer>;
 
 // call back define
 // param : param is set when call
-typedef std::function<void(Handle)>                     timer_call_back;
-typedef std::function<void(void*)>                      user_timer_call_back;
+using timer_call_back = std::function<void (Handle)>;
+using user_timer_call_back = std::function<void (void *)>;
 
 // handle : handle of socket
 // err    : error code
-typedef std::function<void(Handle, uint32_t)>           connect_call_back;
+using connect_call_back = std::function<void (Handle, uint32_t)>;
 
 // handle : handle of socket
 // len    : send date len
-typedef std::function<void(Handle, uint32_t)>           write_call_back;
+using write_call_back = std::function<void (Handle, uint32_t)>;
 
 // handle : handle of socket
 // data   : point to recv data buffer
 // len    : recv data len
-typedef std::function<void(Handle, BufferPtr,uint32_t)> read_call_back;
+using read_call_back = std::function<void (Handle, BufferPtr, uint32_t)>;
     
 // error code
 enum CPPNET_ERROR_CODE {
@@ -44,6 +44,6 @@ enum CPPNET_ERROR_CODE {
     CEC_CONNECT_REFUSE         = 3,    // remote refuse connect or server not exist.
 };
 
-}
+} // namespace cppnet
 
 #endif

@@ -6,16 +6,16 @@
 #ifndef INCLUDE_CPPNET_SOCKET
 #define INCLUDE_CPPNET_SOCKET
 
-#include <string>
 #include <cstdint>
+#include <string>
 
 namespace cppnet {
 
 // cppnet socket interface
 class CNSocket {
 public:
-    CNSocket() {}
-    virtual ~CNSocket() {}
+    CNSocket() = default;
+    virtual ~CNSocket() = default;
     // get os native socket
     virtual uint64_t GetSocket() = 0;
     // get local listen port
@@ -40,6 +40,6 @@ public:
     virtual void* GetContext() = 0;
 };
 
-}
+} // namespace cppnet
 
 #endif

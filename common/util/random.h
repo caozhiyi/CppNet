@@ -6,8 +6,8 @@
 #ifndef COMMON_UTIL_RANDOM
 #define COMMON_UTIL_RANDOM
 
-#include <random>
 #include <cstdint>
+#include <random>
 
 namespace cppnet {
 
@@ -24,6 +24,6 @@ private:
     std::uniform_int_distribution<int32_t> _uniform;
 };
 
-}
+} // namespace cppnet
 
 #endif

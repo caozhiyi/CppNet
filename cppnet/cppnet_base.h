@@ -6,9 +6,10 @@
 #ifndef CPPNET_CPPNET_BASE
 #define CPPNET_CPPNET_BASE
 
-#include <vector>
 #include <memory>
 #include <string>
+#include <vector>
+
 #include "include/cppnet_type.h"
 
 namespace cppnet {
@@ -68,5 +69,6 @@ private:
     std::vector<std::shared_ptr<Dispatcher>> _dispatchers;
 };
 
-}
+} // namespace cppnet
+
 #endif
