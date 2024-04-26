@@ -19,9 +19,9 @@ public:
     ~ThreadSafeBlockQueue() {}
 
     void Push(const T& element) {
-        std::unique_lock<std::mutex> lock(_mutex);
+        std::lock_guard<std::mutex> lock(_mutex);
         _queue.push(element);
-        _empty_notify.notify_all();
+        _empty_notify.notify_one();
     }
 
     T Pop() {
@@ -35,19 +35,19 @@ public:
     }
 
     void Clear() {
-        std::unique_lock<std::mutex> lock(_mutex);
+        std::lock_guard<std::mutex> lock(_mutex);
         while (!_queue.empty()) {
             _queue.pop();
         }
     }
 
     uint32_t Size() {
-        std::unique_lock<std::mutex> lock(_mutex);
+        std::lock_guard<std::mutex> lock(_mutex);
         return _queue.size();
     }
 
     bool Empty() {
-        std::unique_lock<std::mutex> lock(_mutex);
+        std::lock_guard<std::mutex> lock(_mutex);
         return _queue.empty();
     }
 
