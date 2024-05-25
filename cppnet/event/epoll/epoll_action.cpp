@@ -50,7 +50,7 @@ EpollEventActions::EpollEventActions():
 }
 
 EpollEventActions::~EpollEventActions() {
-    if (_epoll_handler > 0) {
+    if (_epoll_handler != nullptr) {
 #ifdef __win__
         epoll_close(_epoll_handler);
 #else
