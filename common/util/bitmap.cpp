@@ -112,7 +112,11 @@ int32_t Bitmap::GetMinAfter(uint32_t index) {
     if (target_vec_index == bitmap_index) {
         return -1;
     }
-
+    
+    if (target_vec_index >= _bitmap.size()) {
+        return -1;
+    }
+    
     int64_t cur_bitmap = _bitmap[target_vec_index];
     ret += (next_vec_index - 1) * __step_size;
     ret += (uint32_t)std::log2f(float((cur_bitmap & (-cur_bitmap)) + 1));
