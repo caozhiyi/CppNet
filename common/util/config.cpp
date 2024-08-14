@@ -6,8 +6,8 @@
 #include <fstream>
 #include <cstring>
 
-#include "config.h"
 #include "common/log/log.h"
+#include "common/util/config.h"
 
 namespace cppnet {
 

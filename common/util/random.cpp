@@ -4,7 +4,7 @@
 // Author: caozhiyi (caozhiyi5@gmail.com)
 
 #include <random>
-#include "random.h"
+#include "common/util/random.h"
 
 namespace cppnet {
 

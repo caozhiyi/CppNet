@@ -4,7 +4,7 @@
 // Author: caozhiyi (caozhiyi5@gmail.com)
 
 #include <cmath>
-#include "bitmap.h"
+#include "common/util/bitmap.h"
 
 namespace cppnet {
 

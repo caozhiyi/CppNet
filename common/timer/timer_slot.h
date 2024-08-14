@@ -7,7 +7,7 @@
 #define COMMON_TIMER_TIMER_SLOT
 
 #include <cstdint>
-#include "timer_interface.h"
+#include "common/timer/timer_interface.h"
 
 namespace cppnet {
 

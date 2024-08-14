@@ -3,9 +3,9 @@
 
 // Author: caozhiyi (caozhiyi5@gmail.com)
 
-#include "buffer_queue.h"
-#include "buffer_block.h"
 #include "common/alloter/pool_block.h"
+#include "common/buffer/buffer_queue.h"
+#include "common/buffer/buffer_block.h"
 #include "common/alloter/alloter_interface.h"
 
 namespace cppnet {

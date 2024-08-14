@@ -5,8 +5,8 @@
 
 #include <stdarg.h>
 
-#include "log.h"
-#include "base_logger.h"
+#include "common/log/log.h"
+#include "common/log/base_logger.h"
 
 namespace cppnet {
 

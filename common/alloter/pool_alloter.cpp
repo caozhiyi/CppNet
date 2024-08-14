@@ -6,8 +6,8 @@
 #include <cstring>
 #include <cstdlib>
 
-#include "pool_alloter.h"
-#include "normal_alloter.h"
+#include "common/alloter/pool_alloter.h"
+#include "common/alloter/normal_alloter.h"
 
 namespace cppnet {
 

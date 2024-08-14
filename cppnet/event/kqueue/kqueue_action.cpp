@@ -6,12 +6,12 @@
 #include <thread>
 #include <unistd.h>    // for close
 
-#include "kqueue_action.h"
 #include "include/cppnet_type.h"
 #include "cppnet/cppnet_config.h"
 #include "cppnet/socket/rw_socket.h"
 #include "cppnet/socket/connect_socket.h"
 #include "cppnet/event/event_interface.h"
+#include "cppnet/event/kqueue/kqueue_action.h"
 
 #include "common/log/log.h"
 #include "common/util/time.h"

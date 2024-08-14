@@ -4,8 +4,8 @@
 // Author: caozhiyi (caozhiyi5@gmail.com)
 
 #include <cstring>
-#include "buffer_block.h"
 #include "common/alloter/pool_block.h"
+#include "common/buffer/buffer_block.h"
 
 namespace cppnet {
 

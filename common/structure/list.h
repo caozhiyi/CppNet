@@ -8,7 +8,7 @@
 
 #include <memory>
 #include <cstdint>
-#include "list_slot.h"
+#include "common/structure/list_slot.h"
 
 namespace cppnet {
 

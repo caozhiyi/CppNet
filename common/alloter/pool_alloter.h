@@ -11,7 +11,7 @@
 #endif
 #include <vector>
 #include <cstdint>
-#include "alloter_interface.h"
+#include "common/alloter/alloter_interface.h"
 
 namespace cppnet {
 

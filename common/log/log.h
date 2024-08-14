@@ -9,7 +9,7 @@
 #include <memory>
 #include <cstdint>
 
-#include "log_stream.h"
+#include "common/log/log_stream.h"
 #include "common/util/singleton.h"
 
 namespace cppnet {

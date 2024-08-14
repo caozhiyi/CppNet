@@ -8,8 +8,7 @@
 #include <sys/poll.h>
 #include <sys/socket.h>
 #include <sys/resource.h>
-
-#include "../socket.h"
+#include "common/network/socket.h"
 
 namespace cppnet {
 

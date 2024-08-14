@@ -7,8 +7,9 @@
 #define CPPNET_SOCKET_READ_WRITE_SOCKET
 
 #include <atomic>
-#include "socket_interface.h"
 #include "include/cppnet_socket.h"
+#include "cppnet/socket/socket_interface.h"
+
 
 namespace cppnet {
 
