@@ -7,8 +7,8 @@
 #define COMMON_BUFFER_BUFFER_BLOCK
 
 #include <memory>
-#include "buffer_interface.h"
 #include "common/structure/list_slot.h"
+#include "common/buffer/buffer_interface.h"
 
 namespace cppnet {
 

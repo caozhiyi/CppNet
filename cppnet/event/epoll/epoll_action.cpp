@@ -18,12 +18,12 @@
 #define WSAEWOULDBLOCK 10035
 #endif
 
-#include "epoll_action.h"
 #include "include/cppnet_type.h"
 #include "cppnet/cppnet_config.h"
 #include "cppnet/socket/rw_socket.h"
 #include "cppnet/socket/connect_socket.h"
 #include "cppnet/event/event_interface.h"
+#include "cppnet/event/epoll/epoll_action.h"
 
 #include "common/log/log.h"
 #include "common/util/time.h"
@@ -50,10 +50,11 @@ EpollEventActions::EpollEventActions():
 }
 
 EpollEventActions::~EpollEventActions() {
-    if (_epoll_handler != nullptr) {
 #ifdef __win__
+    if (_epoll_handler != nullptr) {
         epoll_close(_epoll_handler);
 #else
+    if (_epoll_handler != -1) {
         close(_epoll_handler);
 #endif
     }

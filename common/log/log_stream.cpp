@@ -3,9 +3,9 @@
 
 // Author: caozhiyi (caozhiyi5@gmail.com)
 
-#include "log.h"
-#include "log_stream.h"
-#include "logger_interface.h"
+#include "common/log/log.h"
+#include "common/log/log_stream.h"
+#include "common/log/logger_interface.h"
 
 namespace cppnet {
 

@@ -11,8 +11,8 @@
 #include <memory>
 #include <unordered_map>
 
-#include "../util/bitmap.h"
-#include "timer_interface.h"
+#include "common/util/bitmap.h"
+#include "common/timer/timer_interface.h"
 
 namespace cppnet {
 

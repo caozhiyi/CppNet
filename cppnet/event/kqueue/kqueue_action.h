@@ -10,7 +10,7 @@
 #include <vector>
 #include <cstdint>
 #include <sys/event.h> // for kqueue
-#include "../action_interface.h"
+#include "cppnet/event/action_interface.h"
 
 namespace cppnet {
 

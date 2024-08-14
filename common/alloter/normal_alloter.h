@@ -6,7 +6,7 @@
 #ifndef COMMON_ALLOTER_NORMAL_ALLOTER
 #define COMMON_ALLOTER_NORMAL_ALLOTER
 
-#include "alloter_interface.h"
+#include "common/alloter/alloter_interface.h"
 
 namespace cppnet {
 

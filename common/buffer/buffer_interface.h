@@ -6,8 +6,8 @@
 #ifndef COMMON_BUFFER_BUFFER_INTERFACE
 #define COMMON_BUFFER_BUFFER_INTERFACE
 
-#include "include/cppnet_buffer.h"
 #include <memory>
+#include "include/cppnet_buffer.h"
 
 namespace cppnet {
 
