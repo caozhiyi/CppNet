@@ -10,6 +10,7 @@ void SetNoDelay(const uint64_t& sock) {
     int ret = setsockopt(sock, SOL_SOCKET, TCP_NODELAY, (const char*)&opt, sizeof(opt));
 }
 #else
+#include <sys/socket.h>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 void SetNoDelay(const uint64_t& sock) {
