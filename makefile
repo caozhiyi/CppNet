@@ -25,6 +25,10 @@ ifeq ($(detected_OS),Darwin)  # Mac OS X
     SRCS += $(wildcard ./cppnet/event/kqueue/*.cpp)
 endif
 
+ifeq ($(detected_OS),FreeBSD)  # FreeBSD
+    SRCS += $(wildcard ./cppnet/event/kqueue/*.cpp)
+endif
+
 OBJS = $(patsubst %.cpp, %.o, $(SRCS))
 
 
