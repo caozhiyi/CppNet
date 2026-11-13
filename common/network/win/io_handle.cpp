@@ -17,13 +17,19 @@ SysCallInt64Result OsHandle::TcpSocket(bool ipv4) {
     }
     int64_t sock = socket(af, SOCK_STREAM, 0);
     if (sock == INVALID_SOCKET) {
-        return {sock, (int32_t)GetLastError()};
+        return {sock, WSAGetLastError()};
     }
 
-    // both ipv6 and ipv4
-    int32_t opt = 0;
-    if (setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&opt, sizeof(opt)) != 0) {
-        return { sock, (int32_t)GetLastError() };
+    // dual stack: ipv6 socket that also accepts ipv4. IPV6_V6ONLY only
+    // applies to AF_INET6 sockets; setting it on AF_INET fails with
+    // WSAEINVAL and used to turn every ipv4 socket creation into an error.
+    if (af == AF_INET6) {
+        int32_t opt = 0;
+        if (setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&opt, sizeof(opt)) != 0) {
+            int32_t err = WSAGetLastError();
+            closesocket((SOCKET)sock);
+            return { -1, err };
+        }
     }
 
     return {sock, 0};
@@ -49,7 +55,7 @@ SysCallInt32Result OsHandle::Bind(int64_t sockfd, Address& address) {
     }
     
     if (SOCKET_ERROR == ret) {
-        return {ret, (int32_t)GetLastError()};
+        return {ret, WSAGetLastError()};
     }
     return {ret, 0};
 }
@@ -59,9 +65,11 @@ SysCallInt32Result OsHandle::Listen(int64_t sockfd, uint32_t len) {
         len = SOMAXCONN;
     }
     
-    int32_t ret = listen((SOCKET)sockfd, SOMAXCONN);
+    // pass the backlog through: the old code computed `len` above and then
+    // ignored it by hard coding SOMAXCONN again
+    int32_t ret = listen((SOCKET)sockfd, len);
     if (SOCKET_ERROR == ret) {
-        return {ret, (int32_t)GetLastError()};
+        return {ret, WSAGetLastError()};
     }
 
     return {ret, 0};
@@ -87,7 +95,7 @@ SysCallInt32Result OsHandle::Connect(int64_t sockfd, Address& address) {
     }
 
     if (ret < 0) {
-        return { ret, (int32_t)GetLastError() };
+        return { ret, WSAGetLastError() };
     }
     return { ret, 0 };
 }
@@ -95,7 +103,7 @@ SysCallInt32Result OsHandle::Connect(int64_t sockfd, Address& address) {
 SysCallInt32Result OsHandle::Close(int64_t sockfd) {
     int32_t ret = closesocket((SOCKET)sockfd);
     if (ret != 0) {
-        return {ret, (int32_t)GetLastError()};
+        return {ret, WSAGetLastError()};
     }
     return {ret, 0};
 }
@@ -105,7 +113,7 @@ SysCallInt64Result OsHandle::Accept(int64_t sockfd, Address& address) {
     socklen_t addr_size = sizeof(client_addr);
     int64_t ret = accept(sockfd, (sockaddr*)&client_addr, &addr_size);
     if (ret < 0) {
-        return { ret, (int32_t)GetLastError() };
+        return { ret, WSAGetLastError() };
     }
 
     struct sockaddr* addr_pt = (struct sockaddr*)&client_addr;
@@ -129,7 +137,9 @@ SysCallInt64Result OsHandle::Accept(int64_t sockfd, Address& address) {
     {
         // get port
         addr = &((struct sockaddr_in6 *)addr_pt)->sin6_addr;
-        address.SetAddrPort((((struct sockaddr_in6 *)addr_pt)->sin6_port));
+        // ntohs was missing: the accepted ipv6 peer port was reported
+        // byte swapped
+        address.SetAddrPort(ntohs(((struct sockaddr_in6 *)addr_pt)->sin6_port));
         address.SetType(AT_IPV6);
         // get IP
         char str_addr[INET6_ADDRSTRLEN] = { 0 };
@@ -149,7 +159,7 @@ SysCallInt64Result OsHandle::Accept(int64_t sockfd, Address& address) {
 SysCallInt32Result OsHandle::Write(int64_t sockfd, const char *data, uint32_t len) {
     int32_t ret = send(sockfd, data, len, 0);
     if (ret < 0) {
-        return { ret, (int32_t)GetLastError() };
+        return { ret, WSAGetLastError() };
     }
     return { ret, 0 };
 }
@@ -168,7 +178,7 @@ SysCallInt32Result OsHandle::Writev(int64_t sockfd, Iovec *vec, uint32_t vec_len
 SysCallInt32Result OsHandle::Recv(int64_t sockfd, char *data, uint32_t len, uint16_t flag) {
     int32_t ret = recv(sockfd, data, len, 0);
     if (ret < 0) {
-        return { ret, (int32_t)GetLastError() };
+        return { ret, WSAGetLastError() };
     }
     return { ret, 0 };
 }

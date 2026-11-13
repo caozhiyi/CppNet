@@ -1,33 +1,31 @@
-// Use of this source code is governed by a BSD 3-Clause License
-// that can be found in the LICENSE file.
-
-// Author: caozhiyi (caozhiyi5@gmail.com)
-
 #include <cstdio>
 #include <cstring>
-#include "common/util/time.h"
+#include <filesystem>
+#include <system_error>
+
 #include "common/log/file_logger.h"
 
 namespace cppnet {
+namespace common {
 
 FileLogger::FileLogger(const std::string& file, 
     FileLoggerSpiltUnit unit, 
     uint16_t max_store_days,
     uint16_t time_offset):
-    _file_name(file),
-    _time_offset(time_offset),
-    _spilt_unit(unit) {
+    file_name_(file),
+    time_offset_(time_offset),
+    spilt_unit_(unit) {
 
-    if (unit == FLSU_HOUR) {
-        _time_buf_len = 13; // xxxx-xx-xx:xx
-        _max_file_num = max_store_days * 24;
+    if (unit == FileLoggerSpiltUnit::kHour) {
+        time_buf_len_ = 13; // xxxx-xx-xx:xx
+        max_file_num_ = max_store_days * 24;
 
     } else {
-        _time_buf_len = 10; // xxxx-xx-xx
-        _max_file_num = max_store_days;
+        time_buf_len_ = 10; // xxxx-xx-xx
+        max_file_num_ = max_store_days;
     }
 
-    memset(_time, 0, __file_logger_time_buf_size);
+    memset(time_, 0, kFileLoggerTimeBufSize);
 
     Start();
 }
@@ -35,18 +33,18 @@ FileLogger::FileLogger(const std::string& file,
 FileLogger::~FileLogger() {
     Stop();
     Join();
-    _stream.close();
+    stream_.close();
 }
 
 void FileLogger::Run() {
      while (!_stop) {
         auto log = Pop();
         if (log) {
-            CheckTime(log->_log);
-            if (_stream.is_open()) {
-                _stream.write(log->_log, log->_len);
-                _stream.put('\n');
-                _stream.flush();
+            CheckTime(log->log_);
+            if (stream_.is_open()) {
+                stream_.write(log->log_, log->len_);
+                stream_.put('\n');
+                stream_.flush();
             }
 
         } else {
@@ -86,48 +84,68 @@ void FileLogger::Fatal(std::shared_ptr<Log>& log) {
 }
 
 void FileLogger::SetMaxStoreDays(uint16_t max) {
-    if (_spilt_unit == FLSU_HOUR) {
-        _time_buf_len = 13; // xxxx-xx-xx:xx
-        _max_file_num = max * 24;
+    if (spilt_unit_ == FileLoggerSpiltUnit::kHour) {
+        time_buf_len_ = 13; // xxxx-xx-xx:xx
+        max_file_num_ = max * 24;
 
     } else {
-        _time_buf_len = 10; // xxxx-xx-xx
-        _max_file_num = max;
+        time_buf_len_ = 10; // xxxx-xx-xx
+        max_file_num_ = max;
     }
 
     CheckExpireFiles();
 }
 
 void FileLogger::CheckTime(char* log) {
-    if (strncmp(_time, log + _time_offset, _time_buf_len) == 0) {
+    if (strncmp(time_, log + time_offset_, time_buf_len_) == 0) {
         return;
     }
 
-    if (_stream.is_open()) {
-        _stream.close();
+    if (stream_.is_open()) {
+        stream_.close();
     }
     
     // get new time and file name
-    memcpy(_time, log + _time_offset, _time_buf_len);
-    std::string file_name(_file_name);
+    memcpy(time_, log + time_offset_, time_buf_len_);
+    std::string file_name(file_name_);
     file_name.append(".");
-    file_name.append(_time, _time_buf_len);
+    file_name.append(time_, time_buf_len_);
     file_name.append(".log");
 
-    _history_file_names.push(file_name);
+    history_file_names_.push(file_name);
     CheckExpireFiles();
 
+    // Ensure parent directory exists. std::ofstream::open does not create
+    // missing directories, so without this every write would silently fail
+    // when the configured log path (e.g. "./logs") has not been created yet.
+    std::filesystem::path log_path(file_name);
+    if (log_path.has_parent_path()) {
+        std::error_code ec;
+        std::filesystem::create_directories(log_path.parent_path(), ec);
+        if (ec) {
+            // Fall back to stderr — we cannot log via ourselves here.
+            std::fprintf(stderr,
+                "[FileLogger] failed to create log directory \"%s\": %s\n",
+                log_path.parent_path().string().c_str(), ec.message().c_str());
+        }
+    }
+
     // open new log file
-    _stream.open(file_name.c_str(), std::ios::app | std::ios::out);
+    stream_.open(file_name.c_str(), std::ios::app | std::ios::out);
+    if (!stream_.is_open()) {
+        std::fprintf(stderr,
+            "[FileLogger] failed to open log file \"%s\"\n", file_name.c_str());
+    }
 }
 
 void FileLogger::CheckExpireFiles() {
     // delete expire files
-    while (_history_file_names.size() > _max_file_num) {
-        std::string del_file = _history_file_names.front();
-        _history_file_names.pop();
+    while (history_file_names_.size() > max_file_num_) {
+        std::string del_file = history_file_names_.front();
+        history_file_names_.pop();
         std::remove(del_file.c_str());
     }
 }
 
-} // namespace cppnet
+}  // namespace common
+}  // namespace cppnet

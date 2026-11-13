@@ -6,7 +6,14 @@
 #ifndef COMMON_UTIL_SINGLETON
 #define COMMON_UTIL_SINGLETON
 
+// VENDORED-FROM: quicX/src/common/util/singleton.h (CppNet adapted)
+// Stage 3.1 of upgrade: relocated to cppnet::common namespace.
+// The old cppnet::Singleton symbol is preserved via a using-declaration
+// at the end of this header so existing CppNet business code keeps working
+// without modification (self-export pattern, see common/log).
+
 namespace cppnet {
+namespace common {
 
 template<typename T>
 class Singleton {
@@ -23,5 +30,10 @@ protected:
     virtual ~Singleton() {}
 };
 
-}
+}  // namespace common
+
+// Self-export: keep cppnet::Singleton<T> working for existing call sites.
+using common::Singleton;
+
+}  // namespace cppnet
 #endif

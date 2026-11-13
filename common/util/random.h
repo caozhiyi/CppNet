@@ -6,10 +6,16 @@
 #ifndef COMMON_UTIL_RANDOM
 #define COMMON_UTIL_RANDOM
 
+// VENDORED-FROM: quicX/src/common/util/random.h (CppNet adapted)
+// Stage 3.1 of upgrade: relocated to cppnet::common namespace.
+// The old cppnet::RangeRandom symbol is preserved via a using-declaration
+// at the end of this header (self-export pattern).
+
 #include <cstdint>
 #include <random>
 
 namespace cppnet {
+namespace common {
 
 class RangeRandom {
 public:
@@ -24,6 +30,11 @@ private:
     std::uniform_int_distribution<int32_t> _uniform;
 };
 
-} // namespace cppnet
+}  // namespace common
+
+// Self-export: keep cppnet::RangeRandom working for existing call sites.
+using common::RangeRandom;
+
+}  // namespace cppnet
 
 #endif

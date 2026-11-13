@@ -7,6 +7,7 @@
 #include "common/util/bitmap.h"
 
 namespace cppnet {
+namespace common {
 
 static const uint32_t __step_size = sizeof(int64_t) * 8;
 static const uint64_t __setp_base = 1;
@@ -136,4 +137,5 @@ void Bitmap::Clear() {
     }
 }
 
-}
+}  // namespace common
+}  // namespace cppnet

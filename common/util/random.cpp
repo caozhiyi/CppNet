@@ -7,6 +7,7 @@
 #include "common/util/random.h"
 
 namespace cppnet {
+namespace common {
 
 std::random_device RangeRandom::_random;
 std::mt19937 RangeRandom::_engine(_random());
@@ -24,4 +25,5 @@ int32_t RangeRandom::Random() {
     return _uniform(_engine);
 }
 
-}
+}  // namespace common
+}  // namespace cppnet

@@ -74,7 +74,7 @@ bool EpollEventActions::Init(uint32_t thread_num) {
 #ifdef __win__
     if (!Pipe(_pipe)) {
 #else
-    if (pipe((int*)_pipe) == -1) {
+    if (pipe(_pipe) == -1) {
 #endif
         LOG_FATAL("pipe init failed! error : %d", errno);
         return false;
@@ -151,7 +151,7 @@ bool EpollEventActions::AddRecvEvent(Event* event) {
 
     auto sock = event->GetSocket();
     if (!sock) {
-        LOG_WARN("socket is already destroyed! event %s", "AddSendEvent");
+        LOG_WARN("socket is already destroyed! event %s", "AddRecvEvent");
         return false;
     }
 
@@ -172,9 +172,15 @@ bool EpollEventActions::AddAcceptEvent(Event* event) {
 
     epoll_event* ep_event = (epoll_event*)event->GetData();
     if (!ep_event) {
-        // TODO where to delete it.
-        ep_event = new epoll_event;
-        memset(ep_event, 0, sizeof(epoll_event));
+        // ConnectSocket has no per-socket pool allocator, so we cannot use
+        // PoolNew here. Park the lifetime on EpollEventActions, which
+        // outlives all listen sockets. Previously this was a raw `new` with
+        // a "TODO where to delete it" comment and leaked one struct per
+        // listen socket.
+        auto owned = std::unique_ptr<epoll_event>(new epoll_event());
+        memset(owned.get(), 0, sizeof(epoll_event));
+        ep_event = owned.get();
+        _accept_events.push_back(std::move(owned));
         event->SetData(ep_event);
 
         ep_event->data.ptr = (void*)event;
@@ -187,7 +193,7 @@ bool EpollEventActions::AddAcceptEvent(Event* event) {
 
     auto sock = event->GetSocket();
     if (!sock) {
-        LOG_WARN("socket is already destroyed! event %s", "AddSendEvent");
+        LOG_WARN("socket is already destroyed! event %s", "AddAcceptEvent");
         return false;
     }
 
@@ -273,7 +279,9 @@ bool EpollEventActions::DelEvent(Event* event) {
 }
 
 void EpollEventActions::ProcessEvent(int32_t wait_ms) {
-    int16_t ret = epoll_wait(_epoll_handler, &*_active_list.begin(), (int)_active_list.size(), wait_ms);
+    // epoll_wait returns int. Storing it in int16_t silently truncates
+    // values > 32767 to negative numbers and breaks the error-check below.
+    int ret = epoll_wait(_epoll_handler, &*_active_list.begin(), (int)_active_list.size(), wait_ms);
     if (ret == -1) {
         if (errno == EINTR) {
             return;
@@ -297,12 +305,12 @@ void EpollEventActions::Wakeup() {
     }
 }
 
-void EpollEventActions::OnEvent(std::vector<epoll_event>& event_vec, int16_t num) {
+void EpollEventActions::OnEvent(std::vector<epoll_event>& event_vec, int num) {
     std::shared_ptr<Socket> sock;
     Event* event = nullptr;
 
     for (int i = 0; i < num; i++) {
-        if ((uint32_t)event_vec[i].data.fd == _pipe[0]) {
+        if (event_vec[i].data.fd == _pipe[0]) {
             LOG_WARN("weak up the IO thread, index : %d", i);
             char buf[4];
 #ifdef __win__
@@ -388,7 +396,7 @@ bool EpollEventActions::AddEvent(epoll_event* ev, int32_t event_flag, uint64_t s
 bool EpollEventActions::MakeEpollEvent(Event* event, epoll_event* &ep_event) {
     auto sock = event->GetSocket();
     if (!sock) {
-        LOG_WARN("socket is already destroyed! event %s", "AddSendEvent");
+        LOG_WARN("socket is already destroyed! event %s", "MakeEpollEvent");
         return false;
     }
 
@@ -403,58 +411,69 @@ bool EpollEventActions::MakeEpollEvent(Event* event, epoll_event* &ep_event) {
 
 #ifdef __win__
 bool EpollEventActions::Pipe(SOCKET fd[2]) {
-        SOCKET listener = socket(AF_INET, SOCK_STREAM, 0);
-    if (listener < 0)
+    SOCKET listener = socket(AF_INET, SOCK_STREAM, 0);
+    // SOCKET is an unsigned handle: `listener < 0` never fires. Compare
+    // against INVALID_SOCKET and clean up sockets on every failure path,
+    // which previously leaked them.
+    if (listener == INVALID_SOCKET) {
         return false;
+    }
 
     struct sockaddr_in listen_addr;
     memset(&listen_addr, 0, sizeof(listen_addr));
     listen_addr.sin_family = AF_INET;
     listen_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
     listen_addr.sin_port = 0;	/* kernel chooses port.	 */
-    if (bind(listener, (struct sockaddr *) &listen_addr, sizeof(listen_addr)) == -1) {
+    if (bind(listener, (struct sockaddr *) &listen_addr, sizeof(listen_addr)) == SOCKET_ERROR) {
+        closesocket(listener);
         return false;
     }
-    if (listen(listener, 1) == -1) {
+    if (listen(listener, 1) == SOCKET_ERROR) {
+        closesocket(listener);
         return false;
     }
     SOCKET connector = socket(AF_INET, SOCK_STREAM, 0);
-    if (connector < 0) {
+    if (connector == INVALID_SOCKET) {
+        closesocket(listener);
         return false;
     }
 
     /* We want to find out the port number to connect to.  */
     struct sockaddr_in connect_addr;
     int size = sizeof(connect_addr);
-    if (getsockname(listener, (struct sockaddr *) &connect_addr, &size) == -1) {
-        return false;
-    }
-        
-    if (size != sizeof(connect_addr)) {
+    if (getsockname(listener, (struct sockaddr *) &connect_addr, &size) == SOCKET_ERROR
+        || size != sizeof(connect_addr)) {
+        closesocket(listener);
+        closesocket(connector);
         return false;
     }
 
-    if (connect(connector, (struct sockaddr *) &connect_addr, sizeof(connect_addr)) == -1) {
+    if (connect(connector, (struct sockaddr *) &connect_addr, sizeof(connect_addr)) == SOCKET_ERROR) {
+        closesocket(listener);
+        closesocket(connector);
         return false;
     }
 
     size = sizeof(listen_addr);
     SOCKET acceptor = accept(listener, (struct sockaddr *) &listen_addr, &size);
-    if (acceptor < 0) {
-        return false;
-    }
-    if (size != sizeof(listen_addr)) {
+    if (acceptor == INVALID_SOCKET || size != sizeof(listen_addr)) {
+        closesocket(listener);
+        closesocket(connector);
+        if (acceptor != INVALID_SOCKET) {
+            closesocket(acceptor);
+        }
         return false;
     }
 
     // check options
-    if (getsockname(connector, (struct sockaddr *) &connect_addr, &size) == -1) {
-        return false;
-    }
-    if (size != sizeof(connect_addr)
+    if (getsockname(connector, (struct sockaddr *) &connect_addr, &size) == SOCKET_ERROR
+        || size != sizeof(connect_addr)
         || listen_addr.sin_family != connect_addr.sin_family
         || listen_addr.sin_addr.s_addr != connect_addr.sin_addr.s_addr
         || listen_addr.sin_port != connect_addr.sin_port) {
+        closesocket(listener);
+        closesocket(connector);
+        closesocket(acceptor);
         return false;
     }
     closesocket(listener);

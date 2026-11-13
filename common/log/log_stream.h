@@ -1,10 +1,5 @@
-// Use of this source code is governed by a BSD 3-Clause License
-// that can be found in the LICENSE file.
-
-// Author: caozhiyi (caozhiyi5@gmail.com)
-
-#ifndef QUIC_COMMON_LOG_LOG_STREAM
-#define QUIC_COMMON_LOG_LOG_STREAM
+#ifndef COMMON_LOG_LOG_STREAM
+#define COMMON_LOG_LOG_STREAM
 
 #include <memory>
 #include <string>
@@ -12,10 +7,10 @@
 #include <functional>
 
 namespace cppnet {
+namespace common {
 
 struct Log;
-using LogStreamParam =
-    std::pair<std::shared_ptr<Log>, std::function<void(std::shared_ptr<Log>)>>;
+typedef std::pair<std::shared_ptr<Log>, std::function<void(std::shared_ptr<Log>)>> LogStreamParam;
 
 class LogStream {
 public:
@@ -44,10 +39,11 @@ private:
     LogStream& operator=(const LogStream&) = delete;
 
 private:
-    std::shared_ptr<Log> _log;
-    std::function<void(std::shared_ptr<Log>)> _call_back;
+    std::shared_ptr<Log> log_;
+    std::function<void(std::shared_ptr<Log>)> call_back_;
 };
 
-} // namespace cppnet
+}  // namespace common
+}  // namespace cppnet
 
 #endif

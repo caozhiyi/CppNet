@@ -9,7 +9,7 @@ See [chinese](/README_cn.md)
 See the details in chinese [wiki](https://github.com/caozhiyi/CppNet/wiki)
 ## Introduction
 
-Cppnet is a proactor mode and multithreaded network with C++11 on tcp. Support Window, Linux and macOS.    
+Cppnet is a proactor mode and multithreaded network with C++17 on tcp. Linux and macOS are the supported platforms; the Windows (wepoll) path compiles but is **experimental**: it has no automated coverage and several error-handling bugs were only recently fixed (see `TODO.md`).
  - `Simple`:    
     + Only export a little interfaces, all net io insterface are asynchronous callbacks
     + Insterface as much as possible like calling the socket API of the system

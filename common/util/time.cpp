@@ -9,6 +9,7 @@
 #include "common/os/convert.h"
 
 namespace cppnet {
+namespace common {
 
 uint64_t UTCTimeSec() {
     return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -75,4 +76,5 @@ void Sleep(uint32_t interval) {
 }
 
 
-}
+}  // namespace common
+}  // namespace cppnet
