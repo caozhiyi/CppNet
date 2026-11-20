@@ -17,8 +17,9 @@ namespace cppnet {
 
 class RWSocket;
 class Dispatcher;
-class RangeRandom;
 class InnerBuffer;
+namespace common { class RangeRandom; }
+using common::RangeRandom;
 
 class CppNetBase: 
     public std::enable_shared_from_this<CppNetBase> {

@@ -1,32 +1,31 @@
-// Use of this source code is governed by a BSD 3-Clause License
-// that can be found in the LICENSE file.
-
-// Author: caozhiyi (caozhiyi5@gmail.com)
-
-#ifndef QUIC_COMMON_LOG_FILE_LOGGER
-#define QUIC_COMMON_LOG_FILE_LOGGER
+#ifndef COMMON_LOG_FILE_LOGGER
+#define COMMON_LOG_FILE_LOGGER
 
 #include <mutex>
 #include <queue>
 #include <fstream>
 
-#include "common/log/logger_interface.h"
+#include "common/log/if_logger.h"
 #include "common/thread/thread_with_queue.h"
 
 namespace cppnet {
+namespace common {
 
-enum FileLoggerSpiltUnit {
-    FLSU_DAY  = 1,
-    FLSU_HOUR = 2,
+static const uint8_t kFileLoggerTimeBufSize = sizeof("xxxx-xx-xx:xx");
+
+enum class FileLoggerSpiltUnit {
+    kDay  = 1,
+    kHour = 2,
 };
 
-class FileLogger: 
-    public Logger, 
-    public ThreadWithQueue<std::shared_ptr<Log>> {
+// ThreadWithQueue still lives in cppnet::, bring it in via using.
+class FileLogger:
+    public Logger,
+    public ::cppnet::ThreadWithQueue<std::shared_ptr<Log>> {
 
 public:
     FileLogger(const std::string& file, 
-        FileLoggerSpiltUnit unit = FLSU_DAY, 
+        FileLoggerSpiltUnit unit = FileLoggerSpiltUnit::kDay, 
         uint16_t max_store_days = 3,
         uint16_t time_offset = 5);
 
@@ -41,34 +40,37 @@ public:
     void Error(std::shared_ptr<Log>& log);
     void Fatal(std::shared_ptr<Log>& log);
 
-    void SetFileName(const std::string& name) { _file_name = name; }
-    std::string GetFileName() { return _file_name; }
+    void SetFileName(const std::string& name) { file_name_ = name; }
+    std::string GetFileName() { return file_name_; }
 
     void SetMaxStoreDays(uint16_t max);
-    uint16_t GetMAxStorDays() { return _max_file_num; }
+    uint16_t GetMAxStorDays() { return max_file_num_; }
 
 private:
     void CheckTime(char* log);
     void CheckExpireFiles();
 
 private:
-    enum : uint8_t {
-        __file_logger_time_buf_size = sizeof("xxxx-xx-xx:xx")
-    };
-    std::string   _file_name;
-    std::fstream  _stream;
+    std::string   file_name_;
+    std::fstream  stream_;
 
     // for time check
-    uint16_t _time_offset;
-    uint8_t  _time_buf_len;
-    FileLoggerSpiltUnit _spilt_unit;
-    char     _time[__file_logger_time_buf_size];
+    uint16_t time_offset_;
+    uint8_t  time_buf_len_;
+    FileLoggerSpiltUnit spilt_unit_;
+    char     time_[kFileLoggerTimeBufSize];
 
     // for log file delete
-    uint16_t _max_file_num;
-    std::queue<std::string> _history_file_names;
+    uint16_t max_file_num_;
+    std::queue<std::string> history_file_names_;
 };
 
-} // namespace cppnet
+}  // namespace common
+
+// Compatibility alias: legacy code uses cppnet::FileLogger directly.
+using common::FileLogger;
+using common::FileLoggerSpiltUnit;
+
+}  // namespace cppnet
 
 #endif

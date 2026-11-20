@@ -39,11 +39,16 @@ void CppNetBase::Init(uint32_t thread_num) {
     _random = std::unique_ptr<RangeRandom>(new RangeRandom(0, thread_num - 1));
 
 #ifndef __win__
-    //Disable  SIGPIPE signal
-    sigset_t set;
-    sigprocmask(SIG_SETMASK, NULL, &set);
-    sigaddset(&set, SIGPIPE);
-    sigprocmask(SIG_SETMASK, &set, NULL);
+    // Ignore SIGPIPE process-wide so that writing to a closed peer socket
+    // returns EPIPE instead of killing the whole process.
+    //
+    // Previous code used sigprocmask() to *block* SIGPIPE, which only
+    // affects the calling thread (and per POSIX, sigprocmask() in a
+    // multithreaded program is undefined; pthread_sigmask should be used).
+    // Worker threads spawned later inherited the mask, but any thread
+    // created before this point would still receive SIGPIPE. SIG_IGN on
+    // the disposition is process-wide and immune to thread creation order.
+    signal(SIGPIPE, SIG_IGN);
 #endif
 
     for (uint32_t i = 0; i < thread_num; i++) {

@@ -226,10 +226,18 @@ void RWSocket::OnConnect(uint16_t err) {
 }
 
 void RWSocket::OnDisConnect(uint16_t err) {
+    // Idempotent guard: EPOLLRDHUP and EPOLLHUP can be set in the same epoll
+    // batch (both mapped to OnDisConnect below), and a user Close() can race
+    // with a peer close. Running the close path twice would double close the
+    // fd, which may hit an unrelated recycled descriptor.
+    if (IsShutdown()) {
+        return;
+    }
+
     auto sock = shared_from_this();
     __all_socket_map.erase(_sock);
 
-    if (!IsShutdown()) {
+    {
         auto cppnet_base = _cppnet_base.lock();
         if (cppnet_base) {
             cppnet_base->OnDisConnect(sock, err);
@@ -244,6 +252,8 @@ void RWSocket::OnDisConnect(uint16_t err) {
             actions->DelEvent(_event);
         }
         OsHandle::Close(_sock);
+        // invalidate the descriptor so any later misuse is a no-op close(0)
+        SetSocket(0);
     }
 }
 
@@ -271,11 +281,28 @@ bool RWSocket::Recv(uint32_t len) {
 
         std::vector<Iovec> io_vec;
         uint32_t buff_len = _read_buffer->GetFreeMemoryBlock(io_vec, expand);
+        if (io_vec.empty()) {
+            // All current blocks are full and no space was offered. Expand to
+            // get a fresh block; if expansion yields nothing, leave the rest
+            // of the data in the socket buffer for the next event.
+            if (need_expend) {
+                break;
+            }
+            need_expend = true;
+            continue;
+        }
         auto ret = OsHandle::Readv(_sock, &*io_vec.begin(), io_vec.size());
         if (ret._return_value < 0 || ret._errno > 0) {
-            if (errno == EWOULDBLOCK || errno == EAGAIN || errno == EINTR) {
-                _read_buffer->MoveWritePt(ret._return_value);
-                off_set += ret._return_value;
+            if (Interrupted(ret._errno)) {
+                // interrupted before any byte was read; retry, otherwise the
+                // edge triggered EPOLLIN event is lost forever
+                continue;
+            }
+            if (WouldBlock(ret._errno)) {
+                // no more data for now. Bytes read in earlier iterations are
+                // already committed to the buffer: nothing to roll back here.
+                // (Previously this moved the write pt by -1 and silently
+                // dropped the last received byte.)
                 break;
 
             } else {
@@ -311,13 +338,21 @@ bool RWSocket::Send() {
     while(_write_buffer && _write_buffer->GetCanReadLength() > 0) {
         std::vector<Iovec> io_vec;
         _write_buffer->GetUseMemoryBlock(io_vec, __linux_write_buff_get);
+        if (io_vec.empty()) {
+            // nothing usable although data is pending; state is inconsistent
+            break;
+        }
         auto ret = OsHandle::Writev(_sock, &*io_vec.begin(), io_vec.size());
         if (ret._return_value >= 0 && ret._errno == 0) {
             _write_buffer->MoveReadPt(ret._return_value);
             off_set += ret._return_value;
 
         } else {
-            if (errno == EWOULDBLOCK || errno == EAGAIN || errno == EINTR) {
+            if (Interrupted(ret._errno)) {
+                // interrupted before any byte was written; retry
+                continue;
+            }
+            if (WouldBlock(ret._errno)) {
                 //can't send complete
                 auto actions = GetEventActions();
                 if (actions) {
@@ -325,7 +360,7 @@ bool RWSocket::Send() {
                 }
                 return false;
 
-            } else if (errno == EBADMSG) {
+            } else if (ret._errno == EBADMSG) {
                 OnDisConnect(CEC_CONNECT_BREAK);
                 return false;
 

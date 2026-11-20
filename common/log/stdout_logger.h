@@ -1,22 +1,18 @@
-// Use of this source code is governed by a BSD 3-Clause License
-// that can be found in the LICENSE file.
-
-// Author: caozhiyi (caozhiyi5@gmail.com)
-
-#ifndef QUIC_COMMON_LOG_STDOUT_LOGGER
-#define QUIC_COMMON_LOG_STDOUT_LOGGER
+#ifndef COMMON_LOG_STDOUT_LOGGER
+#define COMMON_LOG_STDOUT_LOGGER
 
 #include <mutex>
-#include "common/log/logger_interface.h"
+#include "common/log/if_logger.h"
 
 namespace cppnet {
+namespace common {
 
-class StdoutLogger: 
+class StdoutLogger:
     public Logger {
 
 public:
-    StdoutLogger() = default;
-    ~StdoutLogger() = default;
+    StdoutLogger();
+    ~StdoutLogger();
 
     void Debug(std::shared_ptr<Log>& log);
     void Info(std::shared_ptr<Log>& log);
@@ -25,9 +21,14 @@ public:
     void Fatal(std::shared_ptr<Log>& log);
 
 private:
-    std::mutex _mutex;
+    std::mutex mutex_;
 };
 
-} // namespace cppnet
+}  // namespace common
+
+// Compatibility alias: legacy code uses cppnet::StdoutLogger directly.
+using common::StdoutLogger;
+
+}  // namespace cppnet
 
 #endif

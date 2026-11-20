@@ -5,7 +5,11 @@
 
 #include "common/log/log.h"
 
-RPCClient::RPCClient() : _connected(false){
+RPCClient::RPCClient() :
+    _connected(false),
+    // was never initialized: any read callback or CallFunc dereferenced a
+    // null shared_ptr (caught by UBSan as "member call on null pointer").
+    _parse_package(new ParsePackage) {
 }
 
 
@@ -86,7 +90,7 @@ void RPCClient::_DoWrite(cppnet::Handle handle, uint32_t len) {
 
 void RPCClient::_DoConnect(cppnet::Handle handle, uint32_t err) {
     if (err != cppnet::CEC_SUCCESS) {
-        cppnet::LOG_ERROR("connect failed! err : %d", err);
+        LOG_ERROR("connect failed! err : %d", err);
         return;
     }
     _socket = handle;
@@ -98,5 +102,5 @@ void RPCClient::_DoDisConnect(cppnet::Handle handle, uint32_t err) {
     if (err != cppnet::CEC_CLOSED) {
         _net.Connection(_ip, _port);
     }
-    cppnet::LOG_ERROR("disconnect with server!");
+    LOG_ERROR("disconnect with server!");
 }

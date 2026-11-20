@@ -6,6 +6,7 @@
 #ifndef NET_EVENT_EPOLL_EPOLL_ACTION
 #define NET_EVENT_EPOLL_EPOLL_ACTION
 
+#include <memory>
 #include <vector>
 #ifdef __win__
 #include "wepoll/wepoll.h"
@@ -40,7 +41,7 @@ public:
     virtual void Wakeup();
 
 private:
-    void OnEvent(std::vector<epoll_event>& event_vec, int16_t num);
+    void OnEvent(std::vector<epoll_event>& event_vec, int num);
     bool AddEvent(epoll_event* ev, int32_t event_flag, uint64_t sock, bool in_actions);
     bool MakeEpollEvent(Event* event, epoll_event* &ep_event);
     
@@ -51,10 +52,15 @@ private:
     SOCKET      _pipe[2];
 #else
     int32_t     _epoll_handler;
-    uint32_t    _pipe[2];
+    int         _pipe[2];
 #endif
     epoll_event _pipe_content;
     std::vector<epoll_event> _active_list;
+    // Owns epoll_event objects allocated for listen/accept sockets, which do
+    // not have a per-socket pool allocator (unlike RWSocket). Without this,
+    // AddAcceptEvent leaked one struct per ConnectSocket. EpollEventActions
+    // outlives all listen sockets, so destroying the vector here is safe.
+    std::vector<std::unique_ptr<epoll_event>> _accept_events;
 
 };
 

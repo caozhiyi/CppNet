@@ -2,7 +2,11 @@
 #include "info_router.h"
 #include "func_thread.h"
 
-InfoRouter::InfoRouter() {
+InfoRouter::InfoRouter()
+    // was default-constructed with an indeterminate value: the first
+    // PushTask() indexed _func_thread_vec with garbage and crashed with a
+    // SEGV inside the IO thread (caught by ASan).
+    : _curent_index(0) {
 }
 
 InfoRouter::~InfoRouter() {

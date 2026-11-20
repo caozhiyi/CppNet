@@ -1,25 +1,22 @@
-// Use of this source code is governed by a BSD 3-Clause License
-// that can be found in the LICENSE file.
-
-// Author: caozhiyi (caozhiyi5@gmail.com)
-
 #include "common/log/log.h"
+#include "common/log/if_logger.h"
 #include "common/log/log_stream.h"
-#include "common/log/logger_interface.h"
+
 
 namespace cppnet {
+namespace common {
 
-#define CHECK_CONTINUE()  do{ if (!_log || _log->_len >= __log_block_size) { return *this; }  } while(0);
+#define CHECK_CONTINUE()  do{ if (!log_ || log_->len_ >= kLogBlockSize) { return *this; }  } while(0);
 
 LogStream::LogStream(const LogStreamParam& param):
-    _log(param.first),
-    _call_back(param.second) {
+    log_(param.first),
+    call_back_(param.second) {
 
 }
 
 LogStream::~LogStream() {
-    if (_log && _call_back) {
-        _call_back(_log);
+    if (log_ && call_back_) {
+        call_back_(log_);
     }
 }
 
@@ -27,58 +24,60 @@ LogStream& LogStream::operator<<(bool v) {
     CHECK_CONTINUE()
 
     char c = v ? '1' : '0';
-    _log->_len += snprintf(_log->_log + _log->_len, __log_block_size - _log->_len, "%c", c);
+    log_->len_ += snprintf(log_->log_ + log_->len_, kLogBlockSize - log_->len_, "%c", c);
     return *this;
 }
 
 LogStream& LogStream::operator<<(int8_t v) {
     CHECK_CONTINUE()
 
-    _log->_len += snprintf(_log->_log + _log->_len, __log_block_size - _log->_len, "%d", v);
+    log_->len_ += snprintf(log_->log_ + log_->len_, kLogBlockSize - log_->len_, "%d", v);
     return *this;
 }
 
 LogStream& LogStream::operator<<(uint8_t v) {
     CHECK_CONTINUE()
 
-    _log->_len += snprintf(_log->_log + _log->_len, __log_block_size - _log->_len, "%u", v);
+    log_->len_ += snprintf(log_->log_ + log_->len_, kLogBlockSize - log_->len_, "%u", v);
     return *this;
 }
 
 LogStream& LogStream::operator<<(int16_t v) {
     CHECK_CONTINUE()
 
-    _log->_len += snprintf(_log->_log + _log->_len, __log_block_size - _log->_len, "%d", v);
+    log_->len_ += snprintf(log_->log_ + log_->len_, kLogBlockSize - log_->len_, "%d", v);
     return *this;
 }
 
 LogStream& LogStream::operator<<(uint16_t v) {
     CHECK_CONTINUE()
 
-    _log->_len += snprintf(_log->_log + _log->_len, __log_block_size - _log->_len, "%u", v);
+    log_->len_ += snprintf(log_->log_ + log_->len_, kLogBlockSize - log_->len_, "%u", v);
     return *this;
 }
 
 LogStream& LogStream::operator<<(int32_t v) {
     CHECK_CONTINUE()
 
-    _log->_len += snprintf(_log->_log + _log->_len, __log_block_size - _log->_len, "%d", v);
+    log_->len_ += snprintf(log_->log_ + log_->len_, kLogBlockSize - log_->len_, "%d", v);
     return *this;
 }
 
 LogStream& LogStream::operator<<(uint32_t v) {
     CHECK_CONTINUE()
 
-    _log->_len += snprintf(_log->_log + _log->_len, __log_block_size - _log->_len, "%u", v);
+    log_->len_ += snprintf(log_->log_ + log_->len_, kLogBlockSize - log_->len_, "%u", v);
     return *this;
 }
 
 LogStream& LogStream::operator<<(int64_t v) {
     CHECK_CONTINUE()
 #ifdef __win__
-    _log->_len += snprintf(_log->_log + _log->_len, __log_block_size - _log->_len, "%I64d", v);
+    log_->len_ += snprintf(log_->log_ + log_->len_, kLogBlockSize - log_->len_, "%I64d", v);
+#elif __APPLE__
+    log_->len_ += snprintf(log_->log_ + log_->len_, kLogBlockSize - log_->len_, "%lld", v);
 #else
-    _log->_len += snprintf(_log->_log + _log->_len, __log_block_size - _log->_len, "%ld", v);
+    log_->len_ += snprintf(log_->log_ + log_->len_, kLogBlockSize - log_->len_, "%ld", v);
 #endif
     return *this;
 }
@@ -86,9 +85,11 @@ LogStream& LogStream::operator<<(int64_t v) {
 LogStream& LogStream::operator<<(uint64_t v) {
     CHECK_CONTINUE()
 #ifdef __win__
-    _log->_len += snprintf(_log->_log + _log->_len, __log_block_size - _log->_len, "%I64u", v);
+    log_->len_ += snprintf(log_->log_ + log_->len_, kLogBlockSize - log_->len_, "%I64u", v);
+#elif __APPLE__
+    log_->len_ += snprintf(log_->log_ + log_->len_, kLogBlockSize - log_->len_, "%llu", v);
 #else
-    _log->_len += snprintf(_log->_log + _log->_len, __log_block_size - _log->_len, "%lu", v);
+    log_->len_ += snprintf(log_->log_ + log_->len_, kLogBlockSize - log_->len_, "%lu", v);
 #endif
     return *this;
 }
@@ -96,36 +97,37 @@ LogStream& LogStream::operator<<(uint64_t v) {
 LogStream& LogStream::operator<<(float v) {
     CHECK_CONTINUE()
 
-    _log->_len += snprintf(_log->_log + _log->_len, __log_block_size - _log->_len, "%.10lf", v);
+    log_->len_ += snprintf(log_->log_ + log_->len_, kLogBlockSize - log_->len_, "%.10lf", v);
     return *this;
 }
 
 LogStream& LogStream::operator<<(double v) {
     CHECK_CONTINUE()
 
-    _log->_len += snprintf(_log->_log + _log->_len, __log_block_size - _log->_len, "%.20lf", v);
+    log_->len_ += snprintf(log_->log_ + log_->len_, kLogBlockSize - log_->len_, "%.20lf", v);
     return *this;
 }
 
 LogStream& LogStream::operator<<(const std::string& v) {
     CHECK_CONTINUE()
 
-    _log->_len += snprintf(_log->_log + _log->_len, __log_block_size - _log->_len, "%s", v.c_str());
+    log_->len_ += snprintf(log_->log_ + log_->len_, kLogBlockSize - log_->len_, "%s", v.c_str());
     return *this;
 }
 
 LogStream& LogStream::operator<<(const char* v) {
     CHECK_CONTINUE()
 
-    _log->_len += snprintf(_log->_log + _log->_len, __log_block_size - _log->_len, "%s", v);
+    log_->len_ += snprintf(log_->log_ + log_->len_, kLogBlockSize - log_->len_, "%s", v);
     return *this;
 }
 
 LogStream& LogStream::operator<<(char v) {
     CHECK_CONTINUE()
 
-    _log->_len += snprintf(_log->_log + _log->_len, __log_block_size - _log->_len, "%c", v);
+    log_->len_ += snprintf(log_->log_ + log_->len_, kLogBlockSize - log_->len_, "%c", v);
     return *this;
 }
 
-} // namespace cppnet
+}  // namespace common
+}  // namespace cppnet

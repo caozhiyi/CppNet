@@ -6,10 +6,16 @@
 #ifndef COMMON_UTIL_BITMAP
 #define COMMON_UTIL_BITMAP
 
+// VENDORED-FROM: quicX/src/common/util/bitmap.h (CppNet adapted)
+// Stage 3.1 of upgrade: relocated to cppnet::common namespace.
+// The old cppnet::Bitmap symbol is preserved via a using-declaration at
+// the end of this header (self-export pattern).
+
 #include <vector>
 #include <cstdint>
 
 namespace cppnet {
+namespace common {
 
 // bitmap base on array.
 // find next valid bit in O(1) time.
@@ -44,6 +50,11 @@ private:
     std::vector<int64_t> _bitmap;
 };
 
-}
+}  // namespace common
+
+// Self-export: keep cppnet::Bitmap working for existing call sites.
+using common::Bitmap;
+
+}  // namespace cppnet
 
 #endif

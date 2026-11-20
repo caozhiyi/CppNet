@@ -37,7 +37,7 @@ void CppNet::Init(int32_t thread_num) {
         LOG_SET(file_log);
         LOG_SET_LEVEL((LogLevel)__log_level);
     } else {
-        LOG_SET_LEVEL(LL_NULL);
+        LOG_SET_LEVEL(LogLevel::kNull);
     }
 }
 

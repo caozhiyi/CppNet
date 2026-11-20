@@ -9,7 +9,7 @@
 
 ## 简介
 
-Cppnet是一个封装在TCP协议上的proactor模式multi-thread C++11网络库，支持在windows，linux以及macOS上编译使用。     
+Cppnet是一个封装在TCP协议上的proactor模式multi-thread C++17网络库，支持在linux以及macOS上编译使用；Windows（wepoll）路径可以编译，但属于**实验性支持**：没有自动化测试覆盖，部分错误处理缺陷近期才修复（见`TODO.md`）。
  - `简单`：   
     + 对外暴漏最少接口，所有的网络响应都封装为异步回调的形式
     + 接口声明类似系统原生

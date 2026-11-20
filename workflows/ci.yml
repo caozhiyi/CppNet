@@ -1,0 +1,176 @@
+# CppNet CI
+#
+# Goal of this skeleton:
+#   - Keep the build green on Linux (gcc + clang), macOS (kqueue path),
+#     and Windows (IOCP path) so cross-platform regressions are caught
+#     immediately instead of being discovered weeks later.
+#   - Run the sanitizer matrix (ASan / UBSan / TSan) at build time on
+#     Linux. We do NOT execute the test/* demos yet because they are
+#     interactive servers/clients, not an automated test suite. Phase 0.3
+#     will replace the "build only" sanitizer step with real test
+#     execution under each sanitizer.
+#   - Enforce vendoring discipline (no leftover `quicx::` symbols in
+#     vendored sources) once Phase 2 starts importing quicX modules.
+#
+# Intentional non-goals at Phase 0.2:
+#   - -Werror is NOT enabled globally. The legacy code has known
+#     -Wsign-compare / -Wunused-variable warnings; we will flip -Werror
+#     on per target as vendored modules land (see UPGRADE_PLAN 0.1).
+#   - clang-tidy / clang-format gates are deferred to a follow-up PR.
+#   - Coverage / nightly perf jobs are deferred to Phase 0.4.
+
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+# Cancel in-flight runs on the same ref to save CI minutes when a PR is
+# updated repeatedly.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------
+  # Linux: full matrix (gcc/clang) + sanitizers
+  # ---------------------------------------------------------------------
+  linux:
+    name: linux ${{ matrix.compiler }} ${{ matrix.sanitizer || 'plain' }}
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+        sanitizer: ["", "address,undefined", "thread"]
+        # We only need the sanitizer matrix on one compiler to keep the
+        # job count reasonable. clang has the most accurate sanitizer
+        # implementations on Linux, so we pick clang for sanitizer jobs
+        # and gcc for the plain build.
+        exclude:
+          - compiler: gcc
+            sanitizer: "address,undefined"
+          - compiler: gcc
+            sanitizer: "thread"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build
+          if [ "${{ matrix.compiler }}" = "clang" ]; then
+            sudo apt-get install -y clang
+          fi
+
+      - name: Pick compiler
+        id: cc
+        run: |
+          if [ "${{ matrix.compiler }}" = "clang" ]; then
+            echo "CC=clang"   >> "$GITHUB_ENV"
+            echo "CXX=clang++" >> "$GITHUB_ENV"
+          else
+            echo "CC=gcc"   >> "$GITHUB_ENV"
+            echo "CXX=g++"  >> "$GITHUB_ENV"
+          fi
+
+      - name: Configure
+        run: |
+          SAN_ARG=""
+          if [ -n "${{ matrix.sanitizer }}" ]; then
+            SAN_ARG="-DCPPNET_SANITIZER=${{ matrix.sanitizer }}"
+          fi
+          cmake -B build -S . -G Ninja \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            $SAN_ARG
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      # Real data-path regression test. Runs on the plain builds only:
+      # the sanitizer jobs stay build-only until the remaining teardown
+      # races are fixed (echo_test intentionally _Exit()s with IO threads
+      # parked, which is fine under sanitizers too, but we keep the
+      # matrix unchanged for now).
+      - name: Echo integration test
+        if: matrix.sanitizer == ''
+        run: ./build/bin/echotest
+
+      # Phase 0.3 will replace this with actual smoke tests run under the
+      # sanitizer. For now we only verify the build link succeeds, which
+      # is enough to catch most ABI / instrumentation breakage early.
+      - name: Smoke (built artifacts list)
+        run: ls -la build/bin || true
+
+  # ---------------------------------------------------------------------
+  # macOS: kqueue event driver path
+  # ---------------------------------------------------------------------
+  macos:
+    name: macos clang
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: |
+          cmake -B build -S . \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+      - name: Build
+        run: cmake --build build --parallel
+
+  # ---------------------------------------------------------------------
+  # Windows: IOCP event driver path
+  # ---------------------------------------------------------------------
+  windows:
+    name: windows msvc
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: |
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+      - name: Build
+        run: cmake --build build --config RelWithDebInfo --parallel
+
+  # ---------------------------------------------------------------------
+  # Vendoring discipline check
+  #
+  # Once Phase 2 starts importing quicX modules, every imported file MUST
+  # have its namespace rewritten from quicx::common to cppnet::common
+  # (see doc/VENDORED.md rule #2). This job catches accidental leakage.
+  #
+  # The check is harmless before Phase 2 (nothing to find).
+  # ---------------------------------------------------------------------
+  vendoring-discipline:
+    name: vendoring discipline
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: No quicx:: symbols in vendored code
+        run: |
+          set -e
+          # Search common/ and cppnet/ (vendored target dirs). Tests and
+          # docs are allowed to mention quicx for context.
+          if grep -RIn --include='*.h' --include='*.hpp' \
+                       --include='*.cpp' --include='*.cc' \
+              -E 'quicx::|namespace[[:space:]]+quicx[[:space:]]*\{' \
+              common/ cppnet/ ; then
+            echo
+            echo "ERROR: Found quicx:: references in vendored code paths."
+            echo "Per doc/VENDORED.md rule #2 every import must be"
+            echo "rewritten to cppnet::common at copy time."
+            exit 1
+          fi
+          echo "OK: no quicx:: leakage detected."
+
+      - name: VENDORED.md present
+        run: |
+          test -f doc/VENDORED.md
+          echo "OK: doc/VENDORED.md is in place."

@@ -7,10 +7,44 @@
 #define COMMON_NETWORK_IO_HANDLE
 
 #include <cstdint>
+#include <errno.h>
 #include "common/util/os_return.h"
 #include "common/network/address.h"
 
+// Winsock error codes, in case winsock2.h is not in this header's include chain.
+#ifdef __win__
+#ifndef WSAEINTR
+#define WSAEINTR 10004
+#endif
+#ifndef WSAEWOULDBLOCK
+#define WSAEWOULDBLOCK 10035
+#endif
+#ifndef WSAEINPROGRESS
+#define WSAEINPROGRESS 10036
+#endif
+#endif
+
 namespace cppnet {
+
+// Classify an OS error captured in SysCallResult::_errno by the OsHandle
+// wrappers: POSIX implementations store errno, winsock ones store
+// WSAGetLastError(). Callers must pass the captured _errno, never the global
+// errno macro, which winsock calls do not set.
+inline bool WouldBlock(int32_t err) {
+#ifdef __win__
+    return err == WSAEWOULDBLOCK || err == WSAEINPROGRESS;
+#else
+    return err == EAGAIN || err == EWOULDBLOCK;
+#endif
+}
+
+inline bool Interrupted(int32_t err) {
+#ifdef __win__
+    return err == WSAEINTR;
+#else
+    return err == EINTR;
+#endif
+}
 
 struct Iovec {
 #ifdef __win__
