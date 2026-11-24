@@ -5,6 +5,8 @@
     <a href="https://opensource.org/licenses/BSD-3-Clause"><img src="https://img.shields.io/badge/license-bsd-orange.svg" alt="Licenses"></a>
 </p> 
 
+<a href="https://hellogithub.com/repository/caozhiyi/CppNet" target="_blank"><img src="https://api.hellogithub.com/v1/widgets/recommend.svg?rid=4b35a21a20284a7fb76849104f30642f&claim_uid=IaMhfOS8KA46FiD" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" /></a>
+
 See [chinese](/README_cn.md)    
 See the details in chinese [wiki](https://github.com/caozhiyi/CppNet/wiki)
 ## Introduction
